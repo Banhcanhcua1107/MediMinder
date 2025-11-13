@@ -60,30 +60,28 @@ class _AddMedScreenState extends State<AddMedScreen> {
 
     await showDialog(
       context: context,
+      barrierColor: Colors.black.withOpacity(0.5),
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setDialogState) {
             return Dialog(
-              backgroundColor: Colors.transparent,
-              insetPadding: const EdgeInsets.all(16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              backgroundColor: Colors.white,
               child: Container(
-                height: 400,
+                width: 750,
+                height: 320,
+                padding: const EdgeInsets.all(16.0),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 10,
-                      spreadRadius: 2,
-                    ),
-                  ],
                 ),
                 child: Column(
                   children: [
                     // Header
                     Padding(
-                      padding: const EdgeInsets.all(16.0),
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -111,7 +109,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
                                 _selectedDate = tempSelectedDate;
                                 _selectedTime = tempSelectedTime;
                                 _dateController.text =
-                                    '${_selectedDate.day.toString().padLeft(2, '0')}/${_selectedDate.month.toString().padLeft(2, '0')}/${_selectedDate.year}, ${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}';
+                                    '${tempSelectedDate.day.toString().padLeft(2, '0')}/${tempSelectedDate.month.toString().padLeft(2, '0')}/${tempSelectedDate.year}, ${tempSelectedTime.hour.toString().padLeft(2, '0')}:${tempSelectedTime.minute.toString().padLeft(2, '0')}';
                               });
                               Navigator.pop(context);
                             },
@@ -178,7 +176,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
                                   child: Text(
                                     '$dayName ${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}',
                                     style: TextStyle(
-                                      fontSize: index == 10 ? 16 : 16,
+                                      fontSize: 16,
                                       fontWeight: index == 10
                                           ? FontWeight.bold
                                           : FontWeight.w500,
@@ -210,9 +208,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
                                   child: Text(
                                     index.toString().padLeft(2, '0'),
                                     style: TextStyle(
-                                      fontSize: index == tempSelectedTime.hour
-                                          ? 16
-                                          : 16,
+                                      fontSize: 16,
                                       fontWeight: index == tempSelectedTime.hour
                                           ? FontWeight.bold
                                           : FontWeight.w500,
@@ -245,10 +241,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
                                   child: Text(
                                     minute.toString().padLeft(2, '0'),
                                     style: TextStyle(
-                                      fontSize:
-                                          minute == tempSelectedTime.minute
-                                          ? 16
-                                          : 16,
+                                      fontSize: 16,
                                       fontWeight:
                                           minute == tempSelectedTime.minute
                                           ? FontWeight.bold
