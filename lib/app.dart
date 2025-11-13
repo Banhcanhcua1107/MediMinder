@@ -11,6 +11,7 @@ class MediMinderApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       initialRoute: routes.RouteNames.welcome,
       routes: routes.appRoutes,
+      onGenerateRoute: routes.generateRoute,
       theme: ThemeData(
         primaryColor: const Color(0xFF0D6EF6),
         scaffoldBackgroundColor: Colors.white, // nền trắng cho toàn app

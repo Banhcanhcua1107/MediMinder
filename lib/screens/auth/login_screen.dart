@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/app_provider.dart';
-import '../../services/google_signin_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -51,17 +50,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _handleGoogleLogin() async {
     try {
-      final googleService = GoogleSignInService();
-      final response = await googleService.signInWithGoogle();
-
-      if (response != null && mounted) {
-        Navigator.pushReplacementNamed(context, '/home');
-      }
+      Navigator.pushNamed(context, '/google-signin');
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Google login failed: ${e.toString()}'),
+            content: Text('Lỗi: ${e.toString()}'),
             backgroundColor: Colors.red,
           ),
         );
@@ -227,7 +221,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   alignment: Alignment.centerRight,
                   child: GestureDetector(
                     onTap: () {
-                      // TODO: Navigate to forgot password screen
+                      Navigator.pushNamed(context, '/forgot-password');
                     },
                     child: const Text(
                       'Quên mật khẩu?',

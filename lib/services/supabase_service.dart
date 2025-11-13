@@ -61,6 +61,11 @@ class SupabaseService {
     return session != null;
   }
 
+  /// Reset mật khẩu (gửi email reset)
+  Future<void> resetPassword(String email) async {
+    await _client.auth.resetPasswordForEmail(email);
+  }
+
   // ==================== DATABASE OPERATIONS ====================
 
   /// Lấy dữ liệu từ bảng

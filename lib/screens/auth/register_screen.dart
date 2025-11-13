@@ -49,14 +49,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
 
     final authProvider = context.read<AuthProvider>();
+    final email = _emailController.text.trim();
 
     bool success = await authProvider.signUp(
-      email: _emailController.text.trim(),
+      email: email,
       password: _passwordController.text,
     );
 
     if (success && mounted) {
-      Navigator.pushReplacementNamed(context, '/home');
+      // Navigate to verification screen
+      Navigator.pushReplacementNamed(
+        context,
+        '/verification',
+        arguments: email,
+      );
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
