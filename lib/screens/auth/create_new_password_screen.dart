@@ -5,10 +5,8 @@ import '../../services/supabase_service.dart';
 class CreateNewPasswordScreen extends StatefulWidget {
   final String email;
 
-  const CreateNewPasswordScreen({
-    Key? key,
-    required this.email,
-  }) : super(key: key);
+  const CreateNewPasswordScreen({Key? key, required this.email})
+    : super(key: key);
 
   @override
   State<CreateNewPasswordScreen> createState() =>
@@ -107,10 +105,7 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_errorMessage!),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(_errorMessage!), backgroundColor: Colors.red),
         );
       }
     }
@@ -325,7 +320,9 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
                     onPressed: _isLoading ? null : _handleResetPassword,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF196EB0),
-                      disabledBackgroundColor: const Color(0xFF196EB0).withOpacity(0.6),
+                      disabledBackgroundColor: const Color(
+                        0xFF196EB0,
+                      ).withOpacity(0.6),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),

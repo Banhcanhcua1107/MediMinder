@@ -5,10 +5,7 @@ import '../../services/supabase_service.dart';
 class VerificationScreen extends StatefulWidget {
   final String email;
 
-  const VerificationScreen({
-    Key? key,
-    required this.email,
-  }) : super(key: key);
+  const VerificationScreen({Key? key, required this.email}) : super(key: key);
 
   @override
   State<VerificationScreen> createState() => _VerificationScreenState();
@@ -102,10 +99,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_errorMessage!),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(_errorMessage!), backgroundColor: Colors.red),
         );
       }
     }
@@ -215,10 +209,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                 // OTP Input Fields
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: List.generate(
-                    4,
-                    (index) => _buildOtpField(index),
-                  ),
+                  children: List.generate(4, (index) => _buildOtpField(index)),
                 ),
 
                 // Error message
@@ -244,7 +235,9 @@ class _VerificationScreenState extends State<VerificationScreen> {
                     onPressed: _isLoading ? null : _handleVerify,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF196EB0),
-                      disabledBackgroundColor: const Color(0xFF196EB0).withOpacity(0.6),
+                      disabledBackgroundColor: const Color(
+                        0xFF196EB0,
+                      ).withOpacity(0.6),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -329,24 +322,15 @@ class _VerificationScreenState extends State<VerificationScreen> {
           counterText: '',
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(
-              color: Color(0xFF196EB0),
-              width: 1.2,
-            ),
+            borderSide: const BorderSide(color: Color(0xFF196EB0), width: 1.2),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(
-              color: Color(0xFF196EB0),
-              width: 1.2,
-            ),
+            borderSide: const BorderSide(color: Color(0xFF196EB0), width: 1.2),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(
-              color: Color(0xFF196EB0),
-              width: 2,
-            ),
+            borderSide: const BorderSide(color: Color(0xFF196EB0), width: 2),
           ),
           filled: true,
           fillColor: const Color(0xFFFFFFFF),

@@ -19,11 +19,7 @@ class PasswordChangedScreen extends StatelessWidget {
                 color: const Color(0xFF28A745),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.check,
-                color: Colors.white,
-                size: 60,
-              ),
+              child: const Icon(Icons.check, color: Colors.white, size: 60),
             ),
 
             const SizedBox(height: 32),

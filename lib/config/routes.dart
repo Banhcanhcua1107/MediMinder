@@ -47,8 +47,7 @@ Route<dynamic> Function(RouteSettings) generateRoute =
         case RouteNames.createNewPassword:
           final email = settings.arguments as String?;
           return MaterialPageRoute(
-            builder: (context) =>
-                CreateNewPasswordScreen(email: email ?? ''),
+            builder: (context) => CreateNewPasswordScreen(email: email ?? ''),
           );
         default:
           return MaterialPageRoute(builder: (context) => const WelcomeScreen());
