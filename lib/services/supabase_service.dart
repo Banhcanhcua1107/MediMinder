@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter/foundation.dart';
 import '../config/constants.dart';
 
 /// Service quản lý kết nối và các thao tác với Supabase
@@ -12,16 +13,29 @@ class SupabaseService {
 
   SupabaseService._internal();
 
-  late SupabaseClient _client;
+  /// Lấy Supabase client (đã được khởi tạo ở main.dart)
+  SupabaseClient get client {
+    try {
+      return Supabase.instance.client;
+    } catch (e) {
+      throw Exception(
+        '❌ Supabase not initialized. Make sure Supabase.initialize() is called in main() before using any service.',
+      );
+    }
+  }
 
-  SupabaseClient get client => _client;
-
-  /// Khởi tạo Supabase
+  /// Khởi tạo Supabase (chỉ gọi một lần ở main.dart)
   Future<void> initialize() async {
-    _client = SupabaseClient(
-      AppConstants.SUPABASE_URL,
-      AppConstants.SUPABASE_ANON_KEY,
-    );
+    try {
+      await Supabase.initialize(
+        url: AppConstants.supabaseUrl,
+        anonKey: AppConstants.supabaseAnonKey,
+      );
+      debugPrint('✅ Supabase initialized successfully');
+    } catch (e) {
+      debugPrint('❌ Error initializing Supabase: $e');
+      rethrow;
+    }
   }
 
   // ==================== AUTHENTICATION ====================
@@ -31,7 +45,7 @@ class SupabaseService {
     required String email,
     required String password,
   }) async {
-    return await _client.auth.signUp(email: email, password: password);
+    return await client.auth.signUp(email: email, password: password);
   }
 
   /// Đăng nhập
@@ -39,7 +53,7 @@ class SupabaseService {
     required String email,
     required String password,
   }) async {
-    return await _client.auth.signInWithPassword(
+    return await client.auth.signInWithPassword(
       email: email,
       password: password,
     );
@@ -47,30 +61,30 @@ class SupabaseService {
 
   /// Đăng xuất
   Future<void> signOut() async {
-    await _client.auth.signOut();
+    await client.auth.signOut();
   }
 
   /// Lấy user hiện tại
   User? getCurrentUser() {
-    return _client.auth.currentUser;
+    return client.auth.currentUser;
   }
 
   /// Kiểm tra session có hợp lệ không
   Future<bool> isAuthenticated() async {
-    final session = _client.auth.currentSession;
+    final session = client.auth.currentSession;
     return session != null;
   }
 
   /// Reset mật khẩu (gửi email reset)
   Future<void> resetPassword(String email) async {
-    await _client.auth.resetPasswordForEmail(email);
+    await client.auth.resetPasswordForEmail(email);
   }
 
   // ==================== DATABASE OPERATIONS ====================
 
   /// Lấy dữ liệu từ bảng
   Future<List<dynamic>> getFromTable(String tableName) async {
-    return await _client.from(tableName).select();
+    return await client.from(tableName).select();
   }
 
   /// Thêm dữ liệu vào bảng
@@ -78,7 +92,7 @@ class SupabaseService {
     String tableName,
     Map<String, dynamic> data,
   ) async {
-    return await _client.from(tableName).insert(data).select();
+    return await client.from(tableName).insert(data).select();
   }
 
   /// Cập nhật dữ liệu
@@ -88,7 +102,7 @@ class SupabaseService {
     String columnName,
     dynamic columnValue,
   ) async {
-    return await _client
+    return await client
         .from(tableName)
         .update(data)
         .eq(columnName, columnValue)
@@ -101,7 +115,7 @@ class SupabaseService {
     String columnName,
     dynamic columnValue,
   ) async {
-    await _client.from(tableName).delete().eq(columnName, columnValue);
+    await client.from(tableName).delete().eq(columnName, columnValue);
   }
 
   // ==================== STORAGE OPERATIONS ====================
@@ -113,10 +127,10 @@ class SupabaseService {
     required String fileName,
   }) async {
     try {
-      await _client.storage.from(bucketName).upload(fileName, File(filePath));
+      await client.storage.from(bucketName).upload(fileName, File(filePath));
 
       // Lấy public URL
-      final String publicUrl = _client.storage
+      final String publicUrl = client.storage
           .from(bucketName)
           .getPublicUrl(fileName);
 
@@ -133,7 +147,7 @@ class SupabaseService {
     required String savePath,
   }) async {
     try {
-      final data = await _client.storage.from(bucketName).download(fileName);
+      final data = await client.storage.from(bucketName).download(fileName);
       // Lưu file
       File(savePath).writeAsBytesSync(data);
     } catch (e) {

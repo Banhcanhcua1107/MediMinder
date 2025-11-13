@@ -57,7 +57,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
 
     if (success && mounted) {
-      // Navigate to verification screen
+      // Navigate to verification screen (6 OTP fields)
       Navigator.pushReplacementNamed(
         context,
         '/verification',

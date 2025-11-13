@@ -43,3 +43,25 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# ==================== SECURITY: Environment Variables ====================
+# NEVER commit actual credentials to Git!
+.env
+.env.local
+.env.*.local
+lib/.env
+
+# Allowed: Template file (contains no real credentials)
+# .env.example is NOT ignored - developers should commit this
+
+# ==================== Additional Security ====================
+# API keys and credentials
+*.key
+*.pem
+*.p8
+secrets/
+credentials/
+
+# Firebase config
+google-services.json
+GoogleService-Info.plist

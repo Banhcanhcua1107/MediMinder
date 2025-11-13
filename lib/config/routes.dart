@@ -8,6 +8,8 @@ import '../screens/auth/reset_password_screen.dart';
 import '../screens/auth/verification_screen.dart';
 import '../screens/auth/create_new_password_screen.dart';
 import '../screens/auth/password_changed_screen.dart';
+import '../screens/home_screen.dart';
+import '../screens/add_med_screen.dart';
 
 class RouteNames {
   static const String welcome = '/';
@@ -19,6 +21,8 @@ class RouteNames {
   static const String verification = '/verification';
   static const String createNewPassword = '/create-new-password';
   static const String passwordChanged = '/password-changed';
+  static const String home = '/home';
+  static const String addMed = '/add-med';
 }
 
 final Map<String, WidgetBuilder> appRoutes = {
@@ -28,6 +32,8 @@ final Map<String, WidgetBuilder> appRoutes = {
   RouteNames.googleSignIn: (context) => const GoogleSignInScreen(),
   RouteNames.forgotPassword: (context) => const ForgotPasswordScreen(),
   RouteNames.passwordChanged: (context) => const PasswordChangedScreen(),
+  RouteNames.home: (context) => const HomeScreen(),
+  RouteNames.addMed: (context) => const AddMedScreen(),
 };
 
 // Route generator for routes with arguments

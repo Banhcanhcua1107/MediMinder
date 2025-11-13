@@ -16,12 +16,14 @@ class _VerificationScreenState extends State<VerificationScreen> {
   late List<FocusNode> _focusNodes;
   bool _isLoading = false;
   String? _errorMessage;
+  int _remainingSeconds = 60;
 
   @override
   void initState() {
     super.initState();
-    _otpControllers = List.generate(4, (_) => TextEditingController());
-    _focusNodes = List.generate(4, (_) => FocusNode());
+    _otpControllers = List.generate(6, (_) => TextEditingController());
+    _focusNodes = List.generate(6, (_) => FocusNode());
+    _startTimer();
   }
 
   @override
@@ -35,8 +37,23 @@ class _VerificationScreenState extends State<VerificationScreen> {
     super.dispose();
   }
 
+  /// Bắt đầu đếm ngược
+  void _startTimer() {
+    Future.doWhile(() async {
+      await Future.delayed(const Duration(seconds: 1));
+      if (mounted) {
+        setState(() {
+          if (_remainingSeconds > 0) {
+            _remainingSeconds--;
+          }
+        });
+      }
+      return _remainingSeconds > 0;
+    });
+  }
+
   void _handleOtpInput(String value, int index) {
-    if (value.isNotEmpty && index < 3) {
+    if (value.isNotEmpty && index < 5) {
       _focusNodes[index + 1].requestFocus();
     }
     setState(() {});
@@ -55,9 +72,9 @@ class _VerificationScreenState extends State<VerificationScreen> {
   Future<void> _handleVerify() async {
     final otpCode = _getOtpCode();
 
-    if (otpCode.length < 4) {
+    if (otpCode.length < 6) {
       setState(() {
-        _errorMessage = 'Vui lòng nhập đầy đủ mã xác nhận';
+        _errorMessage = 'Vui lòng nhập đầy đủ 6 chữ số';
       });
       return;
     }
@@ -80,7 +97,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Xác nhận thành công! Vui lòng đăng nhập.'),
+            content: Text('✅ Xác nhận thành công! Vui lòng đăng nhập.'),
             backgroundColor: Colors.green,
           ),
         );
@@ -94,7 +111,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMessage = 'Mã xác nhận không hợp lệ';
+          _errorMessage = 'Mã xác nhận không hợp lệ: ${e.toString()}';
           _isLoading = false;
         });
 
@@ -106,14 +123,21 @@ class _VerificationScreenState extends State<VerificationScreen> {
   }
 
   Future<void> _handleResend() async {
+    if (_remainingSeconds > 0) return;
+
     try {
       final supabaseService = SupabaseService();
-      await supabaseService.resetPassword(widget.email);
+
+      // Gửi lại OTP qua Supabase
+      await supabaseService.client.auth.signUp(
+        email: widget.email,
+        password: DateTime.now().toString(), // Tạm thời
+      );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Mã xác nhận đã được gửi lại.'),
+            content: Text('✅ Mã xác nhận đã được gửi lại.'),
             backgroundColor: Colors.green,
           ),
         );
@@ -124,14 +148,16 @@ class _VerificationScreenState extends State<VerificationScreen> {
         }
         setState(() {
           _errorMessage = null;
+          _remainingSeconds = 60;
         });
         _focusNodes[0].requestFocus();
+        _startTimer();
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Lỗi: Không thể gửi lại mã xác nhận'),
+            content: Text('❌ Lỗi: ${e.toString()}'),
             backgroundColor: Colors.red,
           ),
         );
@@ -181,7 +207,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
                 // Title
                 Text(
-                  'Xác Nhận',
+                  'Xác Nhận Email',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontSize: 30,
                     fontWeight: FontWeight.bold,
@@ -195,7 +221,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
                 // Description
                 Text(
-                  'Nhập mã xác nhận chúng tôi vừa gửi đến địa chỉ email của bạn.',
+                  'Nhập mã 6 chữ số chúng tôi vừa gửi đến:\n${widget.email}',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
@@ -206,10 +232,10 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
                 const SizedBox(height: 40),
 
-                // OTP Input Fields
+                // OTP Input Fields (6 fields)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: List.generate(4, (index) => _buildOtpField(index)),
+                  children: List.generate(6, (index) => _buildOtpField(index)),
                 ),
 
                 // Error message
@@ -269,32 +295,31 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
                 // Resend link
                 Center(
-                  child: RichText(
-                    text: TextSpan(
-                      children: [
-                        const TextSpan(
-                          text: 'Không nhận được mã? ',
-                          style: TextStyle(
-                            color: Color(0xFF1E232C),
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                          ),
+                  child: Column(
+                    children: [
+                      Text(
+                        _remainingSeconds > 0
+                            ? 'Gửi lại mã trong ${_remainingSeconds}s'
+                            : 'Không nhận được mã?',
+                        style: const TextStyle(
+                          color: Color(0xFF8391A1),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
                         ),
-                        WidgetSpan(
-                          child: GestureDetector(
-                            onTap: _isLoading ? null : _handleResend,
-                            child: const Text(
-                              'Gửi lại',
-                              style: TextStyle(
-                                color: Color(0xFF196EB0),
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                              ),
+                      ),
+                      if (_remainingSeconds == 0)
+                        GestureDetector(
+                          onTap: _handleResend,
+                          child: const Text(
+                            'Gửi lại',
+                            style: TextStyle(
+                              color: Color(0xFF196EB0),
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                    ],
                   ),
                 ),
 
@@ -309,7 +334,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
   Widget _buildOtpField(int index) {
     return SizedBox(
-      width: 60,
+      width: 50,
       height: 60,
       child: TextField(
         controller: _otpControllers[index],
