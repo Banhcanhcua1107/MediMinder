@@ -40,6 +40,10 @@ final Map<String, WidgetBuilder> appRoutes = {
 Route<dynamic> Function(RouteSettings) generateRoute =
     (RouteSettings settings) {
       switch (settings.name) {
+        case RouteNames.home:
+          return MaterialPageRoute(builder: (context) => const HomeScreen());
+        case RouteNames.addMed:
+          return MaterialPageRoute(builder: (context) => const AddMedScreen());
         case RouteNames.resetPassword:
           final email = settings.arguments as String?;
           return MaterialPageRoute(

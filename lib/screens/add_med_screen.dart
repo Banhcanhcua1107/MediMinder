@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
 class AddMedScreen extends StatefulWidget {
   const AddMedScreen({Key? key}) : super(key: key);
@@ -20,12 +21,17 @@ class _AddMedScreenState extends State<AddMedScreen> {
 
   final List<String> _medicineTypes = [
     'Viên Uống',
-    'Bột',
+    'Hạt',
+    'Viên Nén',
     'Dung Dịch',
     'Cao Dán',
     'Tiêm',
     'Khác',
   ];
+
+  bool _isDropdownOpen = false;
+  late DateTime _selectedDate;
+  late TimeOfDay _selectedTime;
 
   @override
   void initState() {
@@ -34,6 +40,8 @@ class _AddMedScreenState extends State<AddMedScreen> {
     _doseController = TextEditingController();
     _amountController = TextEditingController();
     _dateController = TextEditingController();
+    _selectedDate = DateTime.now();
+    _selectedTime = TimeOfDay.now();
   }
 
   @override
@@ -46,33 +54,225 @@ class _AddMedScreenState extends State<AddMedScreen> {
   }
 
   Future<void> _selectDate(BuildContext context) async {
-    final DateTime? pickedDate = await showDatePicker(
+    final DateTime now = DateTime.now();
+    DateTime tempSelectedDate = _selectedDate;
+    TimeOfDay tempSelectedTime = _selectedTime;
+
+    await showDialog(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2100),
-    );
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setDialogState) {
+            return Dialog(
+              backgroundColor: Colors.transparent,
+              insetPadding: const EdgeInsets.all(16),
+              child: Container(
+                height: 400,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    // Header
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text(
+                              'Hủy',
+                              style: TextStyle(
+                                color: Color(0xFF196EB0),
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                          const Text(
+                            'Chọn Ngày Giờ',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              setState(() {
+                                _selectedDate = tempSelectedDate;
+                                _selectedTime = tempSelectedTime;
+                                _dateController.text =
+                                    '${_selectedDate.day.toString().padLeft(2, '0')}/${_selectedDate.month.toString().padLeft(2, '0')}/${_selectedDate.year}, ${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}';
+                              });
+                              Navigator.pop(context);
+                            },
+                            child: const Text(
+                              'Xác Nhận',
+                              style: TextStyle(
+                                color: Color(0xFF196EB0),
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Divider(height: 1),
+                    // Pickers
+                    Expanded(
+                      child: Row(
+                        children: [
+                          // Date Picker
+                          Expanded(
+                            child: CupertinoPicker(
+                              scrollController: FixedExtentScrollController(
+                                initialItem:
+                                    tempSelectedDate.difference(now).inDays +
+                                    10,
+                              ),
+                              itemExtent: 40,
+                              onSelectedItemChanged: (int index) {
+                                setDialogState(() {
+                                  tempSelectedDate = now.add(
+                                    Duration(days: index - 10),
+                                  );
+                                });
+                              },
+                              children: List<Widget>.generate(21, (int index) {
+                                DateTime date = now.add(
+                                  Duration(days: index - 10),
+                                );
+                                String dayName = '';
+                                int daysDiff = date.difference(now).inDays;
 
-    if (pickedDate != null) {
-      final TimeOfDay? pickedTime = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.now(),
-      );
+                                if (daysDiff == 0) {
+                                  dayName = 'Hôm Nay';
+                                } else if (daysDiff == 1) {
+                                  dayName = 'Ngày Mai';
+                                } else if (daysDiff == -1) {
+                                  dayName = 'Hôm Qua';
+                                } else {
+                                  const weekDays = [
+                                    'Thứ 2',
+                                    'Thứ 3',
+                                    'Thứ 4',
+                                    'Thứ 5',
+                                    'Thứ 6',
+                                    'Thứ 7',
+                                    'CN',
+                                  ];
+                                  dayName = weekDays[date.weekday % 7];
+                                }
 
-      if (pickedTime != null) {
-        final DateTime dateTime = DateTime(
-          pickedDate.year,
-          pickedDate.month,
-          pickedDate.day,
-          pickedTime.hour,
-          pickedTime.minute,
+                                return Center(
+                                  child: Text(
+                                    '$dayName ${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}',
+                                    style: TextStyle(
+                                      fontSize: index == 10 ? 16 : 16,
+                                      fontWeight: index == 10
+                                          ? FontWeight.bold
+                                          : FontWeight.w500,
+                                      color: index == 10
+                                          ? const Color(0xFF196EB0)
+                                          : Colors.grey[600],
+                                    ),
+                                  ),
+                                );
+                              }),
+                            ),
+                          ),
+                          // Hour Picker
+                          Expanded(
+                            child: CupertinoPicker(
+                              scrollController: FixedExtentScrollController(
+                                initialItem: tempSelectedTime.hour,
+                              ),
+                              itemExtent: 40,
+                              onSelectedItemChanged: (int index) {
+                                setDialogState(() {
+                                  tempSelectedTime = tempSelectedTime.replacing(
+                                    hour: index,
+                                  );
+                                });
+                              },
+                              children: List<Widget>.generate(24, (int index) {
+                                return Center(
+                                  child: Text(
+                                    index.toString().padLeft(2, '0'),
+                                    style: TextStyle(
+                                      fontSize: index == tempSelectedTime.hour
+                                          ? 16
+                                          : 16,
+                                      fontWeight: index == tempSelectedTime.hour
+                                          ? FontWeight.bold
+                                          : FontWeight.w500,
+                                      color: index == tempSelectedTime.hour
+                                          ? const Color(0xFF196EB0)
+                                          : Colors.grey[600],
+                                    ),
+                                  ),
+                                );
+                              }),
+                            ),
+                          ),
+                          // Minute Picker
+                          Expanded(
+                            child: CupertinoPicker(
+                              scrollController: FixedExtentScrollController(
+                                initialItem: tempSelectedTime.minute ~/ 5,
+                              ),
+                              itemExtent: 40,
+                              onSelectedItemChanged: (int index) {
+                                setDialogState(() {
+                                  tempSelectedTime = tempSelectedTime.replacing(
+                                    minute: index * 5,
+                                  );
+                                });
+                              },
+                              children: List<Widget>.generate(12, (int index) {
+                                int minute = index * 5;
+                                return Center(
+                                  child: Text(
+                                    minute.toString().padLeft(2, '0'),
+                                    style: TextStyle(
+                                      fontSize:
+                                          minute == tempSelectedTime.minute
+                                          ? 16
+                                          : 16,
+                                      fontWeight:
+                                          minute == tempSelectedTime.minute
+                                          ? FontWeight.bold
+                                          : FontWeight.w500,
+                                      color: minute == tempSelectedTime.minute
+                                          ? const Color(0xFF196EB0)
+                                          : Colors.grey[600],
+                                    ),
+                                  ),
+                                );
+                              }),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         );
-        setState(() {
-          _dateController.text =
-              '${dateTime.day.toString().padLeft(2, '0')}/${dateTime.month.toString().padLeft(2, '0')}/${dateTime.year}, ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
-        });
-      }
-    }
+      },
+    );
   }
 
   void _handleSave() {
@@ -128,88 +328,124 @@ class _AddMedScreenState extends State<AddMedScreen> {
   }
 
   Widget _buildCustomDropdown() {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: _selectedType != null
-              ? const Color(0xFF196EB0)
-              : const Color(0xFF9D9D9D),
-          width: _selectedType != null ? 2 : 1,
-        ),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Stack(
-        children: [
-          // Main dropdown button
-          GestureDetector(
-            onTap: _isLoading
-                ? null
-                : () {
-                    _showCustomDropdown();
-                  },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Main dropdown button
+        GestureDetector(
+          onTap: _isLoading
+              ? null
+              : () {
+                  setState(() {
+                    _isDropdownOpen = !_isDropdownOpen;
+                  });
+                },
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: _isDropdownOpen || _selectedType != null
+                    ? const Color(0xFF196EB0)
+                    : const Color(0xFF9D9D9D),
+                width: _isDropdownOpen || _selectedType != null ? 2 : 1,
+              ),
+              borderRadius: BorderRadius.circular(8),
+              color: Colors.white,
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
                     _selectedType ?? 'Chọn Loại Thuốc',
                     style: TextStyle(
                       fontSize: 16,
                       color: _selectedType != null
                           ? Colors.black
                           : Colors.black54,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                  Icon(
-                    _selectedType != null
-                        ? Icons.keyboard_arrow_up
-                        : Icons.keyboard_arrow_down,
-                    color: const Color(0xFF196EB0),
-                  ),
-                ],
+                ),
+                Icon(
+                  _isDropdownOpen
+                      ? Icons.keyboard_arrow_up
+                      : Icons.keyboard_arrow_down,
+                  color: const Color(0xFF196EB0),
+                  size: 24,
+                ),
+              ],
+            ),
+          ),
+        ),
+        // Dropdown list
+        if (_isDropdownOpen)
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: const Color(0xFFEAECF0)),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(8),
+                bottomRight: Radius.circular(8),
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _medicineTypes.length,
+              itemBuilder: (context, index) {
+                final item = _medicineTypes[index];
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedType = item;
+                      _isDropdownOpen = false;
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      border: index != _medicineTypes.length - 1
+                          ? Border(
+                              bottom: BorderSide(
+                                color: const Color(0xFFEAECF0),
+                                width: 1,
+                              ),
+                            )
+                          : null,
+                      color: item == _selectedType
+                          ? const Color(0xFFDDF2FC)
+                          : Colors.white,
+                    ),
+                    child: Text(
+                      item,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: item == _selectedType
+                            ? const Color(0xFF196EB0)
+                            : Colors.black,
+                        fontWeight: item == _selectedType
+                            ? FontWeight.w600
+                            : FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
-        ],
-      ),
+      ],
     );
-  }
-
-  void _showCustomDropdown() {
-    final RenderBox renderBox = context.findRenderObject() as RenderBox;
-    final size = renderBox.size;
-    final offset = renderBox.localToGlobal(Offset.zero);
-
-    showMenu(
-      context: context,
-      position: RelativeRect.fromLTRB(
-        offset.dx + 49,
-        offset.dy + 380,
-        offset.dx + 49 + size.width,
-        0,
-      ),
-      items: _medicineTypes.map((String value) {
-        return PopupMenuItem<String>(
-          value: value,
-          child: Container(
-            width: 303,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            child: Text(
-              value,
-              style: const TextStyle(fontSize: 16, color: Colors.black),
-            ),
-          ),
-        );
-      }).toList(),
-      elevation: 8,
-    ).then((value) {
-      if (value != null) {
-        setState(() {
-          _selectedType = value;
-        });
-      }
-    });
   }
 
   @override
@@ -466,7 +702,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Ngày',
+                      'Ngày Giờ',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
@@ -497,7 +733,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
                             Expanded(
                               child: Text(
                                 _dateController.text.isEmpty
-                                    ? 'dd/mm/yyy , 00:00'
+                                    ? 'dd/mm/yyyy , 00:00'
                                     : _dateController.text,
                                 style: const TextStyle(
                                   color: Color(0xFFBBBBBB),
