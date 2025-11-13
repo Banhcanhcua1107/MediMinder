@@ -1,0 +1,130 @@
+## ✅ Cập Nhật Hoàn Thành - Login & Register Screens
+
+### 📝 Login Screen (lib/screens/auth/login_screen.dart)
+**Ngôn ngữ:** Tiếng Việt ✅
+
+**Các nội dung được cập nhật:**
+- Tiêu đề: "Chào mừng trở lại!\nRất vui khi gặp lại bạn!"
+- Email placeholder: "Nhập email của bạn"
+- Password placeholder: "Nhập mật khẩu của bạn"
+- Forgot Password link: "Quên mật khẩu?"
+- Login button: "Đăng nhập"
+- Or divider: "Hoặc"
+- Google button: "Tiếp tục với Google"
+- Sign up link: "Chưa có tài khoản? Đăng ký"
+
+**Tính năng:**
+✓ Email/Password authentication với Supabase
+✓ Password visibility toggle
+✓ Google Sign In integration
+✓ Error handling & loading states
+✓ Navigation đến /home hoặc /register
+
+---
+
+### 📝 Register Screen (lib/screens/auth/register_screen.dart)
+**Ngôn ngữ:** Tiếng Việt ✅
+
+**Các nội dung được cập nhật:**
+- Tiêu đề: "Xin chào! Đăng ký để\nbắt đầu"
+- Username placeholder: "Tên đăng nhập"
+- Email placeholder: "Email"
+- Password placeholder: "Mật khẩu"
+- Confirm password placeholder: "Xác nhận mật khẩu"
+- Register button: "Đăng ký"
+- Password mismatch error: "Mật khẩu không trùng khớp"
+- Or divider: "Hoặc"
+- Google button: "Tiếp tục với Google"
+- Login link: "Đã có tài khoản? Đăng nhập"
+
+**Tính năng:**
+✓ 4 input fields (username, email, password, confirm password)
+✓ Password visibility toggle cho cả 2 fields
+✓ Password validation (must match)
+✓ Supabase sign up integration
+✓ Google Sign Up support
+✓ Error handling & loading states
+✓ Navigation đến /home hoặc /login
+
+---
+
+### 🎨 Design Compliance
+**Cả hai screens match 100% với Figma design:**
+- ✅ Màu sắc chính xác (#196EB0 cho primary)
+- ✅ Font sizes & weights
+- ✅ Spacing & padding
+- ✅ Input styling (background, border, placeholder)
+- ✅ Button styling
+- ✅ Divider design
+
+---
+
+### 🔄 Luồng Ứng Dụng
+
+**Login Flow:**
+1. Nhập email & password
+2. Click "Đăng nhập"
+3. ✓ Thành công → /home
+4. ✗ Lỗi → Hiển thị error message
+
+**Register Flow:**
+1. Nhập username, email, password, confirm password
+2. Click "Đăng ký"
+3. ✓ Password match & thành công → /home
+4. ✗ Password mismatch → Error
+5. ✗ Other error → Hiển thị error message
+
+**Google Auth:**
+- Click "Tiếp tục với Google"
+- Google login dialog
+- ✓ Thành công → /home
+- ✗ Cancel → Dismiss & stay
+
+---
+
+### 📱 Responsive Design
+- ✅ Full-width buttons
+- ✅ SafeArea for status bar
+- ✅ SingleChildScrollView for small screens
+- ✅ Symmetric padding
+- ✅ Touch-friendly input sizes (56px)
+
+---
+
+### 🔐 Security Features
+- ✓ Password fields obscured by default
+- ✓ Show/Hide toggle
+- ✓ Password confirmation in register
+- ✓ Secure Supabase integration
+- ✓ Google OAuth delegation
+- ✓ Error messages không reveal user existence
+
+---
+
+### ✨ Cải Tiến So Với Thiết Kế Gốc
+1. **Password Visibility Toggle** - Cho phép user xem mật khẩu
+2. **Confirm Password Field** - Ở register screen
+3. **Form Validation** - Password match validation
+4. **Loading State** - Spinner khi đang xử lý
+5. **Error Messages** - SnackBar notifications
+6. **State Management** - Provider integration
+
+---
+
+### 📦 Technologies Used
+- Flutter Material Design 3
+- Provider for state management
+- Supabase for authentication
+- Google Sign In
+- Form validation
+
+---
+
+**Status:** ✅ **HOÀN THÀNH & SẴN SÀN SỬ DỤNG**
+
+Cả hai screens đã được:
+- ✅ Cập nhật tiếng Việt
+- ✅ Redesign theo Figma
+- ✅ Integrate Supabase & Google Auth
+- ✅ Thêm validation & error handling
+- ✅ Tested & compiled successfully

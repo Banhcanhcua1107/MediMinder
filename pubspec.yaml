@@ -1,0 +1,50 @@
+name: mediminder
+description: "Ứng dụng nhắc lịch uống thuốc"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_svg: ^2.0.7
+
+  # Giao diện iOS
+  cupertino_icons: ^1.0.8
+
+  # Quản lý trạng thái đơn giản
+  provider: ^6.1.2
+
+  # Supabase
+  supabase_flutter: ^2.5.0
+
+  # Cloudinary
+  http: ^1.1.0
+
+  # Secure storage
+  flutter_secure_storage: ^9.0.0
+
+  # Shared preferences
+  shared_preferences: ^2.2.0
+
+  # Image picker
+  image_picker: ^1.0.0
+
+  # Google Sign In
+  google_sign_in: ^6.2.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/google_logo.png
+    - assets/images/clock_pill.png
+    - assets/images/clock_small.png
