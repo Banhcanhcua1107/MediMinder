@@ -3,6 +3,8 @@ import 'dart:math'; // Cần cho việc vẽ vòng tròn tiến độ
 import 'med_info_screen.dart';
 import 'add_med_screen.dart';
 import 'profile_screen.dart';
+import 'health_screen.dart';
+import 'medicine_list_screen.dart';
 
 // --- Bảng màu được cải tiến để nhất quán ---
 const Color kPrimaryColor = Color(0xFF2563EB);
@@ -78,14 +80,19 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SafeArea(
         // Sử dụng ListView để có hiệu ứng cuộn mượt mà hơn
         child: ListView(
-          padding: const EdgeInsets.symmetric(vertical: 16.0),
+          padding: const EdgeInsets.only(
+            top: 16,
+            left: 16,
+            right: 16,
+            bottom: 120,
+          ),
           children: [
             _buildHeader(),
             const SizedBox(height: 24),
             _buildDateScroller(),
             const SizedBox(height: 24),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
               child: _buildProgressCard(),
             ),
             const SizedBox(height: 24),
@@ -95,7 +102,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Điều hướng đến màn hình thêm thuốc
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const AddMedScreen()),
@@ -105,13 +111,117 @@ class _HomeScreenState extends State<HomeScreen> {
         elevation: 4,
         child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
+      bottomNavigationBar: _buildBottomBar(),
+    );
+  }
+
+  // Widget: Bottom Navigation Bar
+  Widget _buildBottomBar() {
+    return Container(
+      height: 100,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          top: BorderSide(color: const Color(0xFFE2E8F0), width: 1),
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildBottomBarItem(
+              icon: Icons.home,
+              label: 'Trang chủ',
+              isActive: true,
+            ),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const MedicineListScreen(),
+                  ),
+                );
+              },
+              child: _buildBottomBarItem(
+                icon: Icons.medication,
+                label: 'Thuốc',
+                isActive: false,
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const HealthScreen()),
+                );
+              },
+              child: _buildBottomBarItem(
+                icon: Icons.favorite,
+                label: 'Sức khỏe',
+                isActive: false,
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ProfileScreen(),
+                  ),
+                );
+              },
+              child: _buildBottomBarItem(
+                icon: Icons.person,
+                label: 'Hồ sơ',
+                isActive: false,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Widget: Bottom Bar Item
+  Widget _buildBottomBarItem({
+    required IconData icon,
+    required String label,
+    required bool isActive,
+  }) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          decoration: BoxDecoration(
+            color: isActive ? const Color(0xFFE0E7FF) : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            color: isActive ? kPrimaryColor : const Color(0xFF64748B),
+            size: 24,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+            color: isActive ? kPrimaryColor : const Color(0xFF64748B),
+          ),
+        ),
+      ],
     );
   }
 
   // Widget: Header Chào mừng
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      padding: const EdgeInsets.symmetric(horizontal: 4.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -124,7 +234,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               SizedBox(height: 4),
               Text(
-                'Người dùng', // Thay bằng tên người dùng thật
+                'Người dùng',
                 style: TextStyle(
                   color: kPrimaryTextColor,
                   fontSize: 24,
@@ -142,9 +252,7 @@ class _HomeScreenState extends State<HomeScreen> {
             },
             child: const CircleAvatar(
               radius: 24,
-              backgroundImage: NetworkImage(
-                'https://i.pravatar.cc/150?img=32',
-              ), // Ảnh đại diện mẫu
+              backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=32'),
             ),
           ),
         ],
@@ -158,8 +266,8 @@ class _HomeScreenState extends State<HomeScreen> {
       height: 70,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: 8, // Hiển thị 8 ngày xung quanh ngày hôm nay
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        itemCount: 8,
+        padding: const EdgeInsets.symmetric(horizontal: 4),
         itemBuilder: (context, index) {
           final date = DateTime.now().add(Duration(days: index - 3));
           final isSelected =
@@ -302,35 +410,30 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Widget: Danh sách thuốc
   Widget _buildMedicineList() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Tiêu đề
-          const Text(
-            'Lịch trình hôm nay',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: kPrimaryTextColor,
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Lịch trình hôm nay',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: kPrimaryTextColor,
           ),
-          const SizedBox(height: 16),
-          // Danh sách
-          if (_medicines.isEmpty)
-            const Center(child: Text('Không có lịch trình nào cho hôm nay.'))
-          else
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _medicines.length,
-              itemBuilder: (context, index) {
-                return _buildMedicineItem(_medicines[index]);
-              },
-            ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 16),
+        if (_medicines.isEmpty)
+          const Center(child: Text('Không có lịch trình nào cho hôm nay.'))
+        else
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _medicines.length,
+            itemBuilder: (context, index) {
+              return _buildMedicineItem(_medicines[index]);
+            },
+          ),
+      ],
     );
   }
 

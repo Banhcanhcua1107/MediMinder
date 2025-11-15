@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/custom_toast.dart';
 
 class MedInfoScreen extends StatefulWidget {
   final Map<String, dynamic>? medData;
@@ -468,8 +469,11 @@ class _MedInfoScreenState extends State<MedInfoScreen> {
   }
 
   void _onEditPressed() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Mở giao diện chỉnh sửa (chưa triển khai)')),
+    showCustomToast(
+      context,
+      message: 'Chỉnh sửa thuốc',
+      subtitle: 'Tính năng đang phát triển',
+      isSuccess: true,
     );
   }
 
@@ -477,8 +481,11 @@ class _MedInfoScreenState extends State<MedInfoScreen> {
     setState(() {
       if (quantity > 0) quantity -= 1;
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Đã ghi nhận: Đã uống 1 liều')),
+    showCustomToast(
+      context,
+      message: 'Đã ghi nhận',
+      subtitle: 'Bạn đã uống 1 liều',
+      isSuccess: true,
     );
   }
 
@@ -508,9 +515,12 @@ class _MedInfoScreenState extends State<MedInfoScreen> {
     if (ok == true) {
       if (mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(
+        showCustomToast(
           context,
-        ).showSnackBar(const SnackBar(content: Text('Thuốc đã được xóa')));
+          message: 'Xóa thuốc thành công',
+          subtitle: 'Thuốc đã bị xóa khỏi danh sách',
+          isSuccess: true,
+        );
       }
     }
   }

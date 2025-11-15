@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hồ sơ &amp; Cài đặt</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#137fec",
+            "background-light": "#f6f7f8",
+            "background-dark": "#101922",
+          },
+          fontFamily: {
+            "display": ["Manrope", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden">
+<!-- Top App Bar -->
+<div class="flex items-center bg-white dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-10 border-b border-gray-200 dark:border-gray-800">
+<div class="flex size-12 shrink-0 items-center">
+<span class="material-symbols-outlined text-gray-800 dark:text-gray-200" style="font-size: 24px;">arrow_back</span>
+</div>
+<h2 class="text-gray-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Hồ sơ &amp; Cài đặt</h2>
+<div class="flex w-12 items-center justify-end">
+<p class="text-primary text-base font-bold leading-normal tracking-[0.015em] shrink-0">Lưu</p>
+</div>
+</div>
+<!-- Profile Header -->
+<div class="flex p-4 @container bg-white dark:bg-background-dark">
+<div class="flex w-full flex-col gap-4 items-center">
+<div class="flex gap-4 flex-col items-center">
+<div class="relative">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full min-h-32 w-32" data-alt="User avatar placeholder" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD9Z9-3KBR60taLMbJGul93YctEfuLb1rZU3wkmhgFgix0cEPtUjHzR9re3V_YVMVhWFTcEbq5SLIeDRnLzwYh3nkhYnsTES03vF_-agi9-JGQdlAeFXElwdyXdsFxiVN_3Jkra-RD1cE5MlFCdY4zOjGQ9jrrug1EfLnciuT7o5gVGvagCyHojvr-yeIquy7QRpYWjxUYLf8czzZBbcpEzM3HWguzkH_QRnZyjFvvkUDNYR-14NG6x10Hiz-S3U5HqeAThkiJJunfa");'></div>
+<button class="absolute bottom-1 right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white">
+<span class="material-symbols-outlined" style="font-size: 20px;">edit</span>
+</button>
+</div>
+<div class="flex flex-col items-center justify-center">
+<p class="text-gray-900 dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em] text-center">Tên người dùng</p>
+<p class="text-gray-500 dark:text-gray-400 text-base font-normal leading-normal text-center">user.email@example.com</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Spacer -->
+<div class="h-4 bg-background-light dark:bg-background-dark"></div>
+<!-- App Settings Section -->
+<div class="bg-white dark:bg-background-dark">
+<h3 class="text-gray-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">Cài đặt Ứng dụng</h3>
+<!-- Notifications -->
+<div class="flex items-center gap-4 bg-white dark:bg-background-dark px-4 min-h-[56px] justify-between">
+<div class="flex items-center gap-4">
+<div class="text-gray-900 dark:text-white flex items-center justify-center rounded-lg bg-background-light dark:bg-gray-800 shrink-0 size-10">
+<span class="material-symbols-outlined" style="font-size: 24px;">notifications</span>
+</div>
+<p class="text-gray-900 dark:text-white text-base font-normal leading-normal flex-1 truncate">Thông báo</p>
+</div>
+<div class="shrink-0">
+<label class="relative flex h-[31px] w-[51px] cursor-pointer items-center rounded-full border-none bg-gray-200 dark:bg-gray-700 p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary">
+<div class="h-full w-[27px] rounded-full bg-white transition-transform" style="box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 8px, rgba(0, 0, 0, 0.06) 0px 3px 1px;"></div>
+<input checked="" class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+</div>
+<!-- Language -->
+<div class="flex items-center gap-4 bg-white dark:bg-background-dark px-4 min-h-[56px] justify-between">
+<div class="flex items-center gap-4">
+<div class="text-gray-900 dark:text-white flex items-center justify-center rounded-lg bg-background-light dark:bg-gray-800 shrink-0 size-10">
+<span class="material-symbols-outlined" style="font-size: 24px;">language</span>
+</div>
+<p class="text-gray-900 dark:text-white text-base font-normal leading-normal flex-1 truncate">Ngôn ngữ</p>
+</div>
+<div class="flex items-center gap-2 shrink-0">
+<p class="text-gray-500 dark:text-gray-400 text-base">Tiếng Việt</p>
+<div class="text-gray-900 dark:text-white flex size-7 items-center justify-center">
+<span class="material-symbols-outlined" style="font-size: 24px;">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- Dark Mode -->
+<div class="flex items-center gap-4 bg-white dark:bg-background-dark px-4 min-h-[56px] justify-between">
+<div class="flex items-center gap-4">
+<div class="text-gray-900 dark:text-white flex items-center justify-center rounded-lg bg-background-light dark:bg-gray-800 shrink-0 size-10">
+<span class="material-symbols-outlined" style="font-size: 24px;">dark_mode</span>
+</div>
+<p class="text-gray-900 dark:text-white text-base font-normal leading-normal flex-1 truncate">Chế độ tối</p>
+</div>
+<div class="shrink-0">
+<label class="relative flex h-[31px] w-[51px] cursor-pointer items-center rounded-full border-none bg-gray-200 dark:bg-gray-700 p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary">
+<div class="h-full w-[27px] rounded-full bg-white transition-transform" style="box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 8px, rgba(0, 0, 0, 0.06) 0px 3px 1px;"></div>
+<input class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+</div>
+</div>
+<!-- Spacer -->
+<div class="h-4 bg-background-light dark:bg-background-dark"></div>
+<!-- Support Section -->
+<div class="bg-white dark:bg-background-dark">
+<h3 class="text-gray-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">Hỗ trợ</h3>
+<!-- Help & Feedback -->
+<div class="flex items-center gap-4 bg-white dark:bg-background-dark px-4 min-h-[56px] justify-between">
+<div class="flex items-center gap-4">
+<div class="text-gray-900 dark:text-white flex items-center justify-center rounded-lg bg-background-light dark:bg-gray-800 shrink-0 size-10">
+<span class="material-symbols-outlined" style="font-size: 24px;">help_outline</span>
+</div>
+<p class="text-gray-900 dark:text-white text-base font-normal leading-normal flex-1 truncate">Trợ giúp &amp; Phản hồi</p>
+</div>
+<div class="shrink-0">
+<div class="text-gray-900 dark:text-white flex size-7 items-center justify-center">
+<span class="material-symbols-outlined" style="font-size: 24px;">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- Terms of Service -->
+<div class="flex items-center gap-4 bg-white dark:bg-background-dark px-4 min-h-[56px] justify-between">
+<div class="flex items-center gap-4">
+<div class="text-gray-900 dark:text-white flex items-center justify-center rounded-lg bg-background-light dark:bg-gray-800 shrink-0 size-10">
+<span class="material-symbols-outlined" style="font-size: 24px;">description</span>
+</div>
+<p class="text-gray-900 dark:text-white text-base font-normal leading-normal flex-1 truncate">Điều khoản Dịch vụ</p>
+</div>
+<div class="shrink-0">
+<div class="text-gray-900 dark:text-white flex size-7 items-center justify-center">
+<span class="material-symbols-outlined" style="font-size: 24px;">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- Privacy Policy -->
+<div class="flex items-center gap-4 bg-white dark:bg-background-dark px-4 min-h-[56px] justify-between">
+<div class="flex items-center gap-4">
+<div class="text-gray-900 dark:text-white flex items-center justify-center rounded-lg bg-background-light dark:bg-gray-800 shrink-0 size-10">
+<span class="material-symbols-outlined" style="font-size: 24px;">privacy_tip</span>
+</div>
+<p class="text-gray-900 dark:text-white text-base font-normal leading-normal flex-1 truncate">Chính sách Bảo mật</p>
+</div>
+<div class="shrink-0">
+<div class="text-gray-900 dark:text-white flex size-7 items-center justify-center">
+<span class="material-symbols-outlined" style="font-size: 24px;">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Spacer -->
+<div class="h-4 bg-background-light dark:bg-background-dark"></div>
+<!-- Logout Button -->
+<div class="p-4 bg-white dark:bg-background-dark">
+<button class="flex w-full items-center justify-center gap-2 rounded-lg bg-red-50 dark:bg-red-900/30 px-4 py-3 text-red-600 dark:text-red-400">
+<span class="material-symbols-outlined">logout</span>
+<span class="text-base font-bold">Đăng xuất</span>
+</button>
+</div>
+<div class="flex-grow bg-background-light dark:bg-background-dark"></div>
+</div>
+</body></html>

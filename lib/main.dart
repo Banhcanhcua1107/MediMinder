@@ -29,7 +29,7 @@ void main() async {
     debugPrint('✅ Supabase initialized successfully');
   } catch (e) {
     debugPrint('❌ Error initializing Supabase: $e');
-    rethrow;
+    // Không rethrow để app vẫn chạy được
   }
 
   runApp(
