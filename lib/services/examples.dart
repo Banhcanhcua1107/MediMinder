@@ -333,5 +333,3 @@ Future<List<String>> uploadMultipleImages(List<String> imagePaths) async {
   return uploadedUrls;
 }
 */
-
-void _exampleNothing() {}

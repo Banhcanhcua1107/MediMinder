@@ -1,4 +1,6 @@
 /// File chứa các hằng số cấu hình cho Cloudinary và Supabase
+library config.constants;
+
 ///
 /// PHƯƠNG PHÁP TỪ .env (KHUYẾN NGHỊ):
 /// 1. Tạo file lib/.env từ .env.example

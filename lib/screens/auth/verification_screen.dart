@@ -263,7 +263,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                       backgroundColor: const Color(0xFF196EB0),
                       disabledBackgroundColor: const Color(
                         0xFF196EB0,
-                      ).withOpacity(0.6),
+                      ).withValues(alpha: 0.6),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),

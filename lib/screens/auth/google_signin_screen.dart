@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../services/google_signin_service.dart';
 
 class GoogleSignInScreen extends StatefulWidget {
-  const GoogleSignInScreen({Key? key}) : super(key: key);
+  const GoogleSignInScreen({super.key});
 
   @override
   State<GoogleSignInScreen> createState() => _GoogleSignInScreenState();
@@ -10,7 +10,7 @@ class GoogleSignInScreen extends StatefulWidget {
 
 class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
   bool _isLoading = false;
-  List<Map<String, String>> _accounts = [
+  final List<Map<String, String>> _accounts = [
     {
       'name': 'Sana Nassani',
       'email': 'sana.nasani3@gmail.com',

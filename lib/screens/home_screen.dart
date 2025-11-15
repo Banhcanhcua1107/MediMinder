@@ -1,246 +1,497 @@
 import 'package:flutter/material.dart';
+import 'dart:math'; // Cần cho việc vẽ vòng tròn tiến độ
+import 'med_info_screen.dart';
+import 'add_med_screen.dart';
+import 'profile_screen.dart';
+
+// --- Bảng màu được cải tiến để nhất quán ---
+const Color kPrimaryColor = Color(0xFF2563EB);
+const Color kBackgroundColor = Color(0xFFF8FAFC);
+const Color kCardColor = Colors.white;
+const Color kPrimaryTextColor = Color(0xFF1E293B);
+const Color kSecondaryTextColor = Color(0xFF64748B);
+const Color kAccentColor = Color(0xFFE0E7FF);
+
+// --- Model dữ liệu (giữ nguyên) ---
+class Medicine {
+  final String name;
+  final String dosage;
+  final String time;
+  final String icon;
+  final bool isTaken; // Thêm trạng thái đã uống hay chưa
+
+  Medicine({
+    required this.name,
+    required this.dosage,
+    required this.time,
+    required this.icon,
+    this.isTaken = false,
+  });
+}
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  DateTime _selectedDate = DateTime.now();
+
+  // --- Dữ liệu mẫu với trạng thái isTaken ---
+  final List<Medicine> _medicines = [
+    Medicine(
+      name: 'Vitamin D',
+      dosage: '1 Viên, 1000mg',
+      time: '09:41',
+      icon: '💊',
+      isTaken: true, // Ví dụ: thuốc này đã được uống
+    ),
+    Medicine(
+      name: 'B12 Drops',
+      dosage: '5 Giọt, 1200mg',
+      time: '18:30',
+      icon: '💧',
+      isTaken: false, // Ví dụ: thuốc này chưa uống
+    ),
+    Medicine(
+      name: 'Omega-3',
+      dosage: '2 Viên, 600mg',
+      time: '20:00',
+      icon: '🐟',
+      isTaken: false,
+    ),
+  ];
+
+  // Tính toán tiến độ uống thuốc
+  double get _progress {
+    if (_medicines.isEmpty) return 0;
+    final takenCount = _medicines.where((m) => m.isTaken).length;
+    return takenCount / _medicines.length;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
+      backgroundColor: kBackgroundColor,
       body: SafeArea(
-        child: Column(
+        // Sử dụng ListView để có hiệu ứng cuộn mượt mà hơn
+        child: ListView(
+          padding: const EdgeInsets.symmetric(vertical: 16.0),
           children: [
-            // Navigation Bar
-            Container(
-              height: 64,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border(
-                  bottom: BorderSide(color: const Color(0xFFEAECF0), width: 1),
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 8,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // Calendar Icon
-                    Container(
-                      height: 48,
-                      width: 48,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(
-                          color: const Color(0xFFEAECF0),
-                          width: 1,
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Icon(
-                        Icons.calendar_today,
-                        color: const Color(0xFFCDCDD0),
-                        size: 24,
-                      ),
-                    ),
-
-                    // Mood Indicator
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFDDF2FC),
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      child: const Text('😇', style: TextStyle(fontSize: 24)),
-                    ),
-
-                    // Settings Icon
-                    Container(
-                      height: 48,
-                      width: 48,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(
-                          color: const Color(0xFFEAECF0),
-                          width: 1,
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: GestureDetector(
-                        onTap: () {
-                          // Navigate to settings
-                        },
-                        child: Icon(
-                          Icons.settings,
-                          color: const Color(0xFFCDCDD0),
-                          size: 24,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            _buildHeader(),
+            const SizedBox(height: 24),
+            _buildDateScroller(),
+            const SizedBox(height: 24),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: _buildProgressCard(),
             ),
-
-            // Content
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    const SizedBox(height: 40),
-
-                    // Medicine Illustration
-                    Container(
-                      width: 242,
-                      height: 235,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Image.network(
-                        'https://www.figma.com/api/mcp/asset/0fee8ae2-9e7c-473f-b63d-14e3cd89b812',
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-
-                    const SizedBox(height: 40),
-
-                    // Title
-                    Text(
-                      'Quản Lý Thuốc Của Bạn',
-                      style: Theme.of(context).textTheme.headlineSmall
-                          ?.copyWith(
-                            fontSize: 29,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF196EB0),
-                            height: 1.3,
-                          ),
-                      textAlign: TextAlign.center,
-                    ),
-
-                    const SizedBox(height: 50),
-
-                    // Description
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 49),
-                      child: Text(
-                        'Thêm thuốc của bạn để được nhắc nhở đúng lúc và theo dõi sức khỏe',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontSize: 18,
-                          fontWeight: FontWeight.normal,
-                          color: const Color(0xFFB8B8B8),
-                          height: 1.4,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-
-                    const SizedBox(height: 80),
-
-                    // Add Medicine Button
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 49),
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: 68,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pushNamed(context, '/add-med');
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFFBBC05),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              side: const BorderSide(
-                                color: Color(0xFFEAECF0),
-                                width: 1,
-                              ),
-                            ),
-                            elevation: 0,
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.add, color: Colors.white, size: 24),
-                              const SizedBox(width: 8),
-                              const Text(
-                                'Thêm Thuốc',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 29,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 80),
-
-                    // Sign Out Button
-                    GestureDetector(
-                      onTap: () {
-                        // Show sign out confirmation dialog
-                        _showSignOutDialog(context);
-                      },
-                      child: Text(
-                        'Đăng Xuất',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontSize: 19,
-                          fontWeight: FontWeight.normal,
-                          color: const Color(0xFFEA4335),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 40),
-                  ],
-                ),
-              ),
-            ),
+            const SizedBox(height: 24),
+            _buildMedicineList(),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Điều hướng đến màn hình thêm thuốc
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AddMedScreen()),
+          );
+        },
+        backgroundColor: kPrimaryColor,
+        elevation: 4,
+        child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
     );
   }
 
-  void _showSignOutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Đăng Xuất'),
-          content: const Text('Bạn có chắc chắn muốn đăng xuất?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Hủy'),
+  // Widget: Header Chào mừng
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Chào buổi sáng 👋',
+                style: TextStyle(color: kSecondaryTextColor, fontSize: 16),
+              ),
+              SizedBox(height: 4),
+              Text(
+                'Người dùng', // Thay bằng tên người dùng thật
+                style: TextStyle(
+                  color: kPrimaryTextColor,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ProfileScreen()),
+              );
+            },
+            child: const CircleAvatar(
+              radius: 24,
+              backgroundImage: NetworkImage(
+                'https://i.pravatar.cc/150?img=32',
+              ), // Ảnh đại diện mẫu
             ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                // Perform sign out
-                Navigator.pushReplacementNamed(context, '/login');
-              },
-              child: const Text(
-                'Đăng Xuất',
-                style: TextStyle(color: Color(0xFFEA4335)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Widget: Thanh chọn ngày
+  Widget _buildDateScroller() {
+    return SizedBox(
+      height: 70,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: 8, // Hiển thị 8 ngày xung quanh ngày hôm nay
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        itemBuilder: (context, index) {
+          final date = DateTime.now().add(Duration(days: index - 3));
+          final isSelected =
+              date.day == _selectedDate.day &&
+              date.month == _selectedDate.month &&
+              date.year == _selectedDate.year;
+
+          const weekDays = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+          final dayName = weekDays[date.weekday % 7];
+
+          return GestureDetector(
+            onTap: () => setState(() => _selectedDate = date),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              width: 60,
+              margin: const EdgeInsets.only(right: 12),
+              decoration: BoxDecoration(
+                color: isSelected ? kPrimaryColor : kCardColor,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: kPrimaryColor.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ]
+                    : [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 5,
+                        ),
+                      ],
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    date.day.toString(),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: isSelected ? Colors.white : kPrimaryTextColor,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    dayName,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: isSelected ? Colors.white70 : kSecondaryTextColor,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        );
-      },
+          );
+        },
+      ),
     );
+  }
+
+  // Widget: Thẻ tiến độ uống thuốc
+  Widget _buildProgressCard() {
+    int totalMeds = _medicines.length;
+    int takenMeds = _medicines.where((m) => m.isTaken).length;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: kCardColor,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Vòng tròn tiến độ
+          SizedBox(
+            width: 80,
+            height: 80,
+            child: CustomPaint(
+              painter: MedicineProgressPainter(progress: _progress),
+              child: Center(
+                child: Text(
+                  '${(_progress * 100).toInt()}%',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: kPrimaryColor,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 20),
+          // Thông tin tiến độ
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Tiến độ của bạn',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: kPrimaryTextColor,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Đã uống $takenMeds trên $totalMeds liều.',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: kSecondaryTextColor,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                // Thanh tiến độ tuyến tính
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: LinearProgressIndicator(
+                    value: _progress,
+                    minHeight: 8,
+                    backgroundColor: kAccentColor,
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      kPrimaryColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Widget: Danh sách thuốc
+  Widget _buildMedicineList() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Tiêu đề
+          const Text(
+            'Lịch trình hôm nay',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: kPrimaryTextColor,
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Danh sách
+          if (_medicines.isEmpty)
+            const Center(child: Text('Không có lịch trình nào cho hôm nay.'))
+          else
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _medicines.length,
+              itemBuilder: (context, index) {
+                return _buildMedicineItem(_medicines[index]);
+              },
+            ),
+        ],
+      ),
+    );
+  }
+
+  // Widget: Mục thuốc trong danh sách
+  Widget _buildMedicineItem(Medicine medicine) {
+    return Card(
+      elevation: 0,
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: kCardColor,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => MedInfoScreen(
+                medData: {
+                  'name': medicine.name,
+                  'dosage': medicine.dosage,
+                  'type': 'Viên Uống',
+                  'amount': 30,
+                  'reminders': [
+                    {
+                      'time': medicine.time,
+                      'frequency': 'Hàng ngày',
+                      'enabled': true,
+                    },
+                  ],
+                },
+              ),
+            ),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              // Icon
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: kAccentColor,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(
+                  child: Text(
+                    medicine.icon,
+                    style: const TextStyle(fontSize: 24),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              // Tên và liều lượng
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      medicine.name,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: kPrimaryTextColor,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      medicine.dosage,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: kSecondaryTextColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Thời gian và trạng thái
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    medicine.time,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: kPrimaryTextColor,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(
+                        medicine.isTaken ? Icons.check_circle : Icons.alarm,
+                        size: 16,
+                        color: medicine.isTaken ? Colors.green : Colors.orange,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        medicine.isTaken ? 'Đã uống' : 'Sắp tới',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: medicine.isTaken
+                              ? Colors.green
+                              : Colors.orange,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Lớp Painter để vẽ vòng tròn tiến độ
+class MedicineProgressPainter extends CustomPainter {
+  final double progress;
+
+  MedicineProgressPainter({required this.progress});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final backgroundPaint = Paint()
+      ..color = kAccentColor
+      ..strokeWidth = 10
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    final progressPaint = Paint()
+      ..color = kPrimaryColor
+      ..strokeWidth = 10
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = min(size.width / 2, size.height / 2);
+
+    // Vẽ vòng tròn nền
+    canvas.drawCircle(center, radius, backgroundPaint);
+
+    // Vẽ vòng tròn tiến độ
+    const startAngle = -pi / 2; // Bắt đầu từ đỉnh
+    final sweepAngle = 2 * pi * progress;
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      startAngle,
+      sweepAngle,
+      false,
+      progressPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return true;
   }
 }

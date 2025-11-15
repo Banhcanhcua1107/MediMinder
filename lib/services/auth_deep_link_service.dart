@@ -16,11 +16,13 @@ class AuthDeepLinkService {
   final appLinks = AppLinks();
 
   /// Khởi tạo deep link listener
-  void initDeepLinks(BuildContext context) {
+  void initDeepLinks(BuildContext? context) {
     // Listen for app links
     appLinks.uriLinkStream.listen(
       (uri) {
-        _handleDeepLink(uri.toString(), context);
+        if (context != null) {
+          _handleDeepLink(uri.toString(), context);
+        }
       },
       onError: (err) {
         debugPrint('❌ Deep link error: $err');
@@ -45,11 +47,13 @@ class AuthDeepLinkService {
           // Supabase sẽ tự động xác nhận khi người dùng nhấp link
         } else if (type == 'recovery') {
           debugPrint('✅ Password recovery link detected');
-          Navigator.pushNamed(
-            context,
-            '/create-new-password',
-            arguments: email,
-          );
+          if (context.mounted) {
+            Navigator.pushNamed(
+              context,
+              '/create-new-password',
+              arguments: email,
+            );
+          }
         }
       }
     } catch (e) {

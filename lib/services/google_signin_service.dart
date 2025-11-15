@@ -1,6 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../config/constants.dart';
 
 /// Service quản lý Google Sign In authentication
 class GoogleSignInService {
@@ -46,7 +46,7 @@ class GoogleSignInService {
 
       return response;
     } catch (e) {
-      print('Google sign in error: $e');
+      debugPrint('Google sign in error: $e');
       rethrow;
     }
   }
@@ -57,7 +57,7 @@ class GoogleSignInService {
       await _googleSignIn.signOut();
       await _supabaseClient.auth.signOut();
     } catch (e) {
-      print('Google sign out error: $e');
+      debugPrint('Google sign out error: $e');
       rethrow;
     }
   }

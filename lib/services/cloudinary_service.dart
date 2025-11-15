@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../config/constants.dart';
@@ -19,7 +18,6 @@ class CloudinaryService {
     required String fileName,
   }) async {
     try {
-      final file = File(filePath);
       final request = http.MultipartRequest(
         'POST',
         Uri.parse(

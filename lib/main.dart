@@ -5,7 +5,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'app.dart';
 import 'providers/app_provider.dart';
 import 'config/constants.dart';
-import 'services/auth_deep_link_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
