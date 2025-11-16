@@ -3,6 +3,14 @@ import 'package:provider/provider.dart';
 import '../../providers/app_provider.dart';
 import '../../services/google_signin_service.dart';
 
+// --- Bảng màu thống nhất ---
+const Color kPrimaryColor = Color(0xFF2563EB);
+const Color kBackgroundColor = Color(0xFFF8FAFC);
+const Color kCardColor = Colors.white;
+const Color kPrimaryTextColor = Color(0xFF1E293B);
+const Color kSecondaryTextColor = Color(0xFF64748B);
+const Color kBorderColor = Color(0xFFE2E8F0);
+
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
@@ -96,11 +104,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
+      backgroundColor: kBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

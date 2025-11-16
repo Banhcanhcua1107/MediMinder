@@ -1,6 +1,14 @@
 import 'package:flutter/material.dart';
 import '../../services/google_signin_service.dart';
 
+// --- Bảng màu thống nhất ---
+const Color kPrimaryColor = Color(0xFF2563EB);
+const Color kBackgroundColor = Color(0xFFF8FAFC);
+const Color kCardColor = Colors.white;
+const Color kPrimaryTextColor = Color(0xFF1E293B);
+const Color kSecondaryTextColor = Color(0xFF64748B);
+const Color kBorderColor = Color(0xFFE2E8F0);
+
 class GoogleSignInScreen extends StatefulWidget {
   const GoogleSignInScreen({super.key});
 
@@ -26,17 +34,30 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
   ];
 
   Future<void> _handleSelectAccount(String email) async {
+    if (!mounted) return;
+
     setState(() {
       _isLoading = true;
     });
 
     try {
+      // Gọi Google Sign In Service
       final googleSignInService = GoogleSignInService();
       final result = await googleSignInService.signInWithGoogle();
 
-      if (result != null && mounted) {
+      debugPrint('📱 Google Sign In result: $result');
+      debugPrint('📱 User: ${result?.user}');
+
+      if (!mounted) return;
+
+      // Kiểm tra kết quả
+      if (result != null && result.user != null) {
+        debugPrint('✅ Google Sign In thành công: ${result.user?.email}');
+        // Chuyển sang Home Screen
+        debugPrint('🚀 Navigating to /home...');
         Navigator.pushReplacementNamed(context, '/home');
-      } else if (mounted) {
+      } else {
+        debugPrint('❌ Google Sign In failed - result or user is null');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Đăng nhập Google thất bại'),
@@ -45,9 +66,13 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
         );
       }
     } catch (e) {
+      debugPrint('❌ Google Sign In error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('Lỗi: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
@@ -60,17 +85,48 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
   }
 
   Future<void> _handleUseAnotherAccount() async {
-    final googleSignInService = GoogleSignInService();
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
     try {
+      final googleSignInService = GoogleSignInService();
       final result = await googleSignInService.signInWithGoogle();
-      if (result != null && mounted) {
+
+      debugPrint('📱 Google Sign In result: $result');
+      debugPrint('📱 User: ${result?.user}');
+
+      if (!mounted) return;
+
+      if (result != null && result.user != null) {
+        debugPrint('✅ Google Sign In thành công: ${result.user?.email}');
+        debugPrint('🚀 Navigating to /home...');
         Navigator.pushReplacementNamed(context, '/home');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Đăng nhập Google thất bại'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     } catch (e) {
+      debugPrint('❌ Google Sign In error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('Lỗi: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
         );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
@@ -78,7 +134,7 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: kBackgroundColor,
       body: SafeArea(
         child: Stack(
           children: [
@@ -92,18 +148,15 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
                   width: 41,
                   height: 41,
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(
-                      color: const Color(0xFFE8ECF4),
-                      width: 1,
-                    ),
+                    color: kCardColor,
+                    border: Border.all(color: kBorderColor, width: 1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Center(
                     child: Icon(
                       Icons.arrow_back,
                       size: 20,
-                      color: Color(0xFF196EB0),
+                      color: kPrimaryColor,
                     ),
                   ),
                 ),

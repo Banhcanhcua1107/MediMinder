@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 
+// --- Bảng màu thống nhất ---
+const Color kPrimaryColor = Color(0xFF2563EB);
+const Color kBackgroundColor = Color(0xFFF8FAFC);
+const Color kSuccessColor = Color(0xFF10B981);
+
 class PasswordChangedScreen extends StatelessWidget {
   const PasswordChangedScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
+      backgroundColor: kBackgroundColor,
       body: SafeArea(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -16,7 +21,7 @@ class PasswordChangedScreen extends StatelessWidget {
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: const Color(0xFF28A745),
+                color: kSuccessColor,
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.check, color: Colors.white, size: 60),
@@ -31,7 +36,7 @@ class PasswordChangedScreen extends StatelessWidget {
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontSize: 26,
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFF196EB0),
+                color: kPrimaryColor,
                 height: 1.3,
               ),
             ),

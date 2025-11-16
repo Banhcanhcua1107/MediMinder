@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-import 'dart:math'; // Cần cho việc vẽ vòng tròn tiến độ
+import 'dart:math';
 import 'med_info_screen.dart';
-import 'add_med_screen.dart';
-import 'profile_screen.dart';
-import 'health_screen.dart';
-import 'medicine_list_screen.dart';
 
 // --- Bảng màu được cải tiến để nhất quán ---
 const Color kPrimaryColor = Color(0xFF2563EB);
@@ -91,130 +87,12 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 24),
             _buildDateScroller(),
             const SizedBox(height: 24),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4.0),
-              child: _buildProgressCard(),
-            ),
+            _buildProgressCard(),
             const SizedBox(height: 24),
             _buildMedicineList(),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const AddMedScreen()),
-          );
-        },
-        backgroundColor: kPrimaryColor,
-        elevation: 4,
-        child: const Icon(Icons.add, color: Colors.white, size: 28),
-      ),
-      bottomNavigationBar: _buildBottomBar(),
-    );
-  }
-
-  // Widget: Bottom Navigation Bar
-  Widget _buildBottomBar() {
-    return Container(
-      height: 100,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          top: BorderSide(color: const Color(0xFFE2E8F0), width: 1),
-        ),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildBottomBarItem(
-              icon: Icons.home,
-              label: 'Trang chủ',
-              isActive: true,
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const MedicineListScreen(),
-                  ),
-                );
-              },
-              child: _buildBottomBarItem(
-                icon: Icons.medication,
-                label: 'Thuốc',
-                isActive: false,
-              ),
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const HealthScreen()),
-                );
-              },
-              child: _buildBottomBarItem(
-                icon: Icons.favorite,
-                label: 'Sức khỏe',
-                isActive: false,
-              ),
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ProfileScreen(),
-                  ),
-                );
-              },
-              child: _buildBottomBarItem(
-                icon: Icons.person,
-                label: 'Hồ sơ',
-                isActive: false,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Widget: Bottom Bar Item
-  Widget _buildBottomBarItem({
-    required IconData icon,
-    required String label,
-    required bool isActive,
-  }) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          decoration: BoxDecoration(
-            color: isActive ? const Color(0xFFE0E7FF) : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(
-            icon,
-            color: isActive ? kPrimaryColor : const Color(0xFF64748B),
-            size: 24,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
-            color: isActive ? kPrimaryColor : const Color(0xFF64748B),
-          ),
-        ),
-      ],
     );
   }
 
@@ -245,10 +123,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           GestureDetector(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const ProfileScreen()),
-              );
+              // TODO: Navigate to profile
             },
             child: const CircleAvatar(
               radius: 24,

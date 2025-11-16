@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
-import 'health_screen.dart';
-import 'medicine_list_screen.dart';
-import 'profile_screen.dart';
-import '../widgets/custom_toast.dart'; // ignore: unused_import
+import '../widgets/custom_toast.dart';
 
 const Color kPrimaryColor = Color(0xFF2563EB);
 const Color kBackgroundColor = Color(0xFFF8FAFC);
@@ -282,7 +278,6 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: _buildBottomBar(),
     );
   }
 
@@ -350,126 +345,6 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                       ),
               ),
             ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBottomBar() {
-    return Container(
-      height: 100,
-      decoration: BoxDecoration(
-        color: kCardColor,
-        border: Border(top: BorderSide(color: kBorderColor, width: 0.5)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            // Home
-            GestureDetector(
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const HomeScreen()),
-                );
-              },
-              child: _buildBottomBarItem(
-                icon: Icons.home,
-                label: 'Trang chủ',
-                isActive: false,
-              ),
-            ),
-
-            // Medicine
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const MedicineListScreen(),
-                  ),
-                );
-              },
-              child: _buildBottomBarItem(
-                icon: Icons.medication,
-                label: 'Thuốc',
-                isActive: false,
-              ),
-            ),
-
-            // Health
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const HealthScreen()),
-                );
-              },
-              child: _buildBottomBarItem(
-                icon: Icons.favorite,
-                label: 'Sức khỏe',
-                isActive: false,
-              ),
-            ),
-
-            // Profile
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ProfileScreen(),
-                  ),
-                );
-              },
-              child: _buildBottomBarItem(
-                icon: Icons.person,
-                label: 'Hồ sơ',
-                isActive: false,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBottomBarItem({
-    required IconData icon,
-    required String label,
-    required bool isActive,
-  }) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        if (isActive)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              color: kAccentColor,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: kPrimaryColor, size: 24),
-          )
-        else
-          Icon(icon, color: kSecondaryTextColor, size: 24),
-        const SizedBox(height: 6),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-            color: isActive ? kPrimaryColor : kSecondaryTextColor,
           ),
         ),
       ],

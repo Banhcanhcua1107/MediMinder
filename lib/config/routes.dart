@@ -8,9 +8,8 @@ import '../screens/auth/reset_password_screen.dart';
 import '../screens/auth/verification_screen.dart';
 import '../screens/auth/create_new_password_screen.dart';
 import '../screens/auth/password_changed_screen.dart';
-import '../screens/home_screen.dart';
+import '../screens/dashboard_screen.dart';
 import '../screens/add_med_screen.dart';
-import '../screens/profile_screen.dart';
 
 class RouteNames {
   static const String welcome = '/';
@@ -34,37 +33,37 @@ final Map<String, WidgetBuilder> appRoutes = {
   RouteNames.googleSignIn: (context) => const GoogleSignInScreen(),
   RouteNames.forgotPassword: (context) => const ForgotPasswordScreen(),
   RouteNames.passwordChanged: (context) => const PasswordChangedScreen(),
-  RouteNames.home: (context) => const HomeScreen(),
+  RouteNames.home: (context) => const DashboardScreen(),
   RouteNames.addMed: (context) => const AddMedScreen(),
-  RouteNames.profile: (context) => const ProfileScreen(),
+  RouteNames.profile: (context) => const DashboardScreen(),
 };
 
 // Route generator for routes with arguments
-Route<dynamic> Function(RouteSettings) generateRoute =
-    (RouteSettings settings) {
-      switch (settings.name) {
-        case RouteNames.home:
-          return MaterialPageRoute(builder: (context) => const HomeScreen());
-        case RouteNames.addMed:
-          return MaterialPageRoute(builder: (context) => const AddMedScreen());
-        case RouteNames.profile:
-          return MaterialPageRoute(builder: (context) => const ProfileScreen());
-        case RouteNames.resetPassword:
-          final email = settings.arguments as String?;
-          return MaterialPageRoute(
-            builder: (context) => ResetPasswordScreen(email: email ?? ''),
-          );
-        case RouteNames.verification:
-          final email = settings.arguments as String?;
-          return MaterialPageRoute(
-            builder: (context) => VerificationScreen(email: email ?? ''),
-          );
-        case RouteNames.createNewPassword:
-          final email = settings.arguments as String?;
-          return MaterialPageRoute(
-            builder: (context) => CreateNewPasswordScreen(email: email ?? ''),
-          );
-        default:
-          return MaterialPageRoute(builder: (context) => const WelcomeScreen());
-      }
-    };
+Route<dynamic> Function(RouteSettings)
+generateRoute = (RouteSettings settings) {
+  switch (settings.name) {
+    case RouteNames.home:
+      return MaterialPageRoute(builder: (context) => const DashboardScreen());
+    case RouteNames.addMed:
+      return MaterialPageRoute(builder: (context) => const AddMedScreen());
+    case RouteNames.profile:
+      return MaterialPageRoute(builder: (context) => const DashboardScreen());
+    case RouteNames.resetPassword:
+      final email = settings.arguments as String?;
+      return MaterialPageRoute(
+        builder: (context) => ResetPasswordScreen(email: email ?? ''),
+      );
+    case RouteNames.verification:
+      final email = settings.arguments as String?;
+      return MaterialPageRoute(
+        builder: (context) => VerificationScreen(email: email ?? ''),
+      );
+    case RouteNames.createNewPassword:
+      final email = settings.arguments as String?;
+      return MaterialPageRoute(
+        builder: (context) => CreateNewPasswordScreen(email: email ?? ''),
+      );
+    default:
+      return MaterialPageRoute(builder: (context) => const WelcomeScreen());
+  }
+};

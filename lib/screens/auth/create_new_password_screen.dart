@@ -2,6 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/supabase_service.dart';
 
+// --- Bảng màu thống nhất ---
+const Color kPrimaryColor = Color(0xFF2563EB);
+const Color kBackgroundColor = Color(0xFFF8FAFC);
+const Color kCardColor = Colors.white;
+const Color kPrimaryTextColor = Color(0xFF1E293B);
+const Color kSecondaryTextColor = Color(0xFF64748B);
+const Color kBorderColor = Color(0xFFE2E8F0);
+
 class CreateNewPasswordScreen extends StatefulWidget {
   final String email;
 
@@ -114,11 +122,11 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
+      backgroundColor: kBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -131,17 +139,14 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
                       height: 41,
                       width: 41,
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(
-                          color: const Color(0xFFE8ECF4),
-                          width: 1,
-                        ),
+                        color: kCardColor,
+                        border: Border.all(color: kBorderColor, width: 1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: IconButton(
                         icon: const Icon(Icons.arrow_back),
                         onPressed: () => Navigator.maybePop(context),
-                        color: const Color(0xFF090A0A),
+                        color: kPrimaryTextColor,
                         iconSize: 20,
                         padding: EdgeInsets.zero,
                       ),

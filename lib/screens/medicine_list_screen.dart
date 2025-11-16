@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
-import 'health_screen.dart';
-import 'profile_screen.dart';
 import 'add_med_screen.dart';
-import '../widgets/custom_toast.dart';
 
 const Color kPrimaryColor = Color(0xFF2563EB);
 const Color kBackgroundColor = Color(0xFFF8FAFC);
@@ -54,11 +50,17 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
     return Scaffold(
       backgroundColor: kBackgroundColor,
       body: SafeArea(
-        child: Column(
+        child: ListView(
+          padding: const EdgeInsets.only(
+            top: 20,
+            left: 16,
+            right: 16,
+            bottom: 120,
+          ),
           children: [
             // Header
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.only(bottom: 24),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -85,12 +87,7 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      showCustomToast(
-                        context,
-                        message: 'Lịch sử thuốc',
-                        subtitle: 'Tính năng đang phát triển',
-                        isSuccess: true,
-                      );
+                      // TODO: Implement history feature
                     },
                     child: Container(
                       width: 48,
@@ -118,21 +115,12 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
             ),
 
             // Medicine List
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: _medicines.length,
-                itemBuilder: (context, index) {
-                  return _buildMedicineCard(_medicines[index]);
-                },
-              ),
-            ),
+            ..._medicines.map((med) => _buildMedicineCard(med)).toList(),
 
             // Floating Action Button
             Padding(
-              padding: const EdgeInsets.only(right: 16, bottom: 120),
-              child: Align(
-                alignment: Alignment.bottomRight,
+              padding: const EdgeInsets.only(top: 20),
+              child: Center(
                 child: GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -164,7 +152,6 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: _buildBottomBar(),
     );
   }
 
@@ -246,116 +233,6 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildBottomBar() {
-    return Container(
-      height: 100,
-      decoration: BoxDecoration(
-        color: kCardColor,
-        border: Border(top: BorderSide(color: kBorderColor, width: 0.5)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            // Home
-            GestureDetector(
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const HomeScreen()),
-                );
-              },
-              child: _buildBottomBarItem(
-                icon: Icons.home,
-                label: 'Trang chủ',
-                isActive: false,
-              ),
-            ),
-
-            // Medicine (Active)
-            _buildBottomBarItem(
-              icon: Icons.medication,
-              label: 'Thuốc',
-              isActive: true,
-            ),
-
-            // Health
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const HealthScreen()),
-                );
-              },
-              child: _buildBottomBarItem(
-                icon: Icons.favorite,
-                label: 'Sức khỏe',
-                isActive: false,
-              ),
-            ),
-
-            // Profile
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ProfileScreen(),
-                  ),
-                );
-              },
-              child: _buildBottomBarItem(
-                icon: Icons.person,
-                label: 'Hồ sơ',
-                isActive: false,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBottomBarItem({
-    required IconData icon,
-    required String label,
-    required bool isActive,
-  }) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        if (isActive)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              color: kAccentColor,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: kPrimaryColor, size: 24),
-          )
-        else
-          Icon(icon, color: kSecondaryTextColor, size: 24),
-        const SizedBox(height: 6),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-            color: isActive ? kPrimaryColor : kSecondaryTextColor,
-          ),
-        ),
-      ],
     );
   }
 }

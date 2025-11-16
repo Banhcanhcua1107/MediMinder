@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 import '../../widgets/primary_button.dart';
 
+// --- Bảng màu thống nhất ---
+const Color kPrimaryColor = Color(0xFF2563EB);
+const Color kBackgroundColor = Color(0xFFF8FAFC);
+const Color kCardColor = Colors.white;
+const Color kPrimaryTextColor = Color(0xFF1E293B);
+const Color kSecondaryTextColor = Color(0xFF64748B);
+
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: kBackgroundColor,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -37,7 +45,7 @@ class WelcomeScreen extends StatelessWidget {
                   SizedBox(height: 12),
                   Text(
                     'Welcome To',
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    style: TextStyle(fontSize: 14, color: kSecondaryTextColor),
                   ),
                   SizedBox(height: 6),
                   Text(
@@ -45,14 +53,14 @@ class WelcomeScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFF0B63B8),
+                      color: kPrimaryColor,
                     ),
                   ),
                   SizedBox(height: 8),
                   Text(
                     'Trợ lý cá nhân giúp bạn quản lý lịch uống thuốc mỗi ngày.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey[600]),
+                    style: TextStyle(color: kSecondaryTextColor),
                   ),
                   SizedBox(height: 22),
 
@@ -72,7 +80,7 @@ class WelcomeScreen extends StatelessWidget {
                     child: Text(
                       'Đăng ký',
                       style: TextStyle(
-                        color: Color(0xFF0B63B8),
+                        color: kPrimaryColor,
                         fontWeight: FontWeight.w600,
                       ),
                     ),

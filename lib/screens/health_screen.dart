@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
-import 'profile_screen.dart';
 import 'add_health_profile_screen.dart';
-import 'medicine_list_screen.dart';
 import '../widgets/custom_toast.dart';
 
 // --- Bảng màu ---
@@ -64,7 +61,6 @@ class _HealthScreenState extends State<HealthScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: _buildBottomBar(),
     );
   }
 
@@ -490,119 +486,6 @@ class _HealthScreenState extends State<HealthScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  // Widget: Bottom Navigation Bar
-  Widget _buildBottomBar() {
-    return Container(
-      height: 100,
-      decoration: BoxDecoration(
-        color: kCardColor,
-        border: Border(
-          top: BorderSide(color: const Color(0xFFE2E8F0), width: 0.5),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            // Home
-            GestureDetector(
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const HomeScreen()),
-                );
-              },
-              child: _buildBottomBarItem(
-                icon: Icons.home,
-                label: 'Trang chủ',
-                isActive: false,
-              ),
-            ),
-            // Medicine
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const MedicineListScreen(),
-                  ),
-                );
-              },
-              child: _buildBottomBarItem(
-                icon: Icons.medication,
-                label: 'Thuốc',
-                isActive: false,
-              ),
-            ),
-            // Health
-            _buildBottomBarItem(
-              icon: Icons.favorite,
-              label: 'Sức khỏe',
-              isActive: true,
-            ),
-            // Profile
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ProfileScreen(),
-                  ),
-                );
-              },
-              child: _buildBottomBarItem(
-                icon: Icons.person,
-                label: 'Hồ sơ',
-                isActive: false,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Widget: Bottom Bar Item
-  Widget _buildBottomBarItem({
-    required IconData icon,
-    required String label,
-    required bool isActive,
-  }) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        if (isActive)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              color: const Color(0xFFDEEBFF),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: kPrimaryColor, size: 24),
-          )
-        else
-          Icon(icon, color: kSecondaryTextColor, size: 24),
-        const SizedBox(height: 6),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-            color: isActive ? kPrimaryColor : kSecondaryTextColor,
-          ),
-        ),
-      ],
     );
   }
 
