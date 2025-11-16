@@ -92,8 +92,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                const PersonalInfoScreen(),
+                            builder: (context) => const PersonalInfoScreen(),
                           ),
                         );
                       },
@@ -304,12 +303,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }) {
     return Column(
       children: [
-        if (!isFirst)
-          Divider(
-            height: 1,
-            color: kBorderColor,
-            indent: 64,
-          ),
+        if (!isFirst) Divider(height: 1, color: kBorderColor, indent: 64),
         GestureDetector(
           onTap: () {
             showCustomToast(
@@ -365,12 +359,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }) {
     return Column(
       children: [
-        if (!isFirst)
-          Divider(
-            height: 1,
-            color: kBorderColor,
-            indent: 64,
-          ),
+        if (!isFirst) Divider(height: 1, color: kBorderColor, indent: 64),
         GestureDetector(
           onTap: () {
             showCustomToast(
@@ -432,11 +421,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildDarkModeToggle() {
     return Column(
       children: [
-        Divider(
-          height: 1,
-          color: kBorderColor,
-          indent: 64,
-        ),
+        Divider(height: 1, color: kBorderColor, indent: 64),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
@@ -493,9 +478,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       height: 100,
       decoration: BoxDecoration(
         color: kCardColor,
-        border: Border(
-          top: BorderSide(color: kBorderColor, width: 0.5),
-        ),
+        border: Border(top: BorderSide(color: kBorderColor, width: 0.5)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -546,9 +529,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => const HealthScreen(),
-                  ),
+                  MaterialPageRoute(builder: (context) => const HealthScreen()),
                 );
               },
               child: _buildBottomBarItem(
@@ -636,4 +617,3 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 }
-

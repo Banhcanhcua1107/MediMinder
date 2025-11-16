@@ -309,12 +309,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   }) {
     return Column(
       children: [
-        if (!isFirst)
-          Divider(
-            height: 1,
-            color: kBorderColor,
-            indent: 16,
-          ),
+        if (!isFirst) Divider(height: 1, color: kBorderColor, indent: 16),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Row(
@@ -366,9 +361,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
       height: 100,
       decoration: BoxDecoration(
         color: kCardColor,
-        border: Border(
-          top: BorderSide(color: kBorderColor, width: 0.5),
-        ),
+        border: Border(top: BorderSide(color: kBorderColor, width: 0.5)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -419,9 +412,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => const HealthScreen(),
-                  ),
+                  MaterialPageRoute(builder: (context) => const HealthScreen()),
                 );
               },
               child: _buildBottomBarItem(
