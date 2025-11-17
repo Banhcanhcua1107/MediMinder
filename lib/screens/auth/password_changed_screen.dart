@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 // --- Bảng màu thống nhất ---
-const Color kPrimaryColor = Color(0xFF1256DB);
+const Color kPrimaryColor = Color(0xFF196EB0);
 const Color kBackgroundColor = Color(0xFFF8FAFC);
 const Color kSuccessColor = Color(0xFF10B981);
 
@@ -71,7 +71,7 @@ class PasswordChangedScreen extends StatelessWidget {
                     Navigator.pushReplacementNamed(context, '/login');
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1256DB),
+                    backgroundColor: const Color(0xFF196EB0),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),

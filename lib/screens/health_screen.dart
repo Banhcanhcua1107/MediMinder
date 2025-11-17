@@ -3,7 +3,7 @@ import 'add_health_profile_screen.dart';
 import '../widgets/custom_toast.dart';
 
 // --- Bảng màu ---
-const Color kPrimaryColor = Color(0xFF1256DB);
+const Color kPrimaryColor = Color(0xFF196EB0);
 const Color kBackgroundColor = Color(0xFFF8FAFC);
 const Color kCardColor = Colors.white;
 const Color kPrimaryTextColor = Color(0xFF1E293B);

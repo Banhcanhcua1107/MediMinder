@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'personal_info_screen.dart';
 import '../widgets/custom_toast.dart';
 
-const Color kPrimaryColor = Color(0xFF1256DB);
+const Color kPrimaryColor = Color(0xFF196EB0);
 const Color kBackgroundColor = Color(0xFFF8FAFC);
 const Color kCardColor = Colors.white;
 const Color kPrimaryTextColor = Color(0xFF1E293B);

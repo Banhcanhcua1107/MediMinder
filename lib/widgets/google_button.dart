@@ -53,7 +53,7 @@ class GoogleButton extends StatelessWidget {
                       text,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
-                        fontSize: 14,
+                        fontSize: 20,
                         fontWeight: FontWeight.w600,
                         color: Colors.black87,
                       ),

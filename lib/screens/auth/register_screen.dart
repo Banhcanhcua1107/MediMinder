@@ -4,7 +4,7 @@ import '../../providers/app_provider.dart';
 import '../../services/google_signin_service.dart';
 
 // --- Bảng màu thống nhất ---
-const Color kPrimaryColor = Color(0xFF1256DB);
+const Color kPrimaryColor = Color(0xFF196EB0);
 const Color kBackgroundColor = Color(0xFFF8FAFC);
 const Color kCardColor = Colors.white;
 const Color kPrimaryTextColor = Color(0xFF1E293B);
@@ -147,7 +147,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontSize: 30,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFF1256DB),
+                    color: const Color(0xFF196EB0),
                     height: 1.3,
                     letterSpacing: -0.3,
                   ),
@@ -363,9 +363,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ? null
                             : _handleRegister,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1256DB),
+                          backgroundColor: const Color(0xFF196EB0),
                           disabledBackgroundColor: const Color(
-                            0xFF1256DB,
+                            0xFF196EB0,
                           ).withOpacity(0.6),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -487,7 +487,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             child: const Text(
                               'Đăng nhập',
                               style: TextStyle(
-                                color: Color(0xFF1256DB),
+                                color: Color(0xFF196EB0),
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
                               ),

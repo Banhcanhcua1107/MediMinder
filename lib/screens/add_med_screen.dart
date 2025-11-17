@@ -162,7 +162,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
                 child: Text(
                   'Lưu',
                   style: TextStyle(
-                    color: Color(0xFF1256DB),
+                    color: Color(0xFF196EB0),
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
@@ -217,7 +217,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(
-                          color: Color(0xFF1256DB),
+                          color: Color(0xFF196EB0),
                           width: 2,
                         ),
                       ),
@@ -314,7 +314,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: const BorderSide(
-                                color: Color(0xFF1256DB),
+                                color: Color(0xFF196EB0),
                                 width: 2,
                               ),
                             ),
@@ -363,7 +363,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: const BorderSide(
-                                color: Color(0xFF1256DB),
+                                color: Color(0xFF196EB0),
                                 width: 2,
                               ),
                             ),
@@ -424,11 +424,11 @@ class _AddMedScreenState extends State<AddMedScreen> {
                       ),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? const Color(0xFF1256DB)
+                            ? const Color(0xFF196EB0)
                             : Colors.white,
                         border: Border.all(
                           color: isSelected
-                              ? const Color(0xFF1256DB)
+                              ? const Color(0xFF196EB0)
                               : const Color(0xFFDBE0E6),
                         ),
                         borderRadius: BorderRadius.circular(12),
@@ -514,19 +514,19 @@ class _AddMedScreenState extends State<AddMedScreen> {
                   ),
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: const Color(0xFF1256DB),
+                      color: const Color(0xFF196EB0),
                       style: BorderStyle.solid,
                       width: 2,
                     ),
                     borderRadius: BorderRadius.circular(12),
-                    color: const Color(0xFF1256DB).withValues(alpha: 0.1),
+                    color: const Color(0xFF196EB0).withValues(alpha: 0.1),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: const [
                       Icon(
                         Icons.add_circle,
-                        color: Color(0xFF1256DB),
+                        color: Color(0xFF196EB0),
                         size: 20,
                       ),
                       SizedBox(width: 8),
@@ -535,7 +535,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF1256DB),
+                          color: Color(0xFF196EB0),
                         ),
                       ),
                     ],
@@ -570,7 +570,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(
-                      color: Color(0xFF1256DB),
+                      color: Color(0xFF196EB0),
                       width: 2,
                     ),
                   ),
@@ -611,9 +611,9 @@ class _AddMedScreenState extends State<AddMedScreen> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _handleSave,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1256DB),
+                    backgroundColor: const Color(0xFF196EB0),
                     disabledBackgroundColor: const Color(
-                      0xFF1256DB,
+                      0xFF196EB0,
                     ).withValues(alpha: 0.6),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(

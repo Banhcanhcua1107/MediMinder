@@ -163,7 +163,7 @@ class _MedInfoScreenState extends State<MedInfoScreen> {
                         'Số lượng: $quantity',
                         style: const TextStyle(
                           fontSize: 13,
-                          color: Color(0xFF1256DB),
+                          color: Color(0xFF196EB0),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -173,12 +173,12 @@ class _MedInfoScreenState extends State<MedInfoScreen> {
                       icon: const Icon(
                         Icons.edit,
                         size: 18,
-                        color: Color(0xFF1256DB),
+                        color: Color(0xFF196EB0),
                       ),
                       label: const Text(
                         'Chỉnh Sửa',
                         style: TextStyle(
-                          color: Color(0xFF1256DB),
+                          color: Color(0xFF196EB0),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -213,7 +213,7 @@ class _MedInfoScreenState extends State<MedInfoScreen> {
                       children: [
                         const Icon(
                           Icons.schedule,
-                          color: Color(0xFF1256DB),
+                          color: Color(0xFF196EB0),
                           size: 20,
                         ),
                         const SizedBox(width: 12),
@@ -247,7 +247,7 @@ class _MedInfoScreenState extends State<MedInfoScreen> {
                       child: const Text(
                         'Chỉnh Sửa',
                         style: TextStyle(
-                          color: Color(0xFF1256DB),
+                          color: Color(0xFF196EB0),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -288,7 +288,7 @@ class _MedInfoScreenState extends State<MedInfoScreen> {
                                 children: [
                                   const Icon(
                                     Icons.notifications,
-                                    color: Color(0xFF1256DB),
+                                    color: Color(0xFF196EB0),
                                     size: 20,
                                   ),
                                   const SizedBox(width: 12),
@@ -336,7 +336,7 @@ class _MedInfoScreenState extends State<MedInfoScreen> {
                                         });
                                       },
                                       activeThumbColor: Colors.white,
-                                      activeTrackColor: const Color(0xFF1256DB),
+                                      activeTrackColor: const Color(0xFF196EB0),
                                     ),
                                   ),
                                 ],
@@ -406,7 +406,7 @@ class _MedInfoScreenState extends State<MedInfoScreen> {
                     child: ElevatedButton(
                       onPressed: _onTakenPressed,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1256DB),
+                        backgroundColor: const Color(0xFF196EB0),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -429,7 +429,7 @@ class _MedInfoScreenState extends State<MedInfoScreen> {
                       onPressed: _onEditPressed,
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(
-                          color: Color(0xFF1256DB),
+                          color: Color(0xFF196EB0),
                           width: 2,
                         ),
                         padding: const EdgeInsets.symmetric(vertical: 14),
@@ -442,7 +442,7 @@ class _MedInfoScreenState extends State<MedInfoScreen> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1256DB),
+                          color: Color(0xFF196EB0),
                         ),
                       ),
                     ),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../widgets/primary_button.dart';
 
 // --- Bảng màu thống nhất ---
-const Color kPrimaryColor = Color(0xFF1256DB);
+const Color kPrimaryColor = Color(0xFF196EB0);
 const Color kBackgroundColor = Color(0xFFF8FAFC);
 const Color kCardColor = Colors.white;
 const Color kPrimaryTextColor = Color(0xFF1E293B);
@@ -31,14 +31,14 @@ class WelcomeScreen extends StatelessWidget {
                     width: 170,
                     height: 170,
                     child: Image.network(
-                      'https://res.cloudinary.com/dgl8p7xqo/image/upload/v1763014788/clock_pill_ibxkam.png',
+                      'https://res.cloudinary.com/dgl8p7xqo/image/upload/v1763387953/7732212_hgg4um.png',
                       fit: BoxFit.contain,
                       loadingBuilder: (context, child, loadingProgress) {
                         if (loadingProgress == null) return child;
-                        return CircularProgressIndicator();
+                        return const CircularProgressIndicator();
                       },
                       errorBuilder: (context, error, stackTrace) {
-                        return Icon(Icons.image_not_supported, size: 50);
+                        return const Icon(Icons.image_not_supported, size: 50);
                       },
                     ),
                   ),
