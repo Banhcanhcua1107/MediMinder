@@ -13,9 +13,9 @@ class MediMinderApp extends StatelessWidget {
       routes: routes.appRoutes,
       onGenerateRoute: routes.generateRoute,
       theme: ThemeData(
-        primaryColor: const Color(0xFF0D6EF6),
+        primaryColor: const Color(0xFF1256DB),
         scaffoldBackgroundColor: Colors.white, // nền trắng cho toàn app
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0D6EF6)),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1256DB)),
         useMaterial3: true,
         textTheme: Typography.material2021().black.apply(fontFamily: 'Roboto'),
       ),

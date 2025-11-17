@@ -121,7 +121,7 @@ class _ManageMedScreenState extends State<ManageMedScreen> {
                           ?.copyWith(
                             fontSize: 29,
                             fontWeight: FontWeight.bold,
-                            color: const Color(0xFF196EB0),
+                            color: const Color(0xFF1256DB),
                             height: 1.3,
                           ),
                       textAlign: TextAlign.center,

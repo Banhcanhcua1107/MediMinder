@@ -3,7 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/supabase_service.dart';
 
 // --- Bảng màu thống nhất ---
-const Color kPrimaryColor = Color(0xFF2563EB);
+const Color kPrimaryColor = Color(0xFF1256DB);
 const Color kBackgroundColor = Color(0xFFF8FAFC);
 const Color kCardColor = Colors.white;
 const Color kPrimaryTextColor = Color(0xFF1E293B);
@@ -216,7 +216,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontSize: 30,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFF196EB0),
+                    color: const Color(0xFF1256DB),
                     height: 1.3,
                     letterSpacing: -0.3,
                   ),
@@ -265,9 +265,9 @@ class _VerificationScreenState extends State<VerificationScreen> {
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _handleVerify,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF196EB0),
+                      backgroundColor: const Color(0xFF1256DB),
                       disabledBackgroundColor: const Color(
-                        0xFF196EB0,
+                        0xFF1256DB,
                       ).withValues(alpha: 0.6),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -318,7 +318,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                           child: const Text(
                             'Gửi lại',
                             style: TextStyle(
-                              color: Color(0xFF196EB0),
+                              color: Color(0xFF1256DB),
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
                             ),
@@ -352,15 +352,15 @@ class _VerificationScreenState extends State<VerificationScreen> {
           counterText: '',
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: Color(0xFF196EB0), width: 1.2),
+            borderSide: const BorderSide(color: Color(0xFF1256DB), width: 1.2),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: Color(0xFF196EB0), width: 1.2),
+            borderSide: const BorderSide(color: Color(0xFF1256DB), width: 1.2),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: Color(0xFF196EB0), width: 2),
+            borderSide: const BorderSide(color: Color(0xFF1256DB), width: 2),
           ),
           filled: true,
           fillColor: const Color(0xFFFFFFFF),

@@ -3,7 +3,7 @@ import 'dart:math';
 import 'med_info_screen.dart';
 
 // --- Bảng màu được cải tiến để nhất quán ---
-const Color kPrimaryColor = Color(0xFF2563EB);
+const Color kPrimaryColor = Color(0xFF1256DB);
 const Color kBackgroundColor = Color(0xFFF8FAFC);
 const Color kCardColor = Colors.white;
 const Color kPrimaryTextColor = Color(0xFF1E293B);

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../services/google_signin_service.dart';
 
 // --- Bảng màu thống nhất ---
-const Color kPrimaryColor = Color(0xFF2563EB);
+const Color kPrimaryColor = Color(0xFF1256DB);
 const Color kBackgroundColor = Color(0xFFF8FAFC);
 const Color kCardColor = Colors.white;
 const Color kPrimaryTextColor = Color(0xFF1E293B);
@@ -116,7 +116,7 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.headlineSmall
                           ?.copyWith(
-                            color: const Color(0xFF196EB0),
+                            color: const Color(0xFF1256DB),
                             fontSize: 30,
                             fontWeight: FontWeight.bold,
                             letterSpacing: -0.3,
@@ -220,7 +220,7 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
                                           const TextSpan(
                                             text: '- ',
                                             style: TextStyle(
-                                              color: Color(0xFF196EB0),
+                                              color: Color(0xFF1256DB),
                                               fontSize: 16,
                                               fontFamily: 'Roboto',
                                               fontWeight: FontWeight.bold,
@@ -229,7 +229,7 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
                                           const TextSpan(
                                             text: 'MediMinder',
                                             style: TextStyle(
-                                              color: Color(0xFF196EB0),
+                                              color: Color(0xFF1256DB),
                                               fontSize: 16,
                                               fontFamily: 'Roboto',
                                               fontWeight: FontWeight.bold,
@@ -282,7 +282,7 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
                                               strokeWidth: 2,
                                               valueColor:
                                                   AlwaysStoppedAnimation<Color>(
-                                                    Color(0xFF196EB0),
+                                                    Color(0xFF1256DB),
                                                   ),
                                             ),
                                           ),

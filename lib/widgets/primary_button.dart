@@ -17,7 +17,7 @@ class PrimaryButton extends StatelessWidget {
     final button = ElevatedButton(
       style: ElevatedButton.styleFrom(
         // Thêm 2 dòng dưới đây để tùy chỉnh màu sắc cho nút
-        backgroundColor: const Color(0xFF0B63B8), // Màu nền của nút
+        backgroundColor: const Color(0xFF1256DB), // Màu nền của nút
         foregroundColor: Colors.white, // Màu của chữ bên trong nút
 
         minimumSize: Size(fullWidth ? double.infinity : 160, 48),
