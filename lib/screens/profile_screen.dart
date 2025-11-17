@@ -456,7 +456,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     isSuccess: true,
                   );
                 },
-                activeColor: kPrimaryColor,
+                activeThumbColor: kPrimaryColor,
                 activeTrackColor: kPrimaryColor.withValues(alpha: 0.3),
               ),
             ],

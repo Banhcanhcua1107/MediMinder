@@ -13,7 +13,7 @@ const Color kBorderColor = Color(0xFFE2E8F0);
 class VerificationScreen extends StatefulWidget {
   final String email;
 
-  const VerificationScreen({Key? key, required this.email}) : super(key: key);
+  const VerificationScreen({super.key, required this.email});
 
   @override
   State<VerificationScreen> createState() => _VerificationScreenState();

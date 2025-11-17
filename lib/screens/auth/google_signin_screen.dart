@@ -18,22 +18,8 @@ class GoogleSignInScreen extends StatefulWidget {
 
 class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
   bool _isLoading = false;
-  final List<Map<String, String>> _accounts = [
-    {
-      'name': 'Sana Nassani',
-      'email': 'sana.nasani3@gmail.com',
-      'initial': 'S',
-      'color': '#9C27B0',
-    },
-    {
-      'name': 'SANA NASSANI',
-      'email': 'sana.nassani@std.hku.edu.tr',
-      'initial': 'SN',
-      'color': '#FF7043',
-    },
-  ];
 
-  Future<void> _handleSelectAccount(String email) async {
+  Future<void> _handleSignIn() async {
     if (!mounted) return;
 
     setState(() {
@@ -58,53 +44,6 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
         Navigator.pushReplacementNamed(context, '/home');
       } else {
         debugPrint('❌ Google Sign In failed - result or user is null');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Đăng nhập Google thất bại'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } catch (e) {
-      debugPrint('❌ Google Sign In error: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Lỗi: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _handleUseAnotherAccount() async {
-    if (!mounted) return;
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final googleSignInService = GoogleSignInService();
-      final result = await googleSignInService.signInWithGoogle();
-
-      debugPrint('📱 Google Sign In result: $result');
-      debugPrint('📱 User: ${result?.user}');
-
-      if (!mounted) return;
-
-      if (result != null && result.user != null) {
-        debugPrint('✅ Google Sign In thành công: ${result.user?.email}');
-        debugPrint('🚀 Navigating to /home...');
-        Navigator.pushReplacementNamed(context, '/home');
-      } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Đăng nhập Google thất bại'),
@@ -287,10 +226,10 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
-                                          TextSpan(
+                                          const TextSpan(
                                             text: 'MediMinder',
                                             style: TextStyle(
-                                              color: const Color(0xFF196EB0),
+                                              color: Color(0xFF196EB0),
                                               fontSize: 16,
                                               fontFamily: 'Roboto',
                                               fontWeight: FontWeight.bold,
@@ -304,84 +243,53 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
 
                                 const SizedBox(height: 24),
 
-                                // Account Options
-                                Column(
-                                  children: [
-                                    // Account 1
-                                    _buildAccountOption(
-                                      name: _accounts[0]['name']!,
-                                      email: _accounts[0]['email']!,
-                                      initial: _accounts[0]['initial']!,
-                                      colorHex: _accounts[0]['color']!,
-                                      onTap: () => _handleSelectAccount(
-                                        _accounts[0]['email']!,
-                                      ),
+                                // Account Options - Only "Sử dụng tài khoản khác"
+                                GestureDetector(
+                                  onTap: _isLoading ? null : _handleSignIn,
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 14,
                                     ),
-                                    const SizedBox(height: 1),
-                                    Container(
-                                      height: 1,
-                                      color: const Color(0xFFDADCE0),
-                                    ),
-                                    const SizedBox(height: 1),
-
-                                    // Account 2
-                                    _buildAccountOption(
-                                      name: _accounts[1]['name']!,
-                                      email: _accounts[1]['email']!,
-                                      initial: _accounts[1]['initial']!,
-                                      colorHex: _accounts[1]['color']!,
-                                      onTap: () => _handleSelectAccount(
-                                        _accounts[1]['email']!,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 1),
-                                    Container(
-                                      height: 1,
-                                      color: const Color(0xFFDADCE0),
-                                    ),
-                                    const SizedBox(height: 1),
-
-                                    // Use Another Account
-                                    GestureDetector(
-                                      onTap: _isLoading
-                                          ? null
-                                          : _handleUseAnotherAccount,
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 14,
+                                    child: Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.account_circle_outlined,
+                                          size: 20,
+                                          color: Color(0xFF3C4043),
                                         ),
-                                        child: Row(
-                                          children: [
-                                            const Icon(
-                                              Icons.account_circle_outlined,
-                                              size: 20,
-                                              color: Color(0xFF3C4043),
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Text(
-                                              'Sử dụng tài khoản khác',
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyMedium
-                                                  ?.copyWith(
-                                                    color: const Color(
-                                                      0xFF3C4043,
-                                                    ),
-                                                    fontSize: 14,
-                                                    fontFamily: 'Roboto',
-                                                    fontWeight: FontWeight.w500,
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Text(
+                                            'Sử dụng tài khoản khác',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyMedium
+                                                ?.copyWith(
+                                                  color: const Color(
+                                                    0xFF3C4043,
+                                                  ),
+                                                  fontSize: 14,
+                                                  fontFamily: 'Roboto',
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                          ),
+                                        ),
+                                        if (_isLoading) ...[
+                                          const SizedBox(
+                                            width: 16,
+                                            height: 16,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              valueColor:
+                                                  AlwaysStoppedAnimation<Color>(
+                                                    Color(0xFF196EB0),
                                                   ),
                                             ),
-                                          ],
-                                        ),
-                                      ),
+                                          ),
+                                        ],
+                                      ],
                                     ),
-                                    const SizedBox(height: 1),
-                                    Container(
-                                      height: 1,
-                                      color: const Color(0xFFDADCE0),
-                                    ),
-                                  ],
+                                  ),
                                 ),
                               ],
                             ),
@@ -485,76 +393,6 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAccountOption({
-    required String name,
-    required String email,
-    required String initial,
-    required String colorHex,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: _isLoading ? null : onTap,
-      child: Opacity(
-        opacity: _isLoading ? 0.6 : 1.0,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: Row(
-            children: [
-              Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  color: Color(
-                    int.parse('0xff${colorHex.replaceFirst('#', '')}'),
-                  ),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Center(
-                  child: Text(
-                    initial,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 15,
-                      fontFamily: 'Roboto',
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      name,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: const Color(0xFF3C4043),
-                        fontSize: 14,
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      email,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: const Color(0xFF5F6368),
-                        fontSize: 12,
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.normal,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );

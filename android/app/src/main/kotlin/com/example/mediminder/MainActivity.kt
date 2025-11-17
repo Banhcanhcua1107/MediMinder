@@ -1,4 +1,4 @@
-package com.example.mediminder
+package com.mediminder.app
 
 import io.flutter.embedding.android.FlutterActivity
 

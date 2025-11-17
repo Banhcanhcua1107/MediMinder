@@ -65,19 +65,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 curve: Curves.easeInOut,
               ),
             ),
-            child: SlideTransition(
-              position:
-                  Tween<Offset>(
-                    begin: const Offset(0.05, 0),
-                    end: Offset.zero,
-                  ).animate(
-                    CurvedAnimation(
-                      parent: _animationController,
-                      curve: Curves.easeInOut,
-                    ),
-                  ),
-              child: IndexedStack(index: _currentIndex, children: _screens),
-            ),
+            child: IndexedStack(index: _currentIndex, children: _screens),
           );
         },
       ),

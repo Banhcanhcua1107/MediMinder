@@ -115,7 +115,7 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
             ),
 
             // Medicine List
-            ..._medicines.map((med) => _buildMedicineCard(med)).toList(),
+            ..._medicines.map((med) => _buildMedicineCard(med)),
 
             // Floating Action Button
             Padding(

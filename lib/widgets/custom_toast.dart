@@ -8,13 +8,13 @@ class CustomToast extends StatefulWidget {
   final VoidCallback? onDismiss;
 
   const CustomToast({
-    Key? key,
+    super.key,
     required this.message,
     this.subtitle,
     this.isSuccess = true,
     this.duration = const Duration(seconds: 3),
     this.onDismiss,
-  }) : super(key: key);
+  });
 
   @override
   State<CustomToast> createState() => _CustomToastState();

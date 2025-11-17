@@ -6,7 +6,7 @@ const Color kBackgroundColor = Color(0xFFF8FAFC);
 const Color kSuccessColor = Color(0xFF10B981);
 
 class PasswordChangedScreen extends StatelessWidget {
-  const PasswordChangedScreen({Key? key}) : super(key: key);
+  const PasswordChangedScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

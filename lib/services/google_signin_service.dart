@@ -18,8 +18,7 @@ class GoogleSignInService {
       'email',
       'profile',
     ],
-    serverClientId:
-        'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com', // ← Thêm cái này!
+    serverClientId: null, // Không dùng dotenv ở đây
   );
 
   final _supabaseClient = Supabase.instance.client;
@@ -28,6 +27,7 @@ class GoogleSignInService {
   Future<AuthResponse?> signInWithGoogle() async {
     try {
       debugPrint('🔐 Starting Google Sign In...');
+      debugPrint('📱 Google Sign In instance: $_googleSignIn');
 
       final googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
@@ -65,6 +65,8 @@ class GoogleSignInService {
       return response;
     } catch (e) {
       debugPrint('❌ Google sign in error: $e');
+      debugPrint('❌ Full error: $e');
+      debugPrint('❌ Error type: ${e.runtimeType}');
       rethrow;
     }
   }

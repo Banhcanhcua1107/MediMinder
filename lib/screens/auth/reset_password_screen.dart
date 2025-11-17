@@ -13,7 +13,7 @@ const Color kBorderColor = Color(0xFFE2E8F0);
 class ResetPasswordScreen extends StatefulWidget {
   final String email;
 
-  const ResetPasswordScreen({Key? key, required this.email}) : super(key: key);
+  const ResetPasswordScreen({super.key, required this.email});
 
   @override
   State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();

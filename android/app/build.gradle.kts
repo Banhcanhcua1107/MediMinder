@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.mediminder"
+    namespace = "com.mediminder.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 

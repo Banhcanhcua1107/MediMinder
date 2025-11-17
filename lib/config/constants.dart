@@ -1,5 +1,5 @@
 /// File chứa các hằng số cấu hình cho Cloudinary và Supabase
-library config.constants;
+library;
 
 ///
 /// PHƯƠNG PHÁP TỪ .env (KHUYẾN NGHỊ):

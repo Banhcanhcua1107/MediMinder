@@ -13,8 +13,7 @@ const Color kBorderColor = Color(0xFFE2E8F0);
 class CreateNewPasswordScreen extends StatefulWidget {
   final String email;
 
-  const CreateNewPasswordScreen({Key? key, required this.email})
-    : super(key: key);
+  const CreateNewPasswordScreen({super.key, required this.email});
 
   @override
   State<CreateNewPasswordScreen> createState() =>

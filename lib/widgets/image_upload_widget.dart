@@ -5,7 +5,7 @@ import 'package:image_picker/image_picker.dart';
 
 /// Widget ví dụ upload ảnh lên Cloudinary
 class ImageUploadWidget extends StatefulWidget {
-  const ImageUploadWidget({Key? key}) : super(key: key);
+  const ImageUploadWidget({super.key});
 
   @override
   State<ImageUploadWidget> createState() => _ImageUploadWidgetState();
