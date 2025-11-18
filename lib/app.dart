@@ -2,14 +2,16 @@ import 'package:flutter/material.dart';
 import 'config/routes.dart' as routes;
 
 class MediMinderApp extends StatelessWidget {
-  const MediMinderApp({super.key});
+  final String? initialRoute;
+
+  const MediMinderApp({super.key, this.initialRoute});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'MediMinder',
       debugShowCheckedModeBanner: false,
-      initialRoute: routes.RouteNames.welcome,
+      initialRoute: initialRoute ?? routes.RouteNames.welcome,
       routes: routes.appRoutes,
       onGenerateRoute: routes.generateRoute,
       theme: ThemeData(

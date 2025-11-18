@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../../widgets/primary_button.dart';
 
 // --- Bảng màu thống nhất ---
@@ -35,11 +36,41 @@ class WelcomeScreen extends StatelessWidget {
                       fit: BoxFit.contain,
                       loadingBuilder: (context, child, loadingProgress) {
                         if (loadingProgress == null) return child;
-                        return const CircularProgressIndicator();
+                        return SizedBox(
+                          width: 170,
+                          height: 170,
+                          child: Center(
+                            child: SizedBox(
+                              width: 40,
+                              height: 40,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  kPrimaryColor.withValues(alpha: 0.5),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
                       },
                       errorBuilder: (context, error, stackTrace) {
-                        return const Icon(Icons.image_not_supported, size: 50);
+                        debugPrint('❌ Failed to load image: $error');
+                        return Container(
+                          width: 170,
+                          height: 170,
+                          decoration: BoxDecoration(
+                            color: kBackgroundColor,
+                            borderRadius: BorderRadius.circular(85),
+                          ),
+                          child: const Icon(
+                            Icons.medical_services,
+                            size: 80,
+                            color: kPrimaryColor,
+                          ),
+                        );
                       },
+                      cacheHeight: 200,
+                      cacheWidth: 200,
                     ),
                   ),
                   SizedBox(height: 12),

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:provider/provider.dart';
 import 'personal_info_screen.dart';
 import '../widgets/custom_toast.dart';
+import '../providers/app_provider.dart';
+import '../services/google_signin_service.dart';
 
 const Color kPrimaryColor = Color(0xFF196EB0);
 const Color kBackgroundColor = Color(0xFFF8FAFC);
@@ -469,26 +473,62 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _showLogoutDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Đăng xuất'),
         content: const Text('Bạn có chắc chắn muốn đăng xuất?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Hủy'),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              showCustomToast(
-                context,
-                message: 'Đã đăng xuất',
-                subtitle: 'Tạm biệt!',
-                isSuccess: true,
-              );
-              Future.delayed(const Duration(seconds: 2), () {
-                Navigator.pushReplacementNamed(context, '/login');
-              });
+            onPressed: () async {
+              try {
+                // Đóng dialog xác nhận ngay
+                if (mounted) {
+                  Navigator.pop(dialogContext);
+                }
+
+                debugPrint('🔐 Starting logout process...');
+
+                // Đăng xuất từ Google Sign In nếu tồn tại
+                try {
+                  final googleSignInService = GoogleSignInService();
+                  if (await googleSignInService.isGoogleSignedIn()) {
+                    debugPrint('🔐 Signing out from Google...');
+                    await googleSignInService.signOutGoogle();
+                    debugPrint('✅ Signed out from Google');
+                  }
+                } catch (e) {
+                  debugPrint('⚠️ Google sign out error (not critical): $e');
+                }
+
+                // Đăng xuất từ Supabase
+                if (mounted) {
+                  debugPrint('🔐 Signing out from Supabase...');
+                  await context.read<AuthProvider>().signOut();
+                  debugPrint('✅ Signed out from Supabase');
+                }
+
+                // Chuyển hướng ngay lập tức (StreamBuilder sẽ xử lý)
+                if (mounted) {
+                  debugPrint('✅ Logout completed - Navigating to welcome...');
+                  Navigator.of(
+                    context,
+                  ).pushNamedAndRemoveUntil('/', (route) => false);
+                }
+              } catch (e) {
+                debugPrint('❌ Logout error: $e');
+                if (mounted) {
+                  showCustomToast(
+                    context,
+                    message: 'Lỗi khi đăng xuất',
+                    subtitle: e.toString(),
+                    isSuccess: false,
+                  );
+                }
+              }
             },
             child: const Text(
               'Đăng xuất',

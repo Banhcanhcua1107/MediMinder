@@ -48,6 +48,10 @@ generateRoute = (RouteSettings settings) {
       return MaterialPageRoute(builder: (context) => const AddMedScreen());
     case RouteNames.profile:
       return MaterialPageRoute(builder: (context) => const DashboardScreen());
+    case RouteNames.googleSignIn:
+      return MaterialPageRoute(
+        builder: (context) => const GoogleSignInScreen(),
+      );
     case RouteNames.resetPassword:
       final email = settings.arguments as String?;
       return MaterialPageRoute(

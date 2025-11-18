@@ -58,7 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _handleGoogleLogin() async {
     try {
-      Navigator.pushNamed(context, '/google-signin');
+      Navigator.pushReplacementNamed(context, '/google-signin');
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

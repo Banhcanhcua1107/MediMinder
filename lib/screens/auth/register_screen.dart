@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/app_provider.dart';
-import '../../services/google_signin_service.dart';
 
 // --- Bảng màu thống nhất ---
 const Color kPrimaryColor = Color(0xFF196EB0);
@@ -83,17 +82,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _handleGoogleSignUp() async {
     try {
-      final googleService = GoogleSignInService();
-      final response = await googleService.signInWithGoogle();
-
-      if (response != null && mounted) {
-        Navigator.pushReplacementNamed(context, '/home');
-      }
+      Navigator.pushReplacementNamed(context, '/google-signin');
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Google đăng ký thất bại: ${e.toString()}'),
+            content: Text('Lỗi: ${e.toString()}'),
             backgroundColor: Colors.red,
           ),
         );
@@ -448,7 +442,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       elevation: 0,
                     ),
                     icon: Image.network(
-                      'https://www.figma.com/api/mcp/asset/516ce40b-1d28-468c-8a7b-2bdb60737e6d',
+                      'https://www.figma.com/api/mcp/asset/9b28dc82-bbec-484a-9f7e-7dcdc9edcc43',
                       width: 24,
                       height: 24,
                       errorBuilder: (context, error, stackTrace) {
