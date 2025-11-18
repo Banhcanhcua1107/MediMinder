@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/supabase_service.dart';
+import '../../widgets/custom_toast.dart';
 
 // --- Bảng màu thống nhất ---
 const Color kPrimaryColor = Color(0xFF196EB0);
@@ -72,13 +73,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         });
 
         // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Mã xác nhận đã được gửi. Vui lòng kiểm tra email của bạn.',
-            ),
-            backgroundColor: Colors.green,
-          ),
+        showCustomToast(
+          context,
+          message: 'Mã xác nhận đã gửi',
+          subtitle: 'Vui lòng kiểm tra email của bạn',
+          isSuccess: true,
         );
 
         // Navigate to reset password screen after 2 seconds
@@ -98,8 +97,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           _isLoading = false;
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_errorMessage!), backgroundColor: Colors.red),
+        showCustomToast(
+          context,
+          message: 'Lỗi gửi mã xác nhận',
+          subtitle: 'Vui lòng thử lại',
+          isSuccess: false,
         );
       }
     }

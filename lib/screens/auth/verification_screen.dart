@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/supabase_service.dart';
+import '../../widgets/custom_toast.dart';
 
 // --- Bảng màu thống nhất ---
 const Color kPrimaryColor = Color(0xFF196EB0);
@@ -103,11 +104,11 @@ class _VerificationScreenState extends State<VerificationScreen> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✅ Xác nhận thành công! Vui lòng đăng nhập.'),
-            backgroundColor: Colors.green,
-          ),
+        showCustomToast(
+          context,
+          message: 'Xác nhẫn thành công!',
+          subtitle: 'Vui lòng đăng nhập',
+          isSuccess: true,
         );
 
         // Navigate to login or home
@@ -119,12 +120,15 @@ class _VerificationScreenState extends State<VerificationScreen> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMessage = 'Mã xác nhận không hợp lệ: ${e.toString()}';
+          _errorMessage = 'Mã xác nhẫn không hợp lệ: ${e.toString()}';
           _isLoading = false;
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_errorMessage!), backgroundColor: Colors.red),
+        showCustomToast(
+          context,
+          message: 'Mã xác nhẫn sai',
+          subtitle: 'Vui lòng thử lại',
+          isSuccess: false,
         );
       }
     }
@@ -143,11 +147,11 @@ class _VerificationScreenState extends State<VerificationScreen> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✅ Mã xác nhận đã được gửi lại.'),
-            backgroundColor: Colors.green,
-          ),
+        showCustomToast(
+          context,
+          message: 'Gửi lại mã thành công',
+          subtitle: 'Kiểm tra email của bạn',
+          isSuccess: true,
         );
 
         // Clear OTP fields
@@ -163,11 +167,11 @@ class _VerificationScreenState extends State<VerificationScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('❌ Lỗi: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
+        showCustomToast(
+          context,
+          message: 'Lỗi gửi lại',
+          subtitle: 'Vui lòng thử lại sau',
+          isSuccess: false,
         );
       }
     }

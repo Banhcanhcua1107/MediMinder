@@ -58,12 +58,15 @@ class AuthProvider extends ChangeNotifier {
   /// Đăng xuất
   Future<void> signOut() async {
     try {
+      // Xóa session từ Supabase
       await _supabaseService.signOut();
       _isAuthenticated = false;
       notifyListeners();
+      debugPrint('✅ User logged out and cache cleared');
     } catch (e) {
       _errorMessage = e.toString();
       notifyListeners();
+      debugPrint('❌ Logout error: $e');
     }
   }
 

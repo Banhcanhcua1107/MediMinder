@@ -52,9 +52,9 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- Index để tối ưu query
-CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_users_is_active ON users(is_active);
-CREATE INDEX idx_users_created_at ON users(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_is_active ON users(is_active);
+CREATE INDEX IF NOT EXISTS idx_users_created_at ON users(created_at DESC);
 
 -- Comment cho bảng
 COMMENT ON TABLE users IS 'Bảng lưu trữ thông tin profile người dùng, liên kết với auth.users';
@@ -63,39 +63,9 @@ COMMENT ON TABLE users IS 'Bảng lưu trữ thông tin profile người dùng, 
 -- 2. ROW LEVEL SECURITY (RLS) - Bảo mật dữ liệu
 -- ============================================================================
 
--- Enable RLS cho users table
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-
--- Policy 1: Users có thể xem profile của chính họ
-CREATE POLICY "Users can view own profile"
-ON users
-FOR SELECT
-USING (auth.uid() = id);
-
--- Policy 2: Users có thể cập nhật profile của chính họ
-CREATE POLICY "Users can update own profile"
-ON users
-FOR UPDATE
-USING (auth.uid() = id);
-
--- Policy 3: Users mới có thể insert profile của chính họ
-CREATE POLICY "Users can insert own profile"
-ON users
-FOR INSERT
-WITH CHECK (auth.uid() = id);
-
--- Policy 4: Anonymous users có thể insert (cho signup)
-CREATE POLICY "Anonymous can insert new user"
-ON users
-FOR INSERT
-TO anon
-WITH CHECK (true);
-
--- Policy 5: Admin/authenticated users có thể xem all (tuỳ chọn - comment out nếu không cần)
--- CREATE POLICY "Admin can view all profiles"
--- ON users
--- FOR SELECT
--- USING (auth.jwt() ->> 'role' = 'admin');
+-- Tạm thời disable RLS để trigger có thể tạo user record
+-- Sẽ enable lại sau khi cần bảo mật
+-- ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 
 -- ============================================================================
 -- 3. MEDICINES TABLE - Danh sách thuốc
@@ -124,7 +94,7 @@ CREATE TABLE IF NOT EXISTS medicines (
 );
 
 -- Index
-CREATE INDEX idx_medicines_name ON medicines(name);
+CREATE INDEX IF NOT EXISTS idx_medicines_name ON medicines(name);
 
 COMMENT ON TABLE medicines IS 'Danh sách các loại thuốc';
 
@@ -167,9 +137,9 @@ CREATE TABLE IF NOT EXISTS reminders (
 );
 
 -- Index
-CREATE INDEX idx_reminders_user_id ON reminders(user_id);
-CREATE INDEX idx_reminders_is_active ON reminders(is_active);
-CREATE INDEX idx_reminders_start_date ON reminders(start_date);
+CREATE INDEX IF NOT EXISTS idx_reminders_user_id ON reminders(user_id);
+CREATE INDEX IF NOT EXISTS idx_reminders_is_active ON reminders(is_active);
+CREATE INDEX IF NOT EXISTS idx_reminders_start_date ON reminders(start_date);
 
 COMMENT ON TABLE reminders IS 'Nhắc lịch uống thuốc cho người dùng';
 
@@ -177,21 +147,25 @@ COMMENT ON TABLE reminders IS 'Nhắc lịch uống thuốc cho người dùng';
 ALTER TABLE reminders ENABLE ROW LEVEL SECURITY;
 
 -- Policies
+DROP POLICY IF EXISTS "Users can view own reminders" ON reminders;
 CREATE POLICY "Users can view own reminders"
 ON reminders
 FOR SELECT
 USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can create own reminders" ON reminders;
 CREATE POLICY "Users can create own reminders"
 ON reminders
 FOR INSERT
 WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update own reminders" ON reminders;
 CREATE POLICY "Users can update own reminders"
 ON reminders
 FOR UPDATE
 USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can delete own reminders" ON reminders;
 CREATE POLICY "Users can delete own reminders"
 ON reminders
 FOR DELETE
@@ -225,9 +199,9 @@ CREATE TABLE IF NOT EXISTS medicine_logs (
 );
 
 -- Index
-CREATE INDEX idx_medicine_logs_user_id ON medicine_logs(user_id);
-CREATE INDEX idx_medicine_logs_scheduled_time ON medicine_logs(scheduled_time);
-CREATE INDEX idx_medicine_logs_status ON medicine_logs(status);
+CREATE INDEX IF NOT EXISTS idx_medicine_logs_user_id ON medicine_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_medicine_logs_scheduled_time ON medicine_logs(scheduled_time);
+CREATE INDEX IF NOT EXISTS idx_medicine_logs_status ON medicine_logs(status);
 
 COMMENT ON TABLE medicine_logs IS 'Lịch sử uống thuốc của người dùng';
 
@@ -235,16 +209,19 @@ COMMENT ON TABLE medicine_logs IS 'Lịch sử uống thuốc của người dù
 ALTER TABLE medicine_logs ENABLE ROW LEVEL SECURITY;
 
 -- Policies
+DROP POLICY IF EXISTS "Users can view own logs" ON medicine_logs;
 CREATE POLICY "Users can view own logs"
 ON medicine_logs
 FOR SELECT
 USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can create own logs" ON medicine_logs;
 CREATE POLICY "Users can create own logs"
 ON medicine_logs
 FOR INSERT
 WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update own logs" ON medicine_logs;
 CREATE POLICY "Users can update own logs"
 ON medicine_logs
 FOR UPDATE
@@ -276,18 +253,21 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger cho users table
+DROP TRIGGER IF EXISTS users_update_updated_at ON users;
 CREATE TRIGGER users_update_updated_at
 BEFORE UPDATE ON users
 FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();
 
 -- Trigger cho reminders table
+DROP TRIGGER IF EXISTS reminders_update_updated_at ON reminders;
 CREATE TRIGGER reminders_update_updated_at
 BEFORE UPDATE ON reminders
 FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();
 
 -- Trigger cho medicines table
+DROP TRIGGER IF EXISTS medicines_update_updated_at ON medicines;
 CREATE TRIGGER medicines_update_updated_at
 BEFORE UPDATE ON medicines
 FOR EACH ROW
@@ -372,7 +352,36 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ============================================================================
--- 11. VERIFICATION & TESTING
+-- 11. AUTO INSERT USER - Tự động tạo user record khi auth user được tạo
+-- ============================================================================
+
+-- Function: Auto insert user vào public.users khi auth user được tạo
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.users (id, email, full_name, is_verified, is_active, created_at)
+  VALUES (
+    new.id,
+    new.email,
+    COALESCE(new.raw_user_meta_data ->> 'full_name', new.email),
+    false,
+    true,
+    NOW()
+  );
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Drop trigger if exists
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+
+-- Create trigger that fires when new user is created in auth.users
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- ============================================================================
+-- 12. VERIFICATION & TESTING
 -- ============================================================================
 
 -- Verify tables created
@@ -399,6 +408,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 --
 -- ✅ Features:
 --   - Automatic updated_at timestamp
+--   - Auto insert user vào public.users khi auth user được tạo (trigger)
 --   - Useful views for common queries
 --   - Utility functions for app
 --

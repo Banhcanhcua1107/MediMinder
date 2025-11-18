@@ -1,10 +1,14 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:image_picker/image_picker.dart';
 import '../config/constants.dart';
 
 /// Service quản lý upload ảnh lên Cloudinary
 class CloudinaryService {
   static final CloudinaryService _instance = CloudinaryService._internal();
+  final ImagePicker _imagePicker = ImagePicker();
 
   factory CloudinaryService() {
     return _instance;
@@ -12,12 +16,29 @@ class CloudinaryService {
 
   CloudinaryService._internal();
 
+  /// Pick image từ gallery hoặc camera
+  Future<File?> pickImage({ImageSource source = ImageSource.gallery}) async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(source: source);
+      if (image != null) {
+        debugPrint('📷 Image picked: ${image.path}');
+        return File(image.path);
+      }
+      return null;
+    } catch (e) {
+      debugPrint('❌ Error picking image: $e');
+      return null;
+    }
+  }
+
   /// Upload ảnh từ file path
-  Future<String> uploadImage({
+  Future<String?> uploadImage({
     required String filePath,
     required String fileName,
   }) async {
     try {
+      debugPrint('📤 Uploading image to Cloudinary: $fileName');
+
       final request = http.MultipartRequest(
         'POST',
         Uri.parse(
@@ -31,22 +52,31 @@ class CloudinaryService {
       // Thêm upload preset (không cần API key với upload preset)
       request.fields['upload_preset'] = AppConstants.CLOUDINARY_UPLOAD_PRESET;
       request.fields['public_id'] = fileName;
+      request.fields['folder'] = 'mediminder/avatars';
 
-      // Send request
-      final response = await request.send();
+      debugPrint('📡 Sending request to Cloudinary...');
+      final response = await request.send().timeout(
+        const Duration(seconds: 30),
+        onTimeout: () {
+          throw Exception('Upload timeout');
+        },
+      );
+
       final responseBody = await response.stream.bytesToString();
+      debugPrint('📊 Response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(responseBody);
-        final secureUrl = jsonResponse['secure_url'];
+        final secureUrl = jsonResponse['secure_url'] as String;
+        debugPrint('✅ Image uploaded successfully: $secureUrl');
         return secureUrl;
       } else {
-        throw Exception(
-          'Upload failed: ${response.statusCode} - $responseBody',
-        );
+        debugPrint('❌ Upload failed: ${response.statusCode} - $responseBody');
+        return null;
       }
     } catch (e) {
-      throw Exception('Upload image failed: $e');
+      debugPrint('❌ Error uploading image: $e');
+      return null;
     }
   }
 

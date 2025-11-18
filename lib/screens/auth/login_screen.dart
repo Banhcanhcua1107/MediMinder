@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:async';
 import '../../providers/app_provider.dart';
+import '../../services/google_signin_service.dart';
+import '../../widgets/custom_toast.dart';
 
 // --- Bảng màu thống nhất ---
 const Color kPrimaryColor = Color(0xFF196EB0);
@@ -21,16 +25,32 @@ class _LoginScreenState extends State<LoginScreen> {
   late TextEditingController _emailController;
   late TextEditingController _passwordController;
   bool _showPassword = false;
+  late StreamSubscription<AuthState> _authSubscription;
 
   @override
   void initState() {
     super.initState();
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
+
+    // Lắng nghe auth state change - khi login thành công sẽ navigate
+    _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((
+      data,
+    ) {
+      final session = data.session;
+      if (session != null && mounted) {
+        debugPrint(
+          '✅ Auth state changed - User logged in: ${session.user.email}',
+        );
+        // Navigate to home khi auth thành công
+        Navigator.of(context).pushReplacementNamed('/home');
+      }
+    });
   }
 
   @override
   void dispose() {
+    _authSubscription.cancel();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -47,25 +67,28 @@ class _LoginScreenState extends State<LoginScreen> {
     if (success && mounted) {
       Navigator.pushReplacementNamed(context, '/home');
     } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(authProvider.errorMessage ?? 'Đăng nhập thất bại'),
-          backgroundColor: Colors.red,
-        ),
+      showCustomToast(
+        context,
+        message: 'Đăng nhập thất bại',
+        subtitle: authProvider.errorMessage ?? 'Vui lòng thử lại',
+        isSuccess: false,
       );
     }
   }
 
   Future<void> _handleGoogleLogin() async {
     try {
-      Navigator.pushReplacementNamed(context, '/google-signin');
+      final googleService = GoogleSignInService();
+      await googleService.signInWithGoogle();
+      debugPrint('✅ Google Sign In successful from Login screen');
     } catch (e) {
+      debugPrint('❌ Google Sign In error: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Lỗi: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
+        showCustomToast(
+          context,
+          message: 'Lỗi đăng nhập',
+          subtitle: 'Google Sign In thất bại',
+          isSuccess: false,
         );
       }
     }

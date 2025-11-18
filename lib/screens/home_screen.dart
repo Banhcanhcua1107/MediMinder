@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'med_info_screen.dart';
+import 'profile_screen.dart';
+import '../services/user_service.dart';
 
 // --- Bảng màu được cải tiến để nhất quán ---
 const Color kPrimaryColor = Color(0xFF196EB0);
@@ -36,6 +39,35 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   DateTime _selectedDate = DateTime.now();
+  String _userName = 'Người dùng';
+  String? _avatarUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserInfo();
+  }
+
+  Future<void> _loadUserInfo() async {
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user != null) {
+        final userService = UserService();
+        final userInfo = await userService.getUserInfo(user.id);
+
+        if (userInfo != null && mounted) {
+          setState(() {
+            _userName = userInfo['full_name'] ?? 'Người dùng';
+            _avatarUrl = userInfo['avatar_url'];
+          });
+          debugPrint('✅ Home: User info loaded - $_userName');
+          debugPrint('🖼️ Home: Avatar URL - $_avatarUrl');
+        }
+      }
+    } catch (e) {
+      debugPrint('❌ Error loading user info in home: $e');
+    }
+  }
 
   // --- Dữ liệu mẫu với trạng thái isTaken ---
   final List<Medicine> _medicines = [
@@ -103,17 +135,17 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Column(
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 'Chào buổi sáng 👋',
                 style: TextStyle(color: kSecondaryTextColor, fontSize: 16),
               ),
-              SizedBox(height: 4),
+              const SizedBox(height: 4),
               Text(
-                'Người dùng',
-                style: TextStyle(
+                _userName,
+                style: const TextStyle(
                   color: kPrimaryTextColor,
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -123,11 +155,37 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           GestureDetector(
             onTap: () {
-              // TODO: Navigate to profile
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ProfileScreen()),
+              );
             },
-            child: const CircleAvatar(
-              radius: 24,
-              backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=32'),
+            child: Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFFE2E8F0),
+              ),
+              child: _avatarUrl != null && _avatarUrl!.isNotEmpty
+                  ? ClipOval(
+                      child: Image.network(
+                        _avatarUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(
+                            Icons.person,
+                            color: kSecondaryTextColor,
+                            size: 24,
+                          );
+                        },
+                      ),
+                    )
+                  : const Icon(
+                      Icons.person,
+                      color: kSecondaryTextColor,
+                      size: 24,
+                    ),
             ),
           ),
         ],

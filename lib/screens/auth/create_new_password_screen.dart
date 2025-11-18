@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/supabase_service.dart';
+import '../../widgets/custom_toast.dart';
 
 // --- Bảng màu thống nhất ---
 const Color kPrimaryColor = Color(0xFF196EB0);
@@ -91,11 +92,11 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
           _isLoading = false;
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Mật khẩu đã được cập nhật. Vui lòng đăng nhập lại.'),
-            backgroundColor: Colors.green,
-          ),
+        showCustomToast(
+          context,
+          message: 'Mật khẩu được cập nhật',
+          subtitle: 'Vui lòng đăng nhập lại',
+          isSuccess: true,
         );
 
         // Navigate to password changed screen after 1.5 seconds
@@ -111,8 +112,11 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
           _isLoading = false;
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_errorMessage!), backgroundColor: Colors.red),
+        showCustomToast(
+          context,
+          message: 'Lỗi cập nhật mật khẩu',
+          subtitle: 'Vui lòng thử lại',
+          isSuccess: false,
         );
       }
     }

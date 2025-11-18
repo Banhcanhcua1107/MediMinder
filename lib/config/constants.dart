@@ -122,7 +122,8 @@ class AppConstants {
   static const String CLOUDINARY_API_SECRET = 'YOUR_CLOUDINARY_API_SECRET';
 
   /// Cloudinary Upload Preset (tạo ở Cloudinary console)
-  static const String CLOUDINARY_UPLOAD_PRESET = 'ml_default';
+  /// QUAN TRỌNG: Upload preset phải có "Unsigned" = ON
+  static const String CLOUDINARY_UPLOAD_PRESET = 'mediminder_unsigned';
 
   // ==================== API ENDPOINTS ====================
   static const String API_BASE_URL = 'https://api.example.com';

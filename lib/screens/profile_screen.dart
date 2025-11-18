@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'personal_info_screen.dart';
 import '../widgets/custom_toast.dart';
 import '../providers/app_provider.dart';
 import '../services/google_signin_service.dart';
+import '../services/user_service.dart';
 
 const Color kPrimaryColor = Color(0xFF196EB0);
 const Color kBackgroundColor = Color(0xFFF8FAFC);
@@ -23,6 +25,56 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _isDarkMode = false;
+  String _userName = 'User';
+  String _userEmail = 'email@example.com';
+  String? _avatarUrl; // Lưu URL avatar từ database
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserInfo();
+  }
+
+  Future<void> _loadUserInfo() async {
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user != null && mounted) {
+        // Load từ auth
+        String name =
+            user.userMetadata?['full_name'] ??
+            user.email?.split('@').first ??
+            'User';
+        String email = user.email ?? 'email@example.com';
+
+        // Load avatar từ database
+        String? avatarUrl;
+        try {
+          final userService = UserService();
+          final userId = user.id;
+          final userInfo = await userService.getUserInfo(userId);
+          if (userInfo != null) {
+            avatarUrl = userInfo['avatar_url'];
+            name = userInfo['full_name'] ?? name; // Ưu tiên dùng từ DB
+            email = userInfo['email'] ?? email;
+          }
+        } catch (e) {
+          debugPrint('⚠️ Error loading user from DB: $e');
+        }
+
+        if (mounted) {
+          setState(() {
+            _userName = name;
+            _userEmail = email;
+            _avatarUrl = avatarUrl;
+          });
+          debugPrint('✅ User info loaded: $_userName, $_userEmail');
+          debugPrint('🖼️ Avatar URL: $_avatarUrl');
+        }
+      }
+    } catch (e) {
+      debugPrint('❌ Error loading user info: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,26 +93,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Padding(
               padding: const EdgeInsets.only(bottom: 24),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: kCardColor,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: kBorderColor, width: 1),
-                      ),
-                      child: const Icon(
-                        Icons.arrow_back_ios_new,
-                        color: kPrimaryTextColor,
-                        size: 18,
-                      ),
-                    ),
-                  ),
-                  const Text(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Text(
                     'Cài đặt',
                     style: TextStyle(
                       fontSize: 18,
@@ -68,7 +103,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       color: kPrimaryTextColor,
                     ),
                   ),
-                  SizedBox(width: 40), // Spacer
                 ],
               ),
             ),
@@ -109,30 +143,45 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             color: const Color(0xFFE2E8F0),
                             borderRadius: BorderRadius.circular(32),
                           ),
-                          child: const Icon(
-                            Icons.person,
-                            color: kSecondaryTextColor,
-                            size: 32,
-                          ),
+                          child: _avatarUrl != null && _avatarUrl!.isNotEmpty
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(32),
+                                  child: Image.network(
+                                    _avatarUrl!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return const Icon(
+                                        Icons.person,
+                                        color: kSecondaryTextColor,
+                                        size: 32,
+                                      );
+                                    },
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.person,
+                                  color: kSecondaryTextColor,
+                                  size: 32,
+                                ),
                         ),
                         const SizedBox(width: 16),
                         // User Info
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
+                            children: [
                               Text(
-                                'Văn An',
-                                style: TextStyle(
+                                _userName,
+                                style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                   color: kPrimaryTextColor,
                                 ),
                               ),
-                              SizedBox(height: 4),
+                              const SizedBox(height: 4),
                               Text(
-                                'Thông tin cá nhân',
-                                style: TextStyle(
+                                _userEmail,
+                                style: const TextStyle(
                                   fontSize: 13,
                                   color: kSecondaryTextColor,
                                 ),

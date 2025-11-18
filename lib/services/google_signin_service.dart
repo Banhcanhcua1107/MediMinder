@@ -13,69 +13,39 @@ class GoogleSignInService {
   GoogleSignInService._internal();
 
   final _googleSignIn = GoogleSignIn(
-    scopes: [
-      'openid', // Đặt openid lên đầu
-      'email',
-      'profile',
-    ],
-    serverClientId: null, // Không dùng dotenv ở đây
+    scopes: ['openid', 'email', 'profile'],
+    // Sử dụng Web Client ID để fix error 12500
+    serverClientId:
+        '426495788921-p8h4imo4ord7ktogg5obn67p3vlo25f4.apps.googleusercontent.com',
   );
 
   final _supabaseClient = Supabase.instance.client;
 
-  /// Đăng nhập với Google
-  Future<AuthResponse?> signInWithGoogle() async {
+  /// Đăng nhập với Google qua Supabase OAuth (khỏi cần setup Google Play Services)
+  Future<void> signInWithGoogle() async {
     try {
-      debugPrint('🔐 Starting Google Sign In...');
-      debugPrint('📱 Google Sign In instance: $_googleSignIn');
+      debugPrint('🔐 Starting Supabase OAuth with Google...');
 
-      final googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) {
-        throw Exception('Google sign in cancelled by user');
-      }
-
-      debugPrint('📱 Google user signed in: ${googleUser.email}');
-
-      final googleAuth = await googleUser.authentication;
-      final accessToken = googleAuth.accessToken;
-      final idToken = googleAuth.idToken;
-
-      debugPrint('🔑 Access Token: ${accessToken?.substring(0, 20)}...');
-      debugPrint('🔑 ID Token: ${idToken?.substring(0, 20) ?? "NULL"}...');
-
-      if (accessToken == null) {
-        throw Exception('No access token for user ${googleUser.email}');
-      }
-      if (idToken == null) {
-        throw Exception(
-          'No ID token for user ${googleUser.email}\n\nFix: Check Google Cloud Console OAuth consent screen',
-        );
-      }
-
-      debugPrint('🌐 Sending to Supabase...');
-
-      // Đăng nhập/đăng ký với Supabase
-      final response = await _supabaseClient.auth.signInWithIdToken(
-        provider: OAuthProvider.google,
-        idToken: idToken,
-        accessToken: accessToken,
+      // Dùng Supabase OAuth redirect - không cần Google Play Services
+      await _supabaseClient.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: 'com.mediminder.app://login-callback/',
       );
 
-      debugPrint('✅ Supabase sign in successful: ${response.user?.email}');
-      return response;
+      debugPrint('✅ Supabase OAuth initiated');
     } catch (e) {
-      debugPrint('❌ Google sign in error: $e');
-      debugPrint('❌ Full error: $e');
-      debugPrint('❌ Error type: ${e.runtimeType}');
+      debugPrint('❌ Supabase OAuth error: $e');
       rethrow;
     }
   }
 
-  /// Đăng xuất Google
+  /// Đăng xuất Google hoàn toàn (disconnect)
   Future<void> signOutGoogle() async {
     try {
-      await _googleSignIn.signOut();
+      // disconnect() sẽ xóa token và logout hoàn toàn
+      await _googleSignIn.disconnect();
       await _supabaseClient.auth.signOut();
+      debugPrint('✅ Google disconnected and Supabase signed out');
     } catch (e) {
       debugPrint('Google sign out error: $e');
       rethrow;

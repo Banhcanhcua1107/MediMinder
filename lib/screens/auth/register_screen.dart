@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:async';
 import '../../providers/app_provider.dart';
+import '../../services/google_signin_service.dart';
+import '../../widgets/custom_toast.dart';
 
 // --- Bảng màu thống nhất ---
 const Color kPrimaryColor = Color(0xFF196EB0);
@@ -24,6 +28,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   late TextEditingController _confirmPasswordController;
   bool _showPassword = false;
   bool _showConfirmPassword = false;
+  late StreamSubscription<AuthState> _authSubscription;
 
   @override
   void initState() {
@@ -32,10 +37,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
     _confirmPasswordController = TextEditingController();
+
+    // Lắng nghe auth state change - khi login thành công sẽ navigate
+    _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((
+      data,
+    ) {
+      final session = data.session;
+      if (session != null && mounted) {
+        debugPrint(
+          '✅ Auth state changed - User logged in: ${session.user.email}',
+        );
+        // Navigate to home khi auth thành công
+        Navigator.of(context).pushReplacementNamed('/home');
+      }
+    });
   }
 
   @override
   void dispose() {
+    _authSubscription.cancel();
     _usernameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
@@ -46,11 +66,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future<void> _handleRegister() async {
     // Validate passwords match
     if (_passwordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Mật khẩu không trùng khớp'),
-          backgroundColor: Colors.red,
-        ),
+      showCustomToast(
+        context,
+        message: 'Mật khẩu không trùng khớp',
+        subtitle: 'Vui lòng kiểm tra lại',
+        isSuccess: false,
       );
       return;
     }
@@ -71,25 +91,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
         arguments: email,
       );
     } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(authProvider.errorMessage ?? 'Đăng ký thất bại'),
-          backgroundColor: Colors.red,
-        ),
+      showCustomToast(
+        context,
+        message: 'Đăng ký thất bại',
+        subtitle: authProvider.errorMessage ?? 'Vui lòng thử lại',
+        isSuccess: false,
       );
     }
   }
 
   Future<void> _handleGoogleSignUp() async {
     try {
-      Navigator.pushReplacementNamed(context, '/google-signin');
+      final googleService = GoogleSignInService();
+      await googleService.signInWithGoogle();
+      debugPrint('✅ Google Sign In successful from Register screen');
     } catch (e) {
+      debugPrint('❌ Google Sign In error: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Lỗi: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
+        showCustomToast(
+          context,
+          message: 'Lỗi đăng nhập',
+          subtitle: 'Google Sign In thất bại',
+          isSuccess: false,
         );
       }
     }
