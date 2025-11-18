@@ -45,5 +45,8 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- Notification permissions -->
+	<key>NSUserNotificationUsageDescription</key>
+	<string>MediMinder cần quyền để gửi nhắc nhở uống thuốc</string>
 </dict>
 </plist>

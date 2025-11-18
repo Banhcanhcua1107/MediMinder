@@ -5,6 +5,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'app.dart';
 import 'providers/app_provider.dart';
 import 'config/constants.dart';
+import 'services/notification_service.dart';
+import 'services/background_task_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,6 +30,27 @@ void main() async {
   } catch (e) {
     debugPrint('❌ Error initializing Supabase: $e');
     // Không return, vẫn tiếp tục chạy app
+  }
+
+  // Khởi tạo Notification Service
+  try {
+    final notificationService = NotificationService();
+    await notificationService.initialize();
+    debugPrint('✅ Notification Service initialized');
+  } catch (e) {
+    debugPrint('❌ Error initializing Notification Service: $e');
+  }
+
+  // Khởi tạo Background Task Service
+  try {
+    final backgroundTaskService = BackgroundTaskService();
+    await backgroundTaskService.initialize();
+    // Lên lịch background tasks
+    await backgroundTaskService.scheduleMedicineCheckTask();
+    await backgroundTaskService.scheduleMedicineSyncTask();
+    debugPrint('✅ Background Task Service initialized and scheduled');
+  } catch (e) {
+    debugPrint('❌ Error initializing Background Task Service: $e');
   }
 
   runApp(

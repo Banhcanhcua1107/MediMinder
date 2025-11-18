@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_toast.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../models/user_medicine.dart';
+import '../repositories/medicine_repository.dart';
 
 class AddMedScreen extends StatefulWidget {
-  const AddMedScreen({super.key});
+  final String? medicineId;
+
+  const AddMedScreen({super.key, this.medicineId});
 
   @override
   State<AddMedScreen> createState() => _AddMedScreenState();
@@ -16,9 +21,15 @@ class _AddMedScreenState extends State<AddMedScreen> {
 
   String? _selectedType;
   String _selectedFrequency = 'Hàng ngày';
-  final List<String> _reminders = ['08:00 AM', '08:00 PM'];
+  List<String> _reminders = [];
   bool _isLoading = false;
   String? _errorMessage;
+
+  DateTime _startDate = DateTime.now();
+  DateTime? _endDate;
+  late MedicineRepository _medicineRepository;
+  UserMedicine? _editingMedicine;
+  MedicineSchedule? _existingSchedule;
 
   final List<String> _medicineTypes = [
     'Viên nén',
@@ -27,15 +38,72 @@ class _AddMedScreenState extends State<AddMedScreen> {
     'Thuốc tiêm',
   ];
 
-  final List<String> _frequencies = ['Hàng ngày', 'Cách ngày', 'Tùy chỉnh'];
+  final List<String> _frequencies = ['Hàng ngày', 'Cách ngày', 'Tuỳ chỉnh'];
 
   @override
   void initState() {
     super.initState();
+    final supabase = Supabase.instance.client;
+    _medicineRepository = MedicineRepository(supabase);
+
     _nameController = TextEditingController();
     _dosageController = TextEditingController();
     _quantityController = TextEditingController();
     _notesController = TextEditingController();
+    _reminders = ['08:00', '20:00'];
+
+    if (widget.medicineId != null) {
+      _loadMedicineData();
+    }
+  }
+
+  Future<void> _loadMedicineData() async {
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user != null) {
+        final medicines = await _medicineRepository.getUserMedicines(user.id);
+        _editingMedicine = medicines.firstWhere(
+          (m) => m.id == widget.medicineId,
+          orElse: () => throw Exception('Medicine not found'),
+        );
+
+        if (_editingMedicine != null) {
+          _nameController.text = _editingMedicine!.name;
+          _dosageController.text = _editingMedicine!.dosageStrength;
+          _quantityController.text = _editingMedicine!.quantityPerDose
+              .toString();
+          _notesController.text = _editingMedicine!.notes ?? '';
+          _selectedType = _medicineTypes.contains(_editingMedicine!.dosageForm)
+              ? _editingMedicine!.dosageForm
+              : 'Viên nén';
+          _startDate = _editingMedicine!.startDate;
+          _endDate = _editingMedicine!.endDate;
+
+          if (_editingMedicine!.scheduleTimes.isNotEmpty) {
+            _reminders = _editingMedicine!.scheduleTimes
+                .map((t) => t.getTimeText())
+                .toList();
+          }
+
+          if (_editingMedicine!.schedules.isNotEmpty) {
+            _existingSchedule = _editingMedicine!.schedules.first;
+            _selectedFrequency = _existingSchedule!.getFrequencyText();
+          }
+
+          setState(() {});
+        }
+      }
+    } catch (e) {
+      print('Error loading medicine: $e');
+      if (mounted) {
+        showCustomToast(
+          context,
+          message: 'Lỗi tải dữ liệu',
+          subtitle: 'Không thể tải thông tin thuốc',
+          isSuccess: false,
+        );
+      }
+    }
   }
 
   @override
@@ -48,27 +116,20 @@ class _AddMedScreenState extends State<AddMedScreen> {
   }
 
   Future<void> _selectTime(int index) async {
-    final timeStr = _reminders[index]
-        .replaceAll(' AM', '')
-        .replaceAll(' PM', '');
-    final timeParts = timeStr.split(':');
-    int hour = int.parse(timeParts[0]);
-    final isAm = _reminders[index].contains('AM');
-
-    if (!isAm && hour != 12) hour += 12;
-    if (isAm && hour == 12) hour = 0;
+    final timeStr = _reminders[index];
+    final parts = timeStr.split(':');
+    int hour = int.parse(parts[0]);
+    int minute = int.parse(parts[1]);
 
     final result = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay(hour: hour, minute: int.parse(timeParts[1])),
+      initialTime: TimeOfDay(hour: hour, minute: minute),
     );
 
     if (result != null) {
-      final period = result.hour < 12 ? 'AM' : 'PM';
-      final displayHour = result.hour % 12 == 0 ? 12 : result.hour % 12;
       setState(() {
         _reminders[index] =
-            '${displayHour.toString().padLeft(2, '0')}:${result.minute.toString().padLeft(2, '0')} $period';
+            '${result.hour.toString().padLeft(2, '0')}:${result.minute.toString().padLeft(2, '0')}';
       });
     }
   }
@@ -81,11 +142,41 @@ class _AddMedScreenState extends State<AddMedScreen> {
 
   void _addReminder() {
     setState(() {
-      _reminders.add('12:00 PM');
+      _reminders.add('12:00');
     });
   }
 
-  void _handleSave() {
+  Future<void> _selectStartDate() async {
+    final result = await showDatePicker(
+      context: context,
+      initialDate: _startDate,
+      firstDate: DateTime(2024),
+      lastDate: DateTime(2100),
+    );
+
+    if (result != null) {
+      setState(() {
+        _startDate = result;
+      });
+    }
+  }
+
+  Future<void> _selectEndDate() async {
+    final result = await showDatePicker(
+      context: context,
+      initialDate: _endDate ?? DateTime.now().add(const Duration(days: 30)),
+      firstDate: _startDate,
+      lastDate: DateTime(2100),
+    );
+
+    if (result != null) {
+      setState(() {
+        _endDate = result;
+      });
+    }
+  }
+
+  void _handleSave() async {
     if (_nameController.text.isEmpty) {
       setState(() {
         _errorMessage = 'Vui lòng nhập tên thuốc';
@@ -109,7 +200,14 @@ class _AddMedScreenState extends State<AddMedScreen> {
 
     if (_quantityController.text.isEmpty) {
       setState(() {
-        _errorMessage = 'Vui lòng nhập số lượng tồn kho';
+        _errorMessage = 'Vui lòng nhập số viên/lần';
+      });
+      return;
+    }
+
+    if (_reminders.isEmpty) {
+      setState(() {
+        _errorMessage = 'Vui lòng thêm ít nhất một giờ uống';
       });
       return;
     }
@@ -119,18 +217,96 @@ class _AddMedScreenState extends State<AddMedScreen> {
       _errorMessage = null;
     });
 
-    Future.delayed(const Duration(seconds: 1), () {
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user == null) throw Exception('User not authenticated');
+
+      if (widget.medicineId == null) {
+        final medicine = await _medicineRepository.createMedicine(
+          userId: user.id,
+          name: _nameController.text,
+          dosageStrength: _dosageController.text,
+          dosageForm: _selectedType!,
+          quantityPerDose: int.parse(_quantityController.text),
+          startDate: _startDate,
+          endDate: _endDate,
+          reasonForUse: null,
+          notes: _notesController.text.isEmpty ? null : _notesController.text,
+        );
+
+        final schedule = await _medicineRepository.createSchedule(
+          medicine.id,
+          frequencyType: _selectedFrequency == 'Hàng ngày'
+              ? 'daily'
+              : _selectedFrequency == 'Cách ngày'
+              ? 'alternate_days'
+              : 'custom',
+        );
+
+        for (int i = 0; i < _reminders.length; i++) {
+          final parts = _reminders[i].split(':');
+          await _medicineRepository.createScheduleTime(
+            schedule.id,
+            timeOfDay: TimeOfDay(
+              hour: int.parse(parts[0]),
+              minute: int.parse(parts[1]),
+            ),
+            orderIndex: i,
+          );
+        }
+      } else {
+        await _medicineRepository.updateMedicine(
+          widget.medicineId!,
+          name: _nameController.text,
+          dosageStrength: _dosageController.text,
+          dosageForm: _selectedType!,
+          quantityPerDose: int.parse(_quantityController.text),
+          startDate: _startDate,
+          endDate: _endDate,
+          notes: _notesController.text.isEmpty ? null : _notesController.text,
+        );
+
+        if (_existingSchedule != null) {
+          for (var time in _editingMedicine!.scheduleTimes) {
+            await _medicineRepository.deleteScheduleTime(time.id);
+          }
+
+          for (int i = 0; i < _reminders.length; i++) {
+            final parts = _reminders[i].split(':');
+            await _medicineRepository.createScheduleTime(
+              _existingSchedule!.id,
+              timeOfDay: TimeOfDay(
+                hour: int.parse(parts[0]),
+                minute: int.parse(parts[1]),
+              ),
+              orderIndex: i,
+            );
+          }
+        }
+      }
+
+      if (mounted) {
+        showCustomToast(
+          context,
+          message: 'Lưu thành công',
+          subtitle:
+              'Thuốc đã được ${widget.medicineId == null ? 'thêm' : 'cập nhật'} vào danh sách',
+          isSuccess: true,
+        );
+        Navigator.pop(context, true);
+      }
+    } catch (e) {
+      print('Error saving medicine: $e');
       setState(() {
-        _isLoading = false;
+        _errorMessage = 'Lỗi: $e';
       });
-      showCustomToast(
-        context,
-        message: 'Thêm thuốc thành công',
-        subtitle: 'Thuốc đã được thêm vào danh sách của bạn',
-        isSuccess: true,
-      );
-      Navigator.pop(context);
-    });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -144,9 +320,9 @@ class _AddMedScreenState extends State<AddMedScreen> {
           onTap: () => Navigator.pop(context),
           child: const Icon(Icons.close, color: Color(0xFF111418), size: 28),
         ),
-        title: const Text(
-          'Thêm thuốc mới',
-          style: TextStyle(
+        title: Text(
+          widget.medicineId == null ? 'Thêm thuốc mới' : 'Chỉnh sửa thuốc',
+          style: const TextStyle(
             color: Color(0xFF111418),
             fontWeight: FontWeight.bold,
             fontSize: 18,
@@ -157,12 +333,12 @@ class _AddMedScreenState extends State<AddMedScreen> {
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: GestureDetector(
-              onTap: _handleSave,
-              child: const Center(
+              onTap: _isLoading ? null : _handleSave,
+              child: Center(
                 child: Text(
                   'Lưu',
                   style: TextStyle(
-                    color: Color(0xFF196EB0),
+                    color: _isLoading ? Colors.grey : const Color(0xFF196EB0),
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
@@ -178,7 +354,6 @@ class _AddMedScreenState extends State<AddMedScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // PHẦN 1: Thông tin thuốc
               const Text(
                 'Thông tin thuốc',
                 style: TextStyle(
@@ -188,8 +363,6 @@ class _AddMedScreenState extends State<AddMedScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-
-              // Tên thuốc
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -232,8 +405,6 @@ class _AddMedScreenState extends State<AddMedScreen> {
                 ],
               ),
               const SizedBox(height: 16),
-
-              // Loại thuốc
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -278,8 +449,6 @@ class _AddMedScreenState extends State<AddMedScreen> {
                 ],
               ),
               const SizedBox(height: 16),
-
-              // Liều lượng và Số lượng tồn kho
               Row(
                 children: [
                   Expanded(
@@ -335,7 +504,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Số lượng tồn kho',
+                          'Số viên/lần',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
@@ -347,7 +516,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
                           controller: _quantityController,
                           keyboardType: TextInputType.number,
                           decoration: InputDecoration(
-                            hintText: 'ví dụ: 30',
+                            hintText: 'ví dụ: 1',
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: const BorderSide(
@@ -381,12 +550,105 @@ class _AddMedScreenState extends State<AddMedScreen> {
                 ],
               ),
               const SizedBox(height: 32),
-
-              // Divider
               Container(height: 1, color: const Color(0xFFDBE0E6)),
               const SizedBox(height: 32),
-
-              // PHẦN 2: Lịch uống thuốc
+              const Text(
+                'Khoảng thời gian',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF111418),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Ngày bắt đầu',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF111418),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  GestureDetector(
+                    onTap: _selectStartDate,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: const Color(0xFFDBE0E6)),
+                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.white,
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.calendar_today, size: 20),
+                          const SizedBox(width: 12),
+                          Text(
+                            '${_startDate.day}/${_startDate.month}/${_startDate.year}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Color(0xFF111418),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Ngày kết thúc (tuỳ chọn)',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF111418),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  GestureDetector(
+                    onTap: _selectEndDate,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: const Color(0xFFDBE0E6)),
+                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.white,
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.calendar_today, size: 20),
+                          const SizedBox(width: 12),
+                          Text(
+                            _endDate != null
+                                ? '${_endDate!.day}/${_endDate!.month}/${_endDate!.year}'
+                                : 'Không xác định',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Color(0xFF111418),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 32),
+              Container(height: 1, color: const Color(0xFFDBE0E6)),
+              const SizedBox(height: 32),
               const Text(
                 'Lịch uống thuốc',
                 style: TextStyle(
@@ -396,8 +658,6 @@ class _AddMedScreenState extends State<AddMedScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-
-              // Tần suất
               const Text(
                 'Tần suất',
                 style: TextStyle(
@@ -426,18 +686,18 @@ class _AddMedScreenState extends State<AddMedScreen> {
                         color: isSelected
                             ? const Color(0xFF196EB0)
                             : Colors.white,
+                        borderRadius: BorderRadius.circular(8),
                         border: Border.all(
                           color: isSelected
                               ? const Color(0xFF196EB0)
                               : const Color(0xFFDBE0E6),
                         ),
-                        borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
                         freq,
                         style: TextStyle(
                           fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w500,
                           color: isSelected
                               ? Colors.white
                               : const Color(0xFF111418),
@@ -448,8 +708,6 @@ class _AddMedScreenState extends State<AddMedScreen> {
                 }).toList(),
               ),
               const SizedBox(height: 20),
-
-              // Thời gian uống
               const Text(
                 'Thời gian uống',
                 style: TextStyle(
@@ -485,7 +743,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
                               _reminders[index],
                               style: const TextStyle(
                                 fontSize: 16,
-                                fontWeight: FontWeight.w600,
+                                fontWeight: FontWeight.w500,
                                 color: Color(0xFF111418),
                               ),
                             ),
@@ -493,7 +751,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
                               onTap: () => _deleteReminder(index),
                               child: const Icon(
                                 Icons.delete,
-                                color: Color(0xFF617589),
+                                color: Color(0xFFEF4444),
                                 size: 20,
                               ),
                             ),
@@ -515,7 +773,6 @@ class _AddMedScreenState extends State<AddMedScreen> {
                   decoration: BoxDecoration(
                     border: Border.all(
                       color: const Color(0xFF196EB0),
-                      style: BorderStyle.solid,
                       width: 2,
                     ),
                     borderRadius: BorderRadius.circular(12),
@@ -524,17 +781,13 @@ class _AddMedScreenState extends State<AddMedScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: const [
-                      Icon(
-                        Icons.add_circle,
-                        color: Color(0xFF196EB0),
-                        size: 20,
-                      ),
+                      Icon(Icons.add, color: Color(0xFF196EB0)),
                       SizedBox(width: 8),
                       Text(
                         'Thêm thời gian',
                         style: TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w500,
                           color: Color(0xFF196EB0),
                         ),
                       ),
@@ -543,8 +796,8 @@ class _AddMedScreenState extends State<AddMedScreen> {
                 ),
               ),
               const SizedBox(height: 32),
-
-              // PHẦN 3: Ghi chú thêm
+              Container(height: 1, color: const Color(0xFFDBE0E6)),
+              const SizedBox(height: 32),
               const Text(
                 'Ghi chú thêm',
                 style: TextStyle(
@@ -583,8 +836,6 @@ class _AddMedScreenState extends State<AddMedScreen> {
                 ),
               ),
               const SizedBox(height: 32),
-
-              // Lỗi
               if (_errorMessage != null) ...[
                 Container(
                   padding: const EdgeInsets.all(12),
@@ -604,8 +855,6 @@ class _AddMedScreenState extends State<AddMedScreen> {
                 ),
                 const SizedBox(height: 16),
               ],
-
-              // Nút lưu
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -622,20 +871,22 @@ class _AddMedScreenState extends State<AddMedScreen> {
                   ),
                   child: _isLoading
                       ? const SizedBox(
-                          height: 24,
-                          width: 24,
+                          height: 20,
+                          width: 20,
                           child: CircularProgressIndicator(
-                            strokeWidth: 2,
                             valueColor: AlwaysStoppedAnimation<Color>(
                               Colors.white,
                             ),
+                            strokeWidth: 2,
                           ),
                         )
-                      : const Text(
-                          'Lưu Lịch Uống Thuốc',
-                          style: TextStyle(
+                      : Text(
+                          widget.medicineId == null
+                              ? 'Thêm thuốc'
+                              : 'Cập nhật thuốc',
+                          style: const TextStyle(
                             fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w600,
                             color: Colors.white,
                           ),
                         ),
