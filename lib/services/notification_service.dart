@@ -137,6 +137,27 @@ class NotificationService {
     );
   }
 
+  // Hàm hiển thị thông báo ngay lập tức (không chờ)
+  Future<void> showImmediateNotification({
+    required int id,
+    required String title,
+    required String body,
+    String? payload,
+  }) async {
+    try {
+      await _flutterLocalNotificationsPlugin.show(
+        id,
+        title,
+        body,
+        NotificationDetails(android: _getAlarmNotificationDetails()),
+        payload: payload,
+      );
+      debugPrint('📢 Immediate notification shown: ID=$id - $title');
+    } catch (e) {
+      debugPrint('❌ Error showing immediate notification: $e');
+    }
+  }
+
   // Hàm lên lịch lặp lại hàng ngày
   Future<void> scheduleDailyNotification({
     required int id,
@@ -214,6 +235,11 @@ class NotificationService {
         '  - ID: ${notification.id}, Title: ${notification.title}, Body: ${notification.body}',
       );
     }
+  }
+
+  // TEST: Show notification for next 5 minutes check
+  Future<void> testShowPendingNotifications() async {
+    await logPendingNotifications();
   }
 
   // Tạo ID duy nhất từ MedicineID và index giờ

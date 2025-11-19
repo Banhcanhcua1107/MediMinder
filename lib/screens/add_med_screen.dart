@@ -300,6 +300,73 @@ class _AddMedScreenState extends State<AddMedScreen> {
     }
   }
 
+  void _handleDelete() async {
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        title: const Text(
+          'Xóa thuốc',
+          style: TextStyle(
+            color: Color(0xFF111418),
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+        ),
+        content: Text(
+          'Bạn chắc chắn muốn xóa "${_nameController.text}"? Hành động này không thể hoàn tác.',
+          style: const TextStyle(color: Color(0xFF666D80), fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text(
+              'Hủy',
+              style: TextStyle(color: Color(0xFF666D80)),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'Xóa',
+              style: TextStyle(color: Color(0xFFDC2626)),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldDelete != true) return;
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      // Xóa tất cả notifications của thuốc này
+      final notificationService = NotificationService();
+      for (int i = 0; i < 20; i++) {
+        await notificationService.cancelNotification(
+          NotificationService.generateNotificationId(widget.medicineId!, i),
+        );
+      }
+
+      // Xóa thuốc khỏi database
+      await _medicineRepository.deleteMedicine(widget.medicineId!);
+
+      if (mounted) {
+        showCustomToast(context, message: 'Xóa thành công', isSuccess: true);
+        Navigator.pop(context, true);
+      }
+    } catch (e) {
+      print('Error deleting medicine: $e');
+      setState(() => _errorMessage = 'Lỗi: $e');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -445,6 +512,33 @@ class _AddMedScreenState extends State<AddMedScreen> {
                         ),
                 ),
               ),
+              if (widget.medicineId != null) ...[
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: _isLoading ? null : _handleDelete,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFDC2626),
+                      side: const BorderSide(
+                        color: Color(0xFFDC2626),
+                        width: 2,
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Xóa thuốc',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 32),
             ],
           ),
