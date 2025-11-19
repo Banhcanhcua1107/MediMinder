@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'med_info_screen.dart';
 import 'profile_screen.dart';
 import '../services/user_service.dart';
+import '../services/notification_service.dart';
+import '../models/user_medicine.dart';
+import '../repositories/medicine_repository.dart';
 
 // --- Bảng màu được cải tiến để nhất quán ---
 const Color kPrimaryColor = Color(0xFF196EB0);
@@ -12,23 +14,8 @@ const Color kCardColor = Colors.white;
 const Color kPrimaryTextColor = Color(0xFF1E293B);
 const Color kSecondaryTextColor = Color(0xFF64748B);
 const Color kAccentColor = Color(0xFFE0E7FF);
-
-// --- Model dữ liệu (giữ nguyên) ---
-class Medicine {
-  final String name;
-  final String dosage;
-  final String time;
-  final String icon;
-  final bool isTaken; // Thêm trạng thái đã uống hay chưa
-
-  Medicine({
-    required this.name,
-    required this.dosage,
-    required this.time,
-    required this.icon,
-    this.isTaken = false,
-  });
-}
+const Color kSuccessColor = Color(0xFF10B981);
+const Color kWarningColor = Color(0xFFF59E0B);
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -37,15 +24,52 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   DateTime _selectedDate = DateTime.now();
   String _userName = 'Người dùng';
   String? _avatarUrl;
+  late MedicineRepository _medicineRepository;
+  late Future<List<UserMedicine>> _medicinesFuture;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    final supabase = Supabase.instance.client;
+    _medicineRepository = MedicineRepository(supabase);
     _loadUserInfo();
+    _loadMedicines();
+
+    // Thêm dòng này
+    _checkPermissions();
+  }
+
+  Future<void> _checkPermissions() async {
+    await NotificationService().requestPermissions();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // App quay lại foreground - refresh dữ liệu
+      debugPrint('🔄 App resumed - refreshing medicines');
+      _loadMedicines();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  void _loadMedicines() {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user != null) {
+      setState(() {
+        _medicinesFuture = _medicineRepository.getTodayMedicines(user.id);
+      });
+    }
   }
 
   Future<void> _loadUserInfo() async {
@@ -61,7 +85,6 @@ class _HomeScreenState extends State<HomeScreen> {
             _avatarUrl = userInfo['avatar_url'];
           });
           debugPrint('✅ Home: User info loaded - $_userName');
-          debugPrint('🖼️ Home: Avatar URL - $_avatarUrl');
         }
       }
     } catch (e) {
@@ -69,63 +92,86 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // --- Dữ liệu mẫu với trạng thái isTaken ---
-  final List<Medicine> _medicines = [
-    Medicine(
-      name: 'Vitamin D',
-      dosage: '1 Viên, 1000mg',
-      time: '09:41',
-      icon: '💊',
-      isTaken: true, // Ví dụ: thuốc này đã được uống
-    ),
-    Medicine(
-      name: 'B12 Drops',
-      dosage: '5 Giọt, 1200mg',
-      time: '18:30',
-      icon: '💧',
-      isTaken: false, // Ví dụ: thuốc này chưa uống
-    ),
-    Medicine(
-      name: 'Omega-3',
-      dosage: '2 Viên, 600mg',
-      time: '20:00',
-      icon: '🐟',
-      isTaken: false,
-    ),
-  ];
-
-  // Tính toán tiến độ uống thuốc
-  double get _progress {
-    if (_medicines.isEmpty) return 0;
-    final takenCount = _medicines.where((m) => m.isTaken).length;
-    return takenCount / _medicines.length;
-  }
-
   @override
   Widget build(BuildContext context) {
+    final user = Supabase.instance.client.auth.currentUser;
+
+    if (user == null) {
+      return Scaffold(
+        backgroundColor: kBackgroundColor,
+        body: const Center(child: Text('Vui lòng đăng nhập')),
+      );
+    }
+
     return Scaffold(
       backgroundColor: kBackgroundColor,
       body: SafeArea(
-        // Sử dụng ListView để có hiệu ứng cuộn mượt mà hơn
-        child: ListView(
-          padding: const EdgeInsets.only(
-            top: 16,
-            left: 16,
-            right: 16,
-            bottom: 120,
-          ),
-          children: [
-            _buildHeader(),
-            const SizedBox(height: 24),
-            _buildDateScroller(),
-            const SizedBox(height: 24),
-            _buildProgressCard(),
-            const SizedBox(height: 24),
-            _buildMedicineList(),
-          ],
+        child: FutureBuilder<List<UserMedicine>>(
+          future: _medicinesFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (snapshot.hasError) {
+              return Center(child: Text('Lỗi: ${snapshot.error}'));
+            }
+
+            final medicines = snapshot.data ?? [];
+
+            // Tính toán thuốc đã uống theo ngày được chọn
+            final takenCount = _calculateTakenCount(medicines);
+            final totalCount = _calculateTotalSchedules(medicines);
+            final progress = totalCount > 0 ? takenCount / totalCount : 0.0;
+
+            return ListView(
+              padding: const EdgeInsets.only(
+                top: 16,
+                left: 16,
+                right: 16,
+                bottom: 120,
+              ),
+              children: [
+                _buildHeader(),
+                const SizedBox(height: 24),
+                _buildDateScroller(),
+                const SizedBox(height: 24),
+                _buildProgressCard(progress, takenCount, totalCount),
+                const SizedBox(height: 24),
+                _buildMedicineList(medicines),
+              ],
+            );
+          },
         ),
       ),
     );
+  }
+
+  int _calculateTotalSchedules(List<UserMedicine> medicines) {
+    int total = 0;
+    for (var med in medicines) {
+      total += med.scheduleTimes.length;
+    }
+    return total;
+  }
+
+  int _calculateTakenCount(List<UserMedicine> medicines) {
+    int count = 0;
+    final now = DateTime.now();
+    final todayStr =
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+
+    for (var med in medicines) {
+      // Kiểm tra xem có intake record cho hôm nay không
+      for (var intake in med.intakes) {
+        final intakeDateStr =
+            '${intake.scheduledDate.year}-${intake.scheduledDate.month.toString().padLeft(2, '0')}-${intake.scheduledDate.day.toString().padLeft(2, '0')}';
+        if (intakeDateStr == todayStr && intake.status == 'taken') {
+          count++;
+        }
+      }
+    }
+    return count;
   }
 
   // Widget: Header Chào mừng
@@ -265,10 +311,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Widget: Thẻ tiến độ uống thuốc
-  Widget _buildProgressCard() {
-    int totalMeds = _medicines.length;
-    int takenMeds = _medicines.where((m) => m.isTaken).length;
-
+  Widget _buildProgressCard(double progress, int taken, int total) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -285,10 +328,10 @@ class _HomeScreenState extends State<HomeScreen> {
             width: 80,
             height: 80,
             child: CustomPaint(
-              painter: MedicineProgressPainter(progress: _progress),
+              painter: MedicineProgressPainter(progress: progress),
               child: Center(
                 child: Text(
-                  '${(_progress * 100).toInt()}%',
+                  '${(progress * 100).toInt()}%',
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -314,7 +357,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Đã uống $takenMeds trên $totalMeds liều.',
+                  'Đã uống $taken trên $total liều.',
                   style: const TextStyle(
                     fontSize: 14,
                     color: kSecondaryTextColor,
@@ -325,7 +368,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(10),
                   child: LinearProgressIndicator(
-                    value: _progress,
+                    value: progress,
                     minHeight: 8,
                     backgroundColor: kAccentColor,
                     valueColor: const AlwaysStoppedAnimation<Color>(
@@ -342,7 +385,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Widget: Danh sách thuốc
-  Widget _buildMedicineList() {
+  Widget _buildMedicineList(List<UserMedicine> medicines) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -355,136 +398,230 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        if (_medicines.isEmpty)
+        if (medicines.isEmpty)
           const Center(child: Text('Không có lịch trình nào cho hôm nay.'))
         else
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: _medicines.length,
+            itemCount: medicines.length,
             itemBuilder: (context, index) {
-              return _buildMedicineItem(_medicines[index]);
+              return _buildMedicineCard(medicines[index]);
             },
           ),
       ],
     );
   }
 
-  // Widget: Mục thuốc trong danh sách
-  Widget _buildMedicineItem(Medicine medicine) {
+  // Widget: Thẻ thuốc với checkbox xác nhận
+  Widget _buildMedicineCard(UserMedicine medicine) {
     return Card(
       elevation: 0,
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       color: kCardColor,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => MedInfoScreen(
-                medData: {
-                  'name': medicine.name,
-                  'dosage': medicine.dosage,
-                  'type': 'Viên Uống',
-                  'amount': 30,
-                  'reminders': [
-                    {
-                      'time': medicine.time,
-                      'frequency': 'Hàng ngày',
-                      'enabled': true,
-                    },
-                  ],
-                },
-              ),
-            ),
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            children: [
-              // Icon
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: kAccentColor,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Center(
-                  child: Text(
-                    medicine.icon,
-                    style: const TextStyle(fontSize: 24),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                // Icon
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: kAccentColor,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      _getMedicineIcon(medicine.dosageForm),
+                      color: kPrimaryColor,
+                      size: 24,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              // Tên và liều lượng
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      medicine.name,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: kPrimaryTextColor,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      medicine.dosage,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: kSecondaryTextColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Thời gian và trạng thái
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    medicine.time,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: kPrimaryTextColor,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
+                const SizedBox(width: 16),
+                // Tên và liều lượng
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        medicine.isTaken ? Icons.check_circle : Icons.alarm,
-                        size: 16,
-                        color: medicine.isTaken ? Colors.green : Colors.orange,
-                      ),
-                      const SizedBox(width: 4),
                       Text(
-                        medicine.isTaken ? 'Đã uống' : 'Sắp tới',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: medicine.isTaken
-                              ? Colors.green
-                              : Colors.orange,
-                          fontWeight: FontWeight.w500,
+                        medicine.name,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: kPrimaryTextColor,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${medicine.dosageStrength}, ${medicine.quantityPerDose} viên',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: kSecondaryTextColor,
                         ),
                       ),
                     ],
                   ),
-                ],
-              ),
-            ],
-          ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // Danh sách thời gian với checkbox
+            ...medicine.scheduleTimes.map((scheduleTime) {
+              final timeStr =
+                  '${scheduleTime.timeOfDay.hour.toString().padLeft(2, '0')}:${scheduleTime.timeOfDay.minute.toString().padLeft(2, '0')}';
+
+              // Kiểm tra xem đã uống hay chưa
+              final now = DateTime.now();
+              final todayStr =
+                  '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+              final isTaken = medicine.intakes.any((intake) {
+                final intakeDateStr =
+                    '${intake.scheduledDate.year}-${intake.scheduledDate.month.toString().padLeft(2, '0')}-${intake.scheduledDate.day.toString().padLeft(2, '0')}';
+                return intakeDateStr == todayStr && intake.status == 'taken';
+              });
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Row(
+                  children: [
+                    Checkbox(
+                      value: isTaken,
+                      onChanged: (value) async {
+                        await _handleToggleTaken(
+                          medicine,
+                          scheduleTime,
+                          value ?? false,
+                        );
+                      },
+                      fillColor: MaterialStateProperty.resolveWith((states) {
+                        if (states.contains(MaterialState.selected)) {
+                          return kSuccessColor;
+                        }
+                        return Colors.transparent;
+                      }),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      timeStr,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: kPrimaryTextColor,
+                      ),
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isTaken
+                            ? kSuccessColor.withOpacity(0.1)
+                            : kWarningColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        isTaken ? 'Đã uống' : 'Sắp tới',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: isTaken ? kSuccessColor : kWarningColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ],
         ),
       ),
     );
+  }
+
+  Future<void> _handleToggleTaken(
+    UserMedicine medicine,
+    MedicineScheduleTime scheduleTime,
+    bool taken,
+  ) async {
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user != null) {
+        if (taken) {
+          // Tạo intake record với status 'taken'
+          await Supabase.instance.client.from('medicine_intakes').insert({
+            'user_id': user.id,
+            'user_medicine_id': medicine.id,
+            'medicine_name': medicine.name,
+            'dosage_strength': medicine.dosageStrength,
+            'quantity_per_dose': medicine.quantityPerDose,
+            'scheduled_date':
+                '${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}-${DateTime.now().day.toString().padLeft(2, '0')}',
+            'scheduled_time':
+                '${scheduleTime.timeOfDay.hour.toString().padLeft(2, '0')}:${scheduleTime.timeOfDay.minute.toString().padLeft(2, '0')}:00',
+            'status': 'taken',
+            'taken_at': DateTime.now().toIso8601String(),
+          });
+          debugPrint(
+            '✅ Marked as taken: ${medicine.name} at ${scheduleTime.timeOfDay}',
+          );
+        } else {
+          // Xóa intake record
+          final dateStr =
+              '${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}-${DateTime.now().day.toString().padLeft(2, '0')}';
+          final timeStr =
+              '${scheduleTime.timeOfDay.hour.toString().padLeft(2, '0')}:${scheduleTime.timeOfDay.minute.toString().padLeft(2, '0')}:00';
+
+          await Supabase.instance.client
+              .from('medicine_intakes')
+              .delete()
+              .eq('user_id', user.id)
+              .eq('user_medicine_id', medicine.id)
+              .eq('scheduled_date', dateStr)
+              .eq('scheduled_time', timeStr)
+              .eq('status', 'taken');
+
+          debugPrint('❌ Removed taken status: ${medicine.name}');
+        }
+        setState(() {});
+      }
+    } catch (e) {
+      debugPrint('❌ Error toggling taken status: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
+      }
+    }
+  }
+
+  IconData _getMedicineIcon(String dosageForm) {
+    switch (dosageForm.toLowerCase()) {
+      case 'tablet':
+      case 'viên nén':
+        return Icons.medication;
+      case 'capsule':
+      case 'viên nang':
+        return Icons.vaccines;
+      case 'liquid':
+      case 'siro':
+        return Icons.local_drink;
+      case 'injection':
+      case 'thuốc tiêm':
+        return Icons.medical_services;
+      default:
+        return Icons.medication;
+    }
   }
 }
 

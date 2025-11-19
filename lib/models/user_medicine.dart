@@ -19,6 +19,7 @@ class UserMedicine {
   // Để lưu schedule và times khi query
   List<MedicineSchedule> schedules;
   List<MedicineScheduleTime> scheduleTimes;
+  List<MedicineIntake> intakes; // Lịch sử uống
 
   UserMedicine({
     required this.id,
@@ -36,6 +37,7 @@ class UserMedicine {
     required this.updatedAt,
     this.schedules = const [],
     this.scheduleTimes = const [],
+    this.intakes = const [],
   });
 
   /// Từ JSON (từ Supabase)
@@ -95,6 +97,7 @@ class UserMedicine {
     DateTime? updatedAt,
     List<MedicineSchedule>? schedules,
     List<MedicineScheduleTime>? scheduleTimes,
+    List<MedicineIntake>? intakes,
   }) {
     return UserMedicine(
       id: id ?? this.id,
@@ -112,6 +115,7 @@ class UserMedicine {
       updatedAt: updatedAt ?? this.updatedAt,
       schedules: schedules ?? this.schedules,
       scheduleTimes: scheduleTimes ?? this.scheduleTimes,
+      intakes: intakes ?? this.intakes,
     );
   }
 

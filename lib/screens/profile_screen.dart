@@ -7,6 +7,7 @@ import '../widgets/custom_toast.dart';
 import '../providers/app_provider.dart';
 import '../services/google_signin_service.dart';
 import '../services/user_service.dart';
+import '../services/notification_service.dart';
 
 const Color kPrimaryColor = Color(0xFF196EB0);
 const Color kBackgroundColor = Color(0xFFF8FAFC);
@@ -253,6 +254,76 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         title: 'Ngôn ngữ',
                         trailing: 'Tiếng Việt',
                         isLast: true,
+                      ),
+                      // Test Alarm Button
+                      Divider(height: 1, color: kBorderColor, indent: 64),
+                      GestureDetector(
+                        onTap: () async {
+                          try {
+                            await NotificationService().showNotification(
+                              id: 999999,
+                              title: '🔔 Test Nhạc Chuông',
+                              body: 'Đây là âm thanh báo thức của bạn!',
+                              useAlarm: true,
+                            );
+                            if (context.mounted) {
+                              showCustomToast(
+                                context,
+                                message: 'Đã gửi thông báo test',
+                                subtitle: 'Kiểm tra âm thanh ngay',
+                                isSuccess: true,
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              showCustomToast(
+                                context,
+                                message: 'Lỗi khi test',
+                                subtitle: e.toString(),
+                                isSuccess: false,
+                              );
+                            }
+                          }
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFE4E6),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(
+                                  Icons.notifications_active,
+                                  color: Color(0xFFE11D48),
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              const Expanded(
+                                child: Text(
+                                  'Test Nhạc Chuông',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                    color: kPrimaryTextColor,
+                                  ),
+                                ),
+                              ),
+                              const Icon(
+                                Icons.chevron_right,
+                                color: kSecondaryTextColor,
+                                size: 24,
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ],
                   ),

@@ -1,16 +1,23 @@
-// filepath: lib/services/notification_service.dart
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:flutter/material.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 
-/// Service quản lý thông báo cục bộ
+// Top-level function để handle notification tap từ background
+@pragma('vm:entry-point')
+void notificationTapBackground(NotificationResponse notificationResponse) {
+  debugPrint('🔔🔔 BACKGROUND Notification received!');
+  debugPrint('🔔 Notification ID: ${notificationResponse.id}');
+  debugPrint('🔔 Payload: ${notificationResponse.payload}');
+}
+
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
 
-  factory NotificationService() {
-    return _instance;
-  }
+  factory NotificationService() => _instance;
 
   NotificationService._internal();
 
@@ -19,183 +26,118 @@ class NotificationService {
 
   bool _isInitialized = false;
 
-  /// Khởi tạo notification service
   Future<void> initialize() async {
     if (_isInitialized) return;
 
-    // Khởi tạo timezone
+    // 1. Cấu hình Timezone (Quan trọng để báo đúng giờ)
     tz_data.initializeTimeZones();
+    try {
+      final String timeZoneName = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(timeZoneName));
+      debugPrint('✅ Timezone initialized: $timeZoneName');
+    } catch (e) {
+      debugPrint('⚠️ Error initializing timezone: $e');
+      try {
+        tz.setLocalLocation(tz.getLocation('Asia/Ho_Chi_Minh'));
+      } catch (_) {
+        tz.setLocalLocation(tz.local);
+      }
+    }
 
-    // Android settings
+    // 2. Cấu hình icon cho Android
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    // iOS settings
-    const DarwinInitializationSettings initializationSettingsIOS =
+    // 3. Cấu hình cho iOS
+    final DarwinInitializationSettings initializationSettingsIOS =
         DarwinInitializationSettings(
-          requestAlertPermission: true,
-          requestBadgePermission: true,
-          requestSoundPermission: true,
-          onDidReceiveLocalNotification: _onDidReceiveLocalNotification,
+          requestAlertPermission: false,
+          requestBadgePermission: false,
+          requestSoundPermission: false,
         );
 
-    // Combine settings
     final InitializationSettings initializationSettings =
         InitializationSettings(
           android: initializationSettingsAndroid,
           iOS: initializationSettingsIOS,
         );
 
-    // Initialize plugin
     await _flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
-      onDidReceiveNotificationResponse: _onSelectNotification,
+      onDidReceiveNotificationResponse: (details) {
+        debugPrint('🔔 Notification received (foreground): ${details.payload}');
+        debugPrint('🔔 Notification ID: ${details.id}');
+        debugPrint('🔔 Action ID: ${details.actionId}');
+      },
+      onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
     );
-
-    // Yêu cầu permission (iOS)
-    await _requestIOSPermissions();
 
     _isInitialized = true;
     debugPrint('✅ Notification Service initialized');
   }
 
-  /// Yêu cầu permission iOS
-  Future<void> _requestIOSPermissions() async {
-    await _flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-          IOSFlutterLocalNotificationsPlugin
-        >()
-        ?.requestPermissions(alert: true, badge: true, sound: true);
+  // Xin quyền (Cập nhật cho Android 12, 13, 14)
+  Future<void> requestPermissions() async {
+    if (Platform.isIOS) {
+      await _flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin
+          >()
+          ?.requestPermissions(alert: true, badge: true, sound: true);
+    } else if (Platform.isAndroid) {
+      final androidImplementation = _flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
+
+      // Quyền thông báo cơ bản (Android 13+)
+      await androidImplementation?.requestNotificationsPermission();
+
+      // Quyền đặt lịch chính xác từng phút (Android 12+)
+      // BẮT BUỘC để báo thức hoạt động đúng giờ
+      await androidImplementation?.requestExactAlarmsPermission();
+    }
   }
 
-  /// Callback khi nhận thông báo ở foreground (iOS)
-  static Future<void> _onDidReceiveLocalNotification(
-    int id,
-    String? title,
-    String? body,
-    String? payload,
-  ) async {
-    debugPrint('📱 iOS notification received: $id - $title - $body');
+  // Cấu hình chi tiết thông báo dạng Báo thức
+  AndroidNotificationDetails _getAlarmNotificationDetails() {
+    return AndroidNotificationDetails(
+      'medicine_alarm_channel_v3', // ID kênh (Đổi ID để reset cài đặt âm thanh)
+      'Nhắc nhở uống thuốc', // Tên hiển thị
+      channelDescription: 'Kênh thông báo quan trọng cho việc uống thuốc',
+      importance: Importance.max,
+      priority: Priority.max,
+      playSound: true,
+      // sound: null, // Mặc định sẽ dùng âm thanh thông báo của hệ thống (Ting ting)
+      enableVibration: true,
+      // Rung mạnh: Im lặng, Rung 1s, Nghỉ 0.5s, Rung 1s...
+      vibrationPattern: Int64List.fromList([0, 1000, 500, 1000, 500, 1000]),
+      audioAttributesUsage: AudioAttributesUsage
+          .notification, // Dùng luồng âm thanh thông báo (Ting ting) thay vì báo thức
+      fullScreenIntent: true, // Hiển thị trên màn hình khóa
+      visibility: NotificationVisibility.public,
+      category: AndroidNotificationCategory.alarm,
+    );
   }
 
-  /// Callback khi click vào notification
-  static Future<void> _onSelectNotification(
-    NotificationResponse notificationResponse,
-  ) async {
-    final String? payload = notificationResponse.payload;
-    debugPrint('🔔 Notification clicked: $payload');
-
-    // TODO: Handle navigation based on payload
-    // Ví dụ: if (payload == 'medicine') => Mở medicine list screen
-  }
-
-  /// Hiển thị thông báo ngay lập tức
+  // Hàm hiển thị ngay lập tức (Test)
   Future<void> showNotification({
     required int id,
     required String title,
     required String body,
     String? payload,
+    bool useAlarm = false,
   }) async {
-    try {
-      const AndroidNotificationDetails androidNotificationDetails =
-          AndroidNotificationDetails(
-            'medicine_channel',
-            'Medicine Reminders',
-            channelDescription: 'Nhắc nhở uống thuốc',
-            importance: Importance.max,
-            priority: Priority.high,
-            ticker: 'Uống thuốc',
-            enableVibration: true,
-            enableLights: true,
-            color: Color(0xFF196EB0),
-            playSound: true,
-            showWhen: true,
-            fullScreenIntent: true, // Hiển thị full screen khi tắt màn hình
-            ongoing: false,
-          );
-
-      const DarwinNotificationDetails iosNotificationDetails =
-          DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true,
-          );
-
-      final NotificationDetails notificationDetails = NotificationDetails(
-        android: androidNotificationDetails,
-        iOS: iosNotificationDetails,
-      );
-
-      await _flutterLocalNotificationsPlugin.show(
-        id,
-        title,
-        body,
-        notificationDetails,
-        payload: payload,
-      );
-
-      debugPrint('✅ Notification shown: $id - $title');
-    } catch (e) {
-      debugPrint('❌ Error showing notification: $e');
-    }
+    await _flutterLocalNotificationsPlugin.show(
+      id,
+      title,
+      body,
+      NotificationDetails(android: _getAlarmNotificationDetails()),
+      payload: payload,
+    );
   }
 
-  /// Lên lịch thông báo tại thời điểm cụ thể
-  Future<void> scheduleNotification({
-    required int id,
-    required String title,
-    required String body,
-    required DateTime scheduledDate,
-    String? payload,
-  }) async {
-    try {
-      const AndroidNotificationDetails androidNotificationDetails =
-          AndroidNotificationDetails(
-            'medicine_channel',
-            'Medicine Reminders',
-            channelDescription: 'Nhắc nhở uống thuốc',
-            importance: Importance.max,
-            priority: Priority.high,
-            ticker: 'Uống thuốc',
-            enableVibration: true,
-            enableLights: true,
-            color: Color(0xFF196EB0),
-            playSound: true,
-            showWhen: true,
-            fullScreenIntent: true, // Hiển thị full screen khi tắt màn hình
-          );
-
-      const DarwinNotificationDetails iosNotificationDetails =
-          DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true,
-          );
-
-      final NotificationDetails notificationDetails = NotificationDetails(
-        android: androidNotificationDetails,
-        iOS: iosNotificationDetails,
-      );
-
-      await _flutterLocalNotificationsPlugin.zonedSchedule(
-        id,
-        title,
-        body,
-        tz.TZDateTime.from(scheduledDate, tz.local),
-        notificationDetails,
-        androidScheduleMode: AndroidScheduleMode.alarmClock,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
-        payload: payload,
-      );
-
-      debugPrint('✅ Notification scheduled: $id - $title at $scheduledDate');
-    } catch (e) {
-      debugPrint('❌ Error scheduling notification: $e');
-    }
-  }
-
-  /// Lên lịch thông báo định kỳ hàng ngày
+  // Hàm lên lịch lặp lại hàng ngày
   Future<void> scheduleDailyNotification({
     required int id,
     required String title,
@@ -204,8 +146,12 @@ class NotificationService {
     String? payload,
   }) async {
     try {
-      final now = DateTime.now();
-      var scheduledDate = DateTime(
+      // Lấy thời gian hiện tại theo timezone đã setup
+      final now = tz.TZDateTime.now(tz.local);
+
+      // Tạo mốc thời gian nhắc
+      var scheduledDate = tz.TZDateTime(
+        tz.local,
         now.year,
         now.month,
         now.day,
@@ -213,106 +159,72 @@ class NotificationService {
         time.minute,
       );
 
-      // Nếu thời gian đã qua hôm nay, lên lịch cho ngày mai
-      if (scheduledDate.isBefore(now)) {
+      // Nếu giờ này đã qua rồi HOẶC là ngay bây giờ (tránh nổ ngay lập tức), thì đặt cho ngày mai
+      if (scheduledDate.isBefore(now) || scheduledDate.isAtSameMomentAs(now)) {
         scheduledDate = scheduledDate.add(const Duration(days: 1));
       }
 
-      const AndroidNotificationDetails androidNotificationDetails =
-          AndroidNotificationDetails(
-            'medicine_channel',
-            'Medicine Reminders',
-            channelDescription: 'Nhắc nhở uống thuốc',
-            importance: Importance.max,
-            priority: Priority.high,
-            ticker: 'Uống thuốc',
-            enableVibration: true,
-            enableLights: true,
-            color: Color(0xFF196EB0),
-            playSound: true,
-            showWhen: true,
-            fullScreenIntent: true, // Hiển thị full screen khi tắt màn hình
-          );
-
-      const DarwinNotificationDetails iosNotificationDetails =
-          DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true,
-          );
-
-      final NotificationDetails notificationDetails = NotificationDetails(
-        android: androidNotificationDetails,
-        iOS: iosNotificationDetails,
-      );
-
-      // Sử dụng zonedSchedule với matchDateTimeComponents để lặp hàng ngày
       await _flutterLocalNotificationsPlugin.zonedSchedule(
         id,
         title,
         body,
-        tz.TZDateTime.from(scheduledDate, tz.local),
-        notificationDetails,
-        androidScheduleMode: AndroidScheduleMode.alarmClock,
+        scheduledDate,
+        NotificationDetails(
+          android: _getAlarmNotificationDetails(),
+          iOS: const DarwinNotificationDetails(
+            presentSound: true,
+            interruptionLevel: InterruptionLevel.critical,
+          ),
+        ),
+        androidScheduleMode: AndroidScheduleMode
+            .exactAllowWhileIdle, // Thay đổi chế độ để đảm bảo báo thức nổ đúng giờ và có tiếng
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
-        matchDateTimeComponents: DateTimeComponents.time, // Lặp hàng ngày
+        matchDateTimeComponents:
+            DateTimeComponents.time, // Lặp lại mỗi ngày cùng giờ
         payload: payload,
       );
 
       debugPrint(
-        '✅ Daily notification scheduled: $id - $title at ${time.hour}:${time.minute.toString().padLeft(2, '0')}',
+        '✅ Scheduled Daily: ID=$id at ${time.hour}:${time.minute} (System Time: $scheduledDate)',
       );
     } catch (e) {
       debugPrint('❌ Error scheduling daily notification: $e');
     }
   }
 
-  /// Hủy thông báo theo ID
   Future<void> cancelNotification(int id) async {
-    try {
-      await _flutterLocalNotificationsPlugin.cancel(id);
-      debugPrint('✅ Notification cancelled: $id');
-    } catch (e) {
-      debugPrint('❌ Error cancelling notification: $e');
-    }
+    await _flutterLocalNotificationsPlugin.cancel(id);
   }
 
-  /// Hủy tất cả thông báo
   Future<void> cancelAllNotifications() async {
-    try {
-      await _flutterLocalNotificationsPlugin.cancelAll();
-      debugPrint('✅ All notifications cancelled');
-    } catch (e) {
-      debugPrint('❌ Error cancelling all notifications: $e');
-    }
+    await _flutterLocalNotificationsPlugin.cancelAll();
   }
 
-  /// Lấy pending notifications
-  Future<List<PendingNotificationRequest>> getPendingNotifications() async {
-    try {
-      final List<PendingNotificationRequest> pendingNotifications =
-          await _flutterLocalNotificationsPlugin.pendingNotificationRequests();
-      debugPrint('📋 Pending notifications: ${pendingNotifications.length}');
-      return pendingNotifications;
-    } catch (e) {
-      debugPrint('❌ Error getting pending notifications: $e');
-      return [];
-    }
-  }
+  // Debug: Lấy danh sách pending notifications
+  Future<void> logPendingNotifications() async {
+    final List<PendingNotificationRequest> pendingNotifications =
+        await _flutterLocalNotificationsPlugin.pendingNotificationRequests();
 
-  /// Tạo ID thông báo từ medicine + time
-  static int generateNotificationId(String medicineId, int timeIndex) {
-    // Kết hợp medicineId + timeIndex để tạo ID duy nhất
-    // Ví dụ: medicineId="med123" + timeIndex=0 => ID=123000
-    try {
-      final medicineNum = int.parse(
-        medicineId.replaceAll(RegExp(r'[^0-9]'), ''),
+    debugPrint(
+      '📋 Total pending notifications: ${pendingNotifications.length}',
+    );
+    for (var notification in pendingNotifications) {
+      debugPrint(
+        '  - ID: ${notification.id}, Title: ${notification.title}, Body: ${notification.body}',
       );
-      return (medicineNum * 10) + timeIndex;
+    }
+  }
+
+  // Tạo ID duy nhất từ MedicineID và index giờ
+  static int generateNotificationId(String medicineId, int timeIndex) {
+    try {
+      // Lấy hashcode dương
+      int hash = medicineId.hashCode.abs();
+      // Giới hạn để nằm trong range của Int32
+      return (hash % 100000000 * 10) + timeIndex;
     } catch (e) {
-      // Fallback: dùng hash code
-      return (medicineId.hashCode.abs() * 10) + timeIndex;
+      return DateTime.now().millisecondsSinceEpoch ~/ 1000;
     }
   }
 }

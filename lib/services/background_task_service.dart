@@ -204,6 +204,7 @@ Future<void> _handleMedicineCheckTask() async {
             body:
                 '${medicine.name} (${medicine.dosageStrength}) - ${medicine.quantityPerDose} viên',
             payload: 'medicine:${medicine.id}',
+            useAlarm: true,
           );
 
           notificationsScheduled++;

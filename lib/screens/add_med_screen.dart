@@ -3,6 +3,7 @@ import '../widgets/custom_toast.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/user_medicine.dart';
 import '../repositories/medicine_repository.dart';
+import '../services/notification_service.dart';
 
 class AddMedScreen extends StatefulWidget {
   final String? medicineId;
@@ -50,6 +51,8 @@ class _AddMedScreenState extends State<AddMedScreen> {
     _dosageController = TextEditingController();
     _quantityController = TextEditingController();
     _notesController = TextEditingController();
+
+    // Mặc định gợi ý giờ uống
     _reminders = ['08:00', '20:00'];
 
     if (widget.medicineId != null) {
@@ -89,20 +92,11 @@ class _AddMedScreenState extends State<AddMedScreen> {
             _existingSchedule = _editingMedicine!.schedules.first;
             _selectedFrequency = _existingSchedule!.getFrequencyText();
           }
-
           setState(() {});
         }
       }
     } catch (e) {
-      print('Error loading medicine: $e');
-      if (mounted) {
-        showCustomToast(
-          context,
-          message: 'Lỗi tải dữ liệu',
-          subtitle: 'Không thể tải thông tin thuốc',
-          isSuccess: false,
-        );
-      }
+      debugPrint('Error loading medicine: $e');
     }
   }
 
@@ -135,15 +129,11 @@ class _AddMedScreenState extends State<AddMedScreen> {
   }
 
   void _deleteReminder(int index) {
-    setState(() {
-      _reminders.removeAt(index);
-    });
+    setState(() => _reminders.removeAt(index));
   }
 
   void _addReminder() {
-    setState(() {
-      _reminders.add('12:00');
-    });
+    setState(() => _reminders.add('12:00'));
   }
 
   Future<void> _selectStartDate() async {
@@ -153,12 +143,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
       firstDate: DateTime(2024),
       lastDate: DateTime(2100),
     );
-
-    if (result != null) {
-      setState(() {
-        _startDate = result;
-      });
-    }
+    if (result != null) setState(() => _startDate = result);
   }
 
   Future<void> _selectEndDate() async {
@@ -168,47 +153,17 @@ class _AddMedScreenState extends State<AddMedScreen> {
       firstDate: _startDate,
       lastDate: DateTime(2100),
     );
-
-    if (result != null) {
-      setState(() {
-        _endDate = result;
-      });
-    }
+    if (result != null) setState(() => _endDate = result);
   }
 
   void _handleSave() async {
-    if (_nameController.text.isEmpty) {
-      setState(() {
-        _errorMessage = 'Vui lòng nhập tên thuốc';
-      });
-      return;
-    }
-
-    if (_selectedType == null) {
-      setState(() {
-        _errorMessage = 'Vui lòng chọn loại thuốc';
-      });
-      return;
-    }
-
-    if (_dosageController.text.isEmpty) {
-      setState(() {
-        _errorMessage = 'Vui lòng nhập liều lượng';
-      });
-      return;
-    }
-
-    if (_quantityController.text.isEmpty) {
-      setState(() {
-        _errorMessage = 'Vui lòng nhập số viên/lần';
-      });
-      return;
-    }
-
-    if (_reminders.isEmpty) {
-      setState(() {
-        _errorMessage = 'Vui lòng thêm ít nhất một giờ uống';
-      });
+    // Validation
+    if (_nameController.text.isEmpty ||
+        _selectedType == null ||
+        _dosageController.text.isEmpty ||
+        _quantityController.text.isEmpty ||
+        _reminders.isEmpty) {
+      setState(() => _errorMessage = 'Vui lòng điền đầy đủ thông tin');
       return;
     }
 
@@ -221,7 +176,11 @@ class _AddMedScreenState extends State<AddMedScreen> {
       final user = Supabase.instance.client.auth.currentUser;
       if (user == null) throw Exception('User not authenticated');
 
+      String currentMedicineId;
+
+      // 1. Lưu vào Supabase
       if (widget.medicineId == null) {
+        // Tạo mới
         final medicine = await _medicineRepository.createMedicine(
           userId: user.id,
           name: _nameController.text,
@@ -230,9 +189,9 @@ class _AddMedScreenState extends State<AddMedScreen> {
           quantityPerDose: int.parse(_quantityController.text),
           startDate: _startDate,
           endDate: _endDate,
-          reasonForUse: null,
           notes: _notesController.text.isEmpty ? null : _notesController.text,
         );
+        currentMedicineId = medicine.id;
 
         final schedule = await _medicineRepository.createSchedule(
           medicine.id,
@@ -255,6 +214,8 @@ class _AddMedScreenState extends State<AddMedScreen> {
           );
         }
       } else {
+        // Cập nhật
+        currentMedicineId = widget.medicineId!;
         await _medicineRepository.updateMedicine(
           widget.medicineId!,
           name: _nameController.text,
@@ -267,10 +228,10 @@ class _AddMedScreenState extends State<AddMedScreen> {
         );
 
         if (_existingSchedule != null) {
+          // Xóa giờ cũ, thêm giờ mới (Đơn giản hóa logic update)
           for (var time in _editingMedicine!.scheduleTimes) {
             await _medicineRepository.deleteScheduleTime(time.id);
           }
-
           for (int i = 0; i < _reminders.length; i++) {
             final parts = _reminders[i].split(':');
             await _medicineRepository.createScheduleTime(
@@ -285,27 +246,57 @@ class _AddMedScreenState extends State<AddMedScreen> {
         }
       }
 
+      // 2. Xử lý Notification (Phần quan trọng đã sửa)
+      final notificationService = NotificationService();
+
+      // Hủy các thông báo cũ của thuốc này để tránh trùng lặp ID
+      // (Loop giả định tối đa 20 mốc giờ để hủy sạch sẽ)
+      for (int i = 0; i < 20; i++) {
+        await notificationService.cancelNotification(
+          NotificationService.generateNotificationId(currentMedicineId, i),
+        );
+      }
+
+      // Thông báo Test ngay lập tức để người dùng yên tâm
+      await notificationService.showNotification(
+        id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        title: '✅ Đã lưu thuốc',
+        body: 'Sẽ nhắc vào: ${_reminders.join(", ")}',
+      );
+
+      // Lên lịch LẶP LẠI HÀNG NGÀY
+      for (int i = 0; i < _reminders.length; i++) {
+        final timeParts = _reminders[i].split(':');
+        final hour = int.parse(timeParts[0]);
+        final minute = int.parse(timeParts[1]);
+
+        await notificationService.scheduleDailyNotification(
+          id: NotificationService.generateNotificationId(currentMedicineId, i),
+          title: 'Đến giờ uống thuốc! 💊',
+          body:
+              '${_nameController.text} - ${_dosageController.text}, ${_quantityController.text} viên',
+          time: TimeOfDay(hour: hour, minute: minute),
+          payload: 'medicine:$currentMedicineId',
+        );
+      }
+
+      // Debug: Log lại danh sách notification đã schedule
+      await notificationService.logPendingNotifications();
+
       if (mounted) {
         showCustomToast(
           context,
           message: 'Lưu thành công',
-          subtitle:
-              'Thuốc đã được ${widget.medicineId == null ? 'thêm' : 'cập nhật'} vào danh sách',
+          subtitle: 'Đã đặt lịch nhắc thuốc',
           isSuccess: true,
         );
         Navigator.pop(context, true);
       }
     } catch (e) {
       print('Error saving medicine: $e');
-      setState(() {
-        _errorMessage = 'Lỗi: $e';
-      });
+      setState(() => _errorMessage = 'Lỗi: $e');
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -354,516 +345,85 @@ class _AddMedScreenState extends State<AddMedScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Thông tin thuốc',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF111418),
-                ),
-              ),
+              _buildSectionTitle('Thông tin thuốc'),
               const SizedBox(height: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Tên thuốc',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF111418),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _nameController,
-                    decoration: InputDecoration(
-                      hintText: 'Nhập tên thuốc',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFFDBE0E6)),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFFDBE0E6)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Color(0xFF196EB0),
-                          width: 2,
-                        ),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              _buildTextField('Tên thuốc', _nameController, 'Nhập tên thuốc'),
               const SizedBox(height: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Loại thuốc',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF111418),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: const Color(0xFFDBE0E6)),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: DropdownButton<String>(
-                      value: _selectedType,
-                      hint: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Text('Chọn loại thuốc'),
-                      ),
-                      isExpanded: true,
-                      underline: const SizedBox(),
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          _selectedType = newValue;
-                        });
-                      },
-                      items: _medicineTypes.map((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Text(value),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ],
-              ),
+              _buildDropdown('Loại thuốc', _selectedType),
               const SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Liều lượng',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: Color(0xFF111418),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        TextField(
-                          controller: _dosageController,
-                          decoration: InputDecoration(
-                            hintText: 'ví dụ: 500mg',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFDBE0E6),
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFDBE0E6),
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: Color(0xFF196EB0),
-                                width: 2,
-                              ),
-                            ),
-                            filled: true,
-                            fillColor: Colors.white,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 14,
-                            ),
-                          ),
-                        ),
-                      ],
+                    child: _buildTextField(
+                      'Liều lượng',
+                      _dosageController,
+                      'ví dụ: 500mg',
                     ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Số viên/lần',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: Color(0xFF111418),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        TextField(
-                          controller: _quantityController,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            hintText: 'ví dụ: 1',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFDBE0E6),
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFDBE0E6),
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: Color(0xFF196EB0),
-                                width: 2,
-                              ),
-                            ),
-                            filled: true,
-                            fillColor: Colors.white,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 14,
-                            ),
-                          ),
-                        ),
-                      ],
+                    child: _buildTextField(
+                      'Số viên/lần',
+                      _quantityController,
+                      'ví dụ: 1',
+                      isNumber: true,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 32),
-              Container(height: 1, color: const Color(0xFFDBE0E6)),
+              const Divider(),
               const SizedBox(height: 32),
-              const Text(
-                'Khoảng thời gian',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF111418),
-                ),
-              ),
+              _buildSectionTitle('Khoảng thời gian'),
               const SizedBox(height: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Ngày bắt đầu',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF111418),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  GestureDetector(
-                    onTap: _selectStartDate,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: const Color(0xFFDBE0E6)),
-                        borderRadius: BorderRadius.circular(12),
-                        color: Colors.white,
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.calendar_today, size: 20),
-                          const SizedBox(width: 12),
-                          Text(
-                            '${_startDate.day}/${_startDate.month}/${_startDate.year}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              color: Color(0xFF111418),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              _buildDatePicker('Ngày bắt đầu', _startDate, _selectStartDate),
               const SizedBox(height: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Ngày kết thúc (tuỳ chọn)',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF111418),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  GestureDetector(
-                    onTap: _selectEndDate,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: const Color(0xFFDBE0E6)),
-                        borderRadius: BorderRadius.circular(12),
-                        color: Colors.white,
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.calendar_today, size: 20),
-                          const SizedBox(width: 12),
-                          Text(
-                            _endDate != null
-                                ? '${_endDate!.day}/${_endDate!.month}/${_endDate!.year}'
-                                : 'Không xác định',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              color: Color(0xFF111418),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+              _buildDatePicker(
+                'Ngày kết thúc (tuỳ chọn)',
+                _endDate,
+                _selectEndDate,
               ),
               const SizedBox(height: 32),
-              Container(height: 1, color: const Color(0xFFDBE0E6)),
+              const Divider(),
               const SizedBox(height: 32),
-              const Text(
-                'Lịch uống thuốc',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF111418),
-                ),
-              ),
+              _buildSectionTitle('Lịch uống thuốc'),
               const SizedBox(height: 16),
-              const Text(
-                'Tần suất',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF111418),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                children: _frequencies.map((String freq) {
-                  final isSelected = freq == _selectedFrequency;
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedFrequency = freq;
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? const Color(0xFF196EB0)
-                            : Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: isSelected
-                              ? const Color(0xFF196EB0)
-                              : const Color(0xFFDBE0E6),
-                        ),
-                      ),
-                      child: Text(
-                        freq,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: isSelected
-                              ? Colors.white
-                              : const Color(0xFF111418),
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
+              _buildFrequencySelector(),
               const SizedBox(height: 20),
               const Text(
                 'Thời gian uống',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF111418),
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               ),
               const SizedBox(height: 12),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: _reminders.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: GestureDetector(
-                      onTap: () => _selectTime(index),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFFDBE0E6)),
-                          borderRadius: BorderRadius.circular(12),
-                          color: Colors.white,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              _reminders[index],
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFF111418),
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () => _deleteReminder(index),
-                              child: const Icon(
-                                Icons.delete,
-                                color: Color(0xFFEF4444),
-                                size: 20,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
+              _buildReminderList(),
               const SizedBox(height: 12),
-              GestureDetector(
-                onTap: _addReminder,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
-                  ),
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: const Color(0xFF196EB0),
-                      width: 2,
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                    color: const Color(0xFF196EB0).withValues(alpha: 0.1),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Icon(Icons.add, color: Color(0xFF196EB0)),
-                      SizedBox(width: 8),
-                      Text(
-                        'Thêm thời gian',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF196EB0),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              _buildAddReminderButton(),
               const SizedBox(height: 32),
-              Container(height: 1, color: const Color(0xFFDBE0E6)),
+              const Divider(),
               const SizedBox(height: 32),
-              const Text(
-                'Ghi chú thêm',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF111418),
-                ),
-              ),
+              _buildSectionTitle('Ghi chú thêm'),
               const SizedBox(height: 12),
-              TextField(
-                controller: _notesController,
+              _buildTextField(
+                'Ghi chú',
+                _notesController,
+                'Ví dụ: Uống sau ăn...',
                 maxLines: 4,
-                decoration: InputDecoration(
-                  hintText: 'ví dụ: Uống sau khi ăn no...',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFDBE0E6)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFDBE0E6)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: Color(0xFF196EB0),
-                      width: 2,
-                    ),
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
-                  ),
-                ),
               ),
               const SizedBox(height: 32),
-              if (_errorMessage != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFEBEE),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFFEF5350)),
-                  ),
+              if (_errorMessage != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
                   child: Text(
                     _errorMessage!,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFFEA4335),
-                    ),
+                    style: const TextStyle(color: Colors.red),
                   ),
                 ),
-                const SizedBox(height: 16),
-              ],
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _handleSave,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF196EB0),
-                    disabledBackgroundColor: const Color(
-                      0xFF196EB0,
-                    ).withValues(alpha: 0.6),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -873,21 +433,14 @@ class _AddMedScreenState extends State<AddMedScreen> {
                       ? const SizedBox(
                           height: 20,
                           width: 20,
-                          child: CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
-                            ),
-                            strokeWidth: 2,
-                          ),
+                          child: CircularProgressIndicator(color: Colors.white),
                         )
                       : Text(
-                          widget.medicineId == null
-                              ? 'Thêm thuốc'
-                              : 'Cập nhật thuốc',
+                          widget.medicineId == null ? 'Thêm thuốc' : 'Cập nhật',
                           style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
                             color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                 ),
@@ -895,6 +448,222 @@ class _AddMedScreenState extends State<AddMedScreen> {
               const SizedBox(height: 32),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  // Helper Widgets để code gọn hơn
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    );
+  }
+
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller,
+    String hint, {
+    bool isNumber = false,
+    int maxLines = 1,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+          maxLines: maxLines,
+          decoration: InputDecoration(
+            hintText: hint,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            filled: true,
+            fillColor: Colors.white,
+            contentPadding: const EdgeInsets.all(16),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDropdown(String label, String? value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: const Color(0xFFDBE0E6)),
+            borderRadius: BorderRadius.circular(12),
+            color: Colors.white,
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: value,
+              isExpanded: true,
+              hint: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Text('Chọn loại'),
+              ),
+              items: _medicineTypes
+                  .map(
+                    (e) => DropdownMenuItem(
+                      value: e,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(e),
+                      ),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (v) => setState(() => _selectedType = v),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDatePicker(String label, DateTime? date, VoidCallback onTap) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 8),
+        GestureDetector(
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              border: Border.all(color: const Color(0xFFDBE0E6)),
+              borderRadius: BorderRadius.circular(12),
+              color: Colors.white,
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.calendar_today, size: 20),
+                const SizedBox(width: 12),
+                Text(
+                  date != null
+                      ? '${date.day}/${date.month}/${date.year}'
+                      : 'Không xác định',
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFrequencySelector() {
+    return Wrap(
+      spacing: 8,
+      children: _frequencies.map((freq) {
+        final isSelected = freq == _selectedFrequency;
+        return GestureDetector(
+          onTap: () => setState(() => _selectedFrequency = freq),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
+              color: isSelected ? const Color(0xFF196EB0) : Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: isSelected
+                    ? const Color(0xFF196EB0)
+                    : const Color(0xFFDBE0E6),
+              ),
+            ),
+            child: Text(
+              freq,
+              style: TextStyle(color: isSelected ? Colors.white : Colors.black),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildReminderList() {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: _reminders.length,
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: GestureDetector(
+            onTap: () => _selectTime(index),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                border: Border.all(color: const Color(0xFFDBE0E6)),
+                borderRadius: BorderRadius.circular(12),
+                color: Colors.white,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    _reminders[index],
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => _deleteReminder(index),
+                    child: const Icon(
+                      Icons.delete,
+                      color: Colors.red,
+                      size: 20,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAddReminderButton() {
+    return GestureDetector(
+      onTap: _addReminder,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          border: Border.all(color: const Color(0xFF196EB0), width: 2),
+          borderRadius: BorderRadius.circular(12),
+          color: const Color(0xFF196EB0).withOpacity(0.1),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Icon(Icons.add, color: Color(0xFF196EB0)),
+            SizedBox(width: 8),
+            Text(
+              'Thêm thời gian',
+              style: TextStyle(
+                color: Color(0xFF196EB0),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
       ),
     );

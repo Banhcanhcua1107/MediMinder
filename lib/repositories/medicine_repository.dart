@@ -71,8 +71,14 @@ class MedicineRepository {
           ),
         );
 
+        // Lấy intakes cho hôm nay
+        final intakes = await getMedicineIntakes(userId, date: today);
+
         userMed.schedules = schedules;
         userMed.scheduleTimes = times;
+        userMed.intakes = intakes
+            .where((intake) => intake.userMedicineId == userMed.id)
+            .toList();
 
         medicines.add(userMed);
       }
