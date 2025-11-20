@@ -142,7 +142,7 @@ Future<void> _handleMedicineCheckTask() async {
   try {
     debugPrint('🔔 Background medicine check task executing...');
 
-    // Khởi tạo Supabase (trong isolate cần reinitialize)
+    // Khởi tạo Supabase (trong isolate cần khởi tạo lại)
     try {
       await Supabase.initialize(
         url: AppConstants.supabaseUrl,
@@ -220,10 +220,10 @@ Future<void> _handleMedicineCheckTask() async {
             scheduleTimeData['last_notification_sent_date'] as String?;
         final hasAlreadySentToday = lastSentDate == todayStr;
 
-        // Trigger notification nếu:
-        // 1. Giờ uống đã tới (differenceInSeconds <= 0)
-        // 2. HOẶC cách giờ uống dưới 3 phút (cho phép lỗi system clock)
-        // 3. VÀ chưa gửi hôm nay
+        debugPrint(
+          '🔍 Kiểm tra ${medicine.name} lúc ${scheduleTime.timeOfDay.hour}:${scheduleTime.timeOfDay.minute.toString().padLeft(2, '0')}: Chênh lệch=${differenceInSeconds}s, Đã gửi hôm nay=$hasAlreadySentToday',
+        );
+
         if (!hasAlreadySentToday &&
             differenceInSeconds <= 0 &&
             differenceInSeconds > -120) {
@@ -323,8 +323,8 @@ Future<void> _handleMedicineSyncTask() async {
       '✅ Medicine sync completed - ${medicines.length} medicines synced',
     );
 
-    // TODO: Lưu vào local storage nếu cần
-    // Ví dụ: Lưu vào SharedPreferences để offline support
+    // TODO: Lưu vào bộ nhớ cục bộ nếu cần
+    // Ví dụ: Lưu vào SharedPreferences để hỗ trợ ngoại tuyến
   } catch (e) {
     debugPrint('❌ Error in medicine sync task: $e');
   }

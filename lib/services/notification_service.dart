@@ -102,13 +102,14 @@ class NotificationService {
   // Cấu hình chi tiết thông báo dạng Báo thức
   AndroidNotificationDetails _getAlarmNotificationDetails() {
     return AndroidNotificationDetails(
-      'medicine_alarm_channel_v3', // ID kênh (Đổi ID để reset cài đặt âm thanh)
+      'medicine_alarm_channel_v4', // ID kênh (Đổi ID để reset cài đặt âm thanh)
       'Nhắc nhở uống thuốc', // Tên hiển thị
       channelDescription: 'Kênh thông báo quan trọng cho việc uống thuốc',
       importance: Importance.max,
       priority: Priority.max,
       playSound: true,
-      // sound: null, // Mặc định sẽ dùng âm thanh thông báo của hệ thống (Ting ting)
+      sound:
+          null, // Mặc định sẽ dùng âm thanh thông báo của hệ thống (Ting ting)
       enableVibration: true,
       // Rung mạnh: Im lặng, Rung 1s, Nghỉ 0.5s, Rung 1s...
       vibrationPattern: Int64List.fromList([0, 1000, 500, 1000, 500, 1000]),
@@ -128,6 +129,7 @@ class NotificationService {
     String? payload,
     bool useAlarm = false,
   }) async {
+    debugPrint('🔔 Showing notification: ID=$id, Title=$title');
     await _flutterLocalNotificationsPlugin.show(
       id,
       title,
@@ -207,7 +209,7 @@ class NotificationService {
       );
 
       debugPrint(
-        '✅ Scheduled Daily: ID=$id at ${time.hour}:${time.minute} (System Time: $scheduledDate)',
+        '✅ Scheduled Daily: ID=$id at ${time.hour}:${time.minute} (Next trigger: $scheduledDate)',
       );
     } catch (e) {
       debugPrint('❌ Error scheduling daily notification: $e');

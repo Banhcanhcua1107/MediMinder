@@ -246,11 +246,11 @@ class _AddMedScreenState extends State<AddMedScreen> {
         }
       }
 
-      // 2. Xử lý Notification (Phần quan trọng đã sửa)
+      // 2. Xử lý Thông báo (Phần quan trọng đã sửa)
       final notificationService = NotificationService();
 
       // Hủy các thông báo cũ của thuốc này để tránh trùng lặp ID
-      // (Loop giả định tối đa 20 mốc giờ để hủy sạch sẽ)
+      // (Vòng lặp giả định tối đa 20 mốc giờ để hủy sạch sẽ)
       for (int i = 0; i < 20; i++) {
         await notificationService.cancelNotification(
           NotificationService.generateNotificationId(currentMedicineId, i),
@@ -276,11 +276,11 @@ class _AddMedScreenState extends State<AddMedScreen> {
           body:
               '${_nameController.text} - ${_dosageController.text}, ${_quantityController.text} viên',
           time: TimeOfDay(hour: hour, minute: minute),
-          payload: 'medicine:$currentMedicineId',
+          payload: 'medicine:${currentMedicineId}',
         );
       }
 
-      // Debug: Log lại danh sách notification đã schedule
+      // Debug: Ghi log lại danh sách thông báo đã lên lịch
       await notificationService.logPendingNotifications();
 
       if (mounted) {
