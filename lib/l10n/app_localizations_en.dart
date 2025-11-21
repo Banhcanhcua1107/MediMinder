@@ -216,7 +216,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get startDate => 'Start Date';
 
   @override
-  String get endDate => 'End Date (Optional)';
+  String get endDate => 'End Date (optional)';
 
   @override
   String get optional => 'Optional';
@@ -300,7 +300,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ok => 'OK';
 
   @override
-  String get confirmDelete => 'Confirm Delete';
+  String get confirmDelete => 'Delete';
 
   @override
   String get deleteConfirmation =>
@@ -316,8 +316,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteConfirmTitle => 'Delete Medicine';
 
   @override
-  String get deleteConfirmMessage =>
-      'Are you sure you want to delete this medicine?';
+  String deleteConfirmMessage(String name) {
+    return 'Are you sure you want to delete \"$name\"? This action cannot be undone.';
+  }
 
   @override
   String get errorLoadingUserInfo => 'Error loading user info';
@@ -510,7 +511,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectReminder => 'Select Time';
 
   @override
-  String get addMedicineSuccess => 'Medicine added successfully';
+  String get addMedicineSuccess => 'Medicine saved successfully';
 
   @override
   String get updateMedicineSuccess => 'Medicine updated successfully';
@@ -589,7 +590,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sunday => 'Sunday';
 
   @override
-  String get medicineInfo => 'Medicine Info';
+  String get medicineInfo => 'Medicine Information';
 
   @override
   String get editMedicineTitle => 'Edit Medicine';
@@ -649,7 +650,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get savedChanges => 'Changes saved';
 
   @override
-  String get selectDate => 'Select date';
+  String get selectDate => 'Select Date';
 
   @override
   String get chooseGender => 'Choose gender';
@@ -954,7 +955,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get update => 'Update';
 
   @override
-  String get selectDaysOfWeek => 'Select days of the week';
+  String get selectDaysOfWeek => 'Select days of week';
 
   @override
   String days(String count) {
@@ -991,7 +992,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get youTookOneDose => 'You took 1 dose';
 
   @override
-  String get medicineDeletedSuccessfully => 'Medicine deleted successfully';
+  String get medicineDeletedSuccessfully =>
+      'Medicine has been successfully removed';
 
   @override
   String get medicineRemovedFromList =>
@@ -1000,4 +1002,59 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get addMedicinesDescription =>
       'Add your medicines to get reminders at the right time and monitor your health';
+
+  @override
+  String get yourProgress => 'Your Progress';
+
+  @override
+  String tookDoses(String taken, String total) {
+    return 'Took $taken out of $total doses';
+  }
+
+  @override
+  String get todaySchedule => 'Today\'s Schedule';
+
+  @override
+  String units(String dosage, String quantity) {
+    return '$dosage, $quantity units';
+  }
+
+  @override
+  String get markTaken => 'Mark Taken';
+
+  @override
+  String get contactInfo => 'Contact Information';
+
+  @override
+  String get selectType => 'Select type';
+
+  @override
+  String get exampleDosage => 'e.g. 500mg';
+
+  @override
+  String get exampleQuantity => 'e.g. 1';
+
+  @override
+  String get timeFrame => 'Time Frame';
+
+  @override
+  String get timeTaken => 'Time to take';
+
+  @override
+  String get addTime => '+ Add Time';
+
+  @override
+  String get exampleNotes => 'e.g. Take after meals...';
+
+  @override
+  String get medicineAdded => 'Medicine has been added';
+
+  @override
+  String get reminderSet => 'Reminder set';
+
+  @override
+  String get durationDays => 'Duration (days)';
+
+  @override
+  String get healthMetricsUpdated => 'Your health metrics have been updated';
 }

@@ -180,10 +180,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get daily => 'Hàng ngày';
 
   @override
-  String get everyOtherDay => 'Cách ngày';
+  String get everyOtherDay => 'Mỗi ngày khác';
 
   @override
-  String get custom => 'Tuỳ chỉnh';
+  String get custom => 'Tùy chỉnh';
 
   @override
   String get selectTime => 'Chọn giờ';
@@ -195,7 +195,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get done => 'Xong';
 
   @override
-  String get save => 'Lưu lại';
+  String get save => 'Lưu';
 
   @override
   String get delete => 'Xóa';
@@ -216,7 +216,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get startDate => 'Ngày bắt đầu';
 
   @override
-  String get endDate => 'Ngày kết thúc (Tùy chọn)';
+  String get endDate => 'Ngày kết thúc (tùy chọn)';
 
   @override
   String get optional => 'Tùy chọn';
@@ -300,7 +300,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get ok => 'OK';
 
   @override
-  String get confirmDelete => 'Xác Nhận Xóa';
+  String get confirmDelete => 'Xóa';
 
   @override
   String get deleteConfirmation =>
@@ -316,7 +316,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get deleteConfirmTitle => 'Xóa thuốc';
 
   @override
-  String get deleteConfirmMessage => 'Bạn có chắc chắn muốn xóa thuốc này?';
+  String deleteConfirmMessage(String name) {
+    return 'Bạn chắc chắn muốn xóa \"$name\"? Hành động này không thể hoàn tác.';
+  }
 
   @override
   String get errorLoadingUserInfo => 'Lỗi khi tải thông tin người dùng';
@@ -331,7 +333,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get medicineSaved => '✅ Đã lưu thuốc';
 
   @override
-  String get medicineDeleted => 'Đã xóa thuốc';
+  String get medicineDeleted => 'Xóa thành công';
 
   @override
   String get errorSaving => 'Lỗi khi lưu thuốc';
@@ -988,7 +990,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get youTookOneDose => 'Bạn đã uống 1 liều';
 
   @override
-  String get medicineDeletedSuccessfully => 'Xóa thuốc thành công';
+  String get medicineDeletedSuccessfully => 'Thuốc đã bị xóa khỏi danh sách';
 
   @override
   String get medicineRemovedFromList => 'Thuốc đã bị xóa khỏi danh sách';
@@ -996,4 +998,60 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get addMedicinesDescription =>
       'Thêm thuốc của bạn để được nhắc nhở đúng lúc và theo dõi sức khỏe';
+
+  @override
+  String get yourProgress => 'Tiến độ của bạn';
+
+  @override
+  String tookDoses(String taken, String total) {
+    return 'Đã uống $taken trên $total liều';
+  }
+
+  @override
+  String get todaySchedule => 'Lịch trình hôm nay';
+
+  @override
+  String units(String dosage, String quantity) {
+    return '$dosage, $quantity viên';
+  }
+
+  @override
+  String get markTaken => 'Đã uống';
+
+  @override
+  String get contactInfo => 'Thông tin liên hệ';
+
+  @override
+  String get selectType => 'Chọn loại';
+
+  @override
+  String get exampleDosage => 'ví dụ: 500mg';
+
+  @override
+  String get exampleQuantity => 'ví dụ: 1';
+
+  @override
+  String get timeFrame => 'Khoảng thời gian';
+
+  @override
+  String get timeTaken => 'Thời gian uống';
+
+  @override
+  String get addTime => '+ Thêm thời gian';
+
+  @override
+  String get exampleNotes => 'ví dụ: Uống sau ăn...';
+
+  @override
+  String get medicineAdded => 'Thuốc đã được thêm';
+
+  @override
+  String get reminderSet => 'Đã đặt lịch nhắc thuốc';
+
+  @override
+  String get durationDays => 'Khoảng thời gian (ngày)';
+
+  @override
+  String get healthMetricsUpdated =>
+      'Các chỉ số sức khỏe của bạn đã được cập nhật';
 }

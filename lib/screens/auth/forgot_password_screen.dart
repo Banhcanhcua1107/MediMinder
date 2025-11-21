@@ -282,9 +282,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   child: RichText(
                     text: TextSpan(
                       children: [
-                        const TextSpan(
-                          text: 'Nhớ mật khẩu? ',
-                          style: TextStyle(
+                        TextSpan(
+                          text: '${l10n.forgotPassword} ',
+                          style: const TextStyle(
                             color: Color(0xFF1E232C),
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
@@ -292,9 +292,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         ),
                         WidgetSpan(
                           child: GestureDetector(
-                            onTap: () => Navigator.pop(context),
-                            child: const Text(
-                              'Đăng Nhập',
+                            onTap: () => Navigator.pushNamed(context, '/login'),
+                            child: Text(
+                              l10n.login,
                               style: TextStyle(
                                 color: Color(0xFF196EB0),
                                 fontSize: 15,

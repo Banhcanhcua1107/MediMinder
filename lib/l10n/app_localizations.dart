@@ -515,7 +515,7 @@ abstract class AppLocalizations {
   /// No description provided for @endDate.
   ///
   /// In en, this message translates to:
-  /// **'End Date (Optional)'**
+  /// **'End Date (optional)'**
   String get endDate;
 
   /// No description provided for @optional.
@@ -683,7 +683,7 @@ abstract class AppLocalizations {
   /// No description provided for @confirmDelete.
   ///
   /// In en, this message translates to:
-  /// **'Confirm Delete'**
+  /// **'Delete'**
   String get confirmDelete;
 
   /// No description provided for @deleteConfirmation.
@@ -713,8 +713,8 @@ abstract class AppLocalizations {
   /// No description provided for @deleteConfirmMessage.
   ///
   /// In en, this message translates to:
-  /// **'Are you sure you want to delete this medicine?'**
-  String get deleteConfirmMessage;
+  /// **'Are you sure you want to delete \"{name}\"? This action cannot be undone.'**
+  String deleteConfirmMessage(String name);
 
   /// No description provided for @errorLoadingUserInfo.
   ///
@@ -1097,7 +1097,7 @@ abstract class AppLocalizations {
   /// No description provided for @addMedicineSuccess.
   ///
   /// In en, this message translates to:
-  /// **'Medicine added successfully'**
+  /// **'Medicine saved successfully'**
   String get addMedicineSuccess;
 
   /// No description provided for @updateMedicineSuccess.
@@ -1253,7 +1253,7 @@ abstract class AppLocalizations {
   /// No description provided for @medicineInfo.
   ///
   /// In en, this message translates to:
-  /// **'Medicine Info'**
+  /// **'Medicine Information'**
   String get medicineInfo;
 
   /// No description provided for @editMedicineTitle.
@@ -1373,7 +1373,7 @@ abstract class AppLocalizations {
   /// No description provided for @selectDate.
   ///
   /// In en, this message translates to:
-  /// **'Select date'**
+  /// **'Select Date'**
   String get selectDate;
 
   /// No description provided for @chooseGender.
@@ -1955,7 +1955,7 @@ abstract class AppLocalizations {
   /// No description provided for @selectDaysOfWeek.
   ///
   /// In en, this message translates to:
-  /// **'Select days of the week'**
+  /// **'Select days of week'**
   String get selectDaysOfWeek;
 
   /// No description provided for @days.
@@ -2015,7 +2015,7 @@ abstract class AppLocalizations {
   /// No description provided for @medicineDeletedSuccessfully.
   ///
   /// In en, this message translates to:
-  /// **'Medicine deleted successfully'**
+  /// **'Medicine has been successfully removed'**
   String get medicineDeletedSuccessfully;
 
   /// No description provided for @medicineRemovedFromList.
@@ -2029,6 +2029,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add your medicines to get reminders at the right time and monitor your health'**
   String get addMedicinesDescription;
+
+  /// No description provided for @yourProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Progress'**
+  String get yourProgress;
+
+  /// No description provided for @tookDoses.
+  ///
+  /// In en, this message translates to:
+  /// **'Took {taken} out of {total} doses'**
+  String tookDoses(String taken, String total);
+
+  /// No description provided for @todaySchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Schedule'**
+  String get todaySchedule;
+
+  /// No description provided for @units.
+  ///
+  /// In en, this message translates to:
+  /// **'{dosage}, {quantity} units'**
+  String units(String dosage, String quantity);
+
+  /// No description provided for @markTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark Taken'**
+  String get markTaken;
+
+  /// No description provided for @contactInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Information'**
+  String get contactInfo;
+
+  /// No description provided for @selectType.
+  ///
+  /// In en, this message translates to:
+  /// **'Select type'**
+  String get selectType;
+
+  /// No description provided for @exampleDosage.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 500mg'**
+  String get exampleDosage;
+
+  /// No description provided for @exampleQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 1'**
+  String get exampleQuantity;
+
+  /// No description provided for @timeFrame.
+  ///
+  /// In en, this message translates to:
+  /// **'Time Frame'**
+  String get timeFrame;
+
+  /// No description provided for @timeTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'Time to take'**
+  String get timeTaken;
+
+  /// No description provided for @addTime.
+  ///
+  /// In en, this message translates to:
+  /// **'+ Add Time'**
+  String get addTime;
+
+  /// No description provided for @exampleNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Take after meals...'**
+  String get exampleNotes;
+
+  /// No description provided for @medicineAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Medicine has been added'**
+  String get medicineAdded;
+
+  /// No description provided for @reminderSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder set'**
+  String get reminderSet;
+
+  /// No description provided for @durationDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration (days)'**
+  String get durationDays;
+
+  /// No description provided for @healthMetricsUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Your health metrics have been updated'**
+  String get healthMetricsUpdated;
 }
 
 class _AppLocalizationsDelegate

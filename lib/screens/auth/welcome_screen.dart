@@ -91,7 +91,7 @@ class WelcomeScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    'Trợ lý cá nhân giúp bạn quản lý lịch uống thuốc mỗi ngày.',
+                    l10n.appDescription,
                     textAlign: TextAlign.center,
                     style: TextStyle(color: kSecondaryTextColor),
                   ),

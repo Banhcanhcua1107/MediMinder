@@ -48,6 +48,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   }
 
   Future<void> _handleResetPassword() async {
+    final l10n = AppLocalizations.of(context)!;
     final code = _codeController.text.trim();
     final newPassword = _newPasswordController.text;
     final confirmPassword = _confirmPasswordController.text;
@@ -55,28 +56,28 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     // Validation
     if (code.isEmpty) {
       setState(() {
-        _errorMessage = 'Vui lòng nhập mã xác nhận';
+        _errorMessage = l10n.enterVerificationCode;
       });
       return;
     }
 
     if (newPassword.isEmpty) {
       setState(() {
-        _errorMessage = 'Vui lòng nhập mật khẩu mới';
+        _errorMessage = l10n.enterNewPassword;
       });
       return;
     }
 
     if (newPassword.length < 6) {
       setState(() {
-        _errorMessage = 'Mật khẩu phải có ít nhất 6 ký tự';
+        _errorMessage = l10n.passwordMinLength;
       });
       return;
     }
 
     if (newPassword != confirmPassword) {
       setState(() {
-        _errorMessage = 'Mật khẩu không trùng khớp';
+        _errorMessage = l10n.passwordMismatch;
       });
       return;
     }
@@ -192,7 +193,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
                 // Description
                 Text(
-                  'Nhập mã xác nhận được gửi đến email của bạn và mật khẩu mới.',
+                  l10n.resetPasswordDescription,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
@@ -217,15 +218,15 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   child: TextField(
                     controller: _codeController,
                     enabled: !_isLoading,
-                    decoration: const InputDecoration(
-                      hintText: 'Nhập mã xác nhận',
-                      hintStyle: TextStyle(
+                    decoration: InputDecoration(
+                      hintText: l10n.enterVerificationCode,
+                      hintStyle: const TextStyle(
                         color: Color(0xFF8391A1),
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
                       ),
                       border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(
+                      contentPadding: const EdgeInsets.symmetric(
                         horizontal: 18,
                         vertical: 16,
                       ),
@@ -255,7 +256,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     obscureText: !_showPassword,
                     enabled: !_isLoading,
                     decoration: InputDecoration(
-                      hintText: 'Mật khẩu mới',
+                      hintText: l10n.newPassword,
                       hintStyle: const TextStyle(
                         color: Color(0xFF8391A1),
                         fontSize: 15,
@@ -309,7 +310,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     obscureText: !_showConfirmPassword,
                     enabled: !_isLoading,
                     decoration: InputDecoration(
-                      hintText: 'Xác nhận mật khẩu',
+                      hintText: l10n.confirmPassword,
                       hintStyle: const TextStyle(
                         color: Color(0xFF8391A1),
                         fontSize: 15,
@@ -400,9 +401,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                               strokeWidth: 2,
                             ),
                           )
-                        : const Text(
-                            'Đặt Lại Mật Khẩu',
-                            style: TextStyle(
+                        : Text(
+                            l10n.resetPassword,
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
@@ -418,9 +419,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   child: GestureDetector(
                     onTap: () =>
                         Navigator.pushReplacementNamed(context, '/login'),
-                    child: const Text(
-                      'Quay lại đăng nhập',
-                      style: TextStyle(
+                    child: Text(
+                      l10n.backToLogin,
+                      style: const TextStyle(
                         color: Color(0xFF196EB0),
                         fontSize: 15,
                         fontWeight: FontWeight.bold,

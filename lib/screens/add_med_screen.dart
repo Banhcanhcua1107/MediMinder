@@ -271,9 +271,8 @@ class _AddMedScreenState extends State<AddMedScreen> {
     }
 
     if (_frequencyIndex == 2 && !_selectedWeekDays.contains(true)) {
-      setState(
-        () => _errorMessage = 'Vui lòng chọn ít nhất một ngày uống thuốc',
-      );
+      final l10n = AppLocalizations.of(context)!;
+      setState(() => _errorMessage = l10n.selectAtLeastOneDay);
       return;
     }
 
@@ -412,7 +411,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
         showCustomToast(
           context,
           message: l10n.addMedicineSuccess,
-          subtitle: 'Đã đặt lịch nhắc thuốc',
+          subtitle: l10n.reminderSet,
           isSuccess: true,
         );
         Navigator.pop(context, true);
@@ -426,35 +425,36 @@ class _AddMedScreenState extends State<AddMedScreen> {
   }
 
   void _handleDelete() async {
+    final l10n = AppLocalizations.of(context)!;
     final shouldDelete = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.white,
-        title: const Text(
-          'Xóa thuốc',
-          style: TextStyle(
+        title: Text(
+          l10n.deleteConfirmTitle,
+          style: const TextStyle(
             color: Color(0xFF111418),
             fontWeight: FontWeight.bold,
             fontSize: 18,
           ),
         ),
         content: Text(
-          'Bạn chắc chắn muốn xóa "${_nameController.text}"? Hành động này không thể hoàn tác.',
+          l10n.deleteConfirmMessage('"${_nameController.text}"'),
           style: const TextStyle(color: Color(0xFF666D80), fontSize: 14),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text(
-              'Hủy',
-              style: TextStyle(color: Color(0xFF666D80)),
+            child: Text(
+              l10n.cancel,
+              style: const TextStyle(color: Color(0xFF666D80)),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text(
-              'Xóa',
-              style: TextStyle(color: Color(0xFFDC2626)),
+            child: Text(
+              l10n.confirmDelete,
+              style: const TextStyle(color: Color(0xFFDC2626)),
             ),
           ),
         ],
@@ -481,7 +481,12 @@ class _AddMedScreenState extends State<AddMedScreen> {
       await _medicineRepository.deleteMedicine(widget.medicineId!);
 
       if (mounted) {
-        showCustomToast(context, message: 'Xóa thành công', isSuccess: true);
+        final l10n = AppLocalizations.of(context)!;
+        showCustomToast(
+          context,
+          message: l10n.medicineDeletedSuccessfully,
+          isSuccess: true,
+        );
         Navigator.pop(context, true);
       }
     } catch (e) {
@@ -514,7 +519,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
           child: const Icon(Icons.close, color: Color(0xFF111418), size: 28),
         ),
         title: Text(
-          widget.medicineId == null ? 'Thêm thuốc mới' : 'Chỉnh sửa thuốc',
+          widget.medicineId == null ? l10n.addNewMedicine : l10n.editMedicine,
           style: const TextStyle(
             color: Color(0xFF111418),
             fontWeight: FontWeight.bold,
@@ -529,7 +534,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
               onTap: _isLoading ? null : _handleSave,
               child: Center(
                 child: Text(
-                  'Lưu',
+                  l10n.save,
                   style: TextStyle(
                     color: _isLoading ? Colors.grey : const Color(0xFF196EB0),
                     fontWeight: FontWeight.bold,
@@ -547,12 +552,12 @@ class _AddMedScreenState extends State<AddMedScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSectionTitle('Thông tin thuốc'),
+              _buildSectionTitle(l10n.medicineInfo),
               const SizedBox(height: 16),
               _buildTextField(
                 l10n.medicineName,
                 _nameController,
-                'Nhập tên thuốc',
+                l10n.enterMedicineName,
               ),
               const SizedBox(height: 16),
               _buildDropdown(l10n.medicineType, _medicineTypeIndex, l10n),
@@ -563,7 +568,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
                     child: _buildTextField(
                       l10n.dosage,
                       _dosageController,
-                      'ví dụ: 500mg',
+                      l10n.exampleDosage,
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -571,7 +576,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
                     child: _buildTextField(
                       l10n.quantity,
                       _quantityController,
-                      'ví dụ: 1',
+                      l10n.exampleQuantity,
                       isNumber: true,
                     ),
                   ),
@@ -580,41 +585,40 @@ class _AddMedScreenState extends State<AddMedScreen> {
               const SizedBox(height: 32),
               const Divider(),
               const SizedBox(height: 32),
-              _buildSectionTitle('Khoảng thời gian'),
+              _buildSectionTitle(l10n.timeFrame),
               const SizedBox(height: 16),
-              _buildDurationSelector(),
+              _buildDurationSelector(l10n),
               const SizedBox(height: 16),
-              _buildDatePicker('Ngày bắt đầu', _startDate, _selectStartDate),
+              _buildDatePicker(l10n.startDate, _startDate, _selectStartDate),
               const SizedBox(height: 16),
-              _buildDatePicker(
-                'Ngày kết thúc (tuỳ chọn)',
-                _endDate,
-                _selectEndDate,
-              ),
+              _buildDatePicker(l10n.endDate, _endDate, _selectEndDate),
               const SizedBox(height: 32),
               const Divider(),
               const SizedBox(height: 32),
-              _buildSectionTitle('Lịch uống thuốc'),
+              _buildSectionTitle(l10n.medicineSchedule),
               const SizedBox(height: 16),
               _buildFrequencySelector(l10n),
               const SizedBox(height: 20),
-              const Text(
-                'Thời gian uống',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              Text(
+                l10n.timeTaken,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               const SizedBox(height: 12),
               _buildReminderList(),
               const SizedBox(height: 12),
-              _buildAddReminderButton(),
+              _buildAddReminderButton(l10n),
               const SizedBox(height: 32),
               const Divider(),
               const SizedBox(height: 32),
-              _buildSectionTitle('Ghi chú thêm'),
+              _buildSectionTitle(l10n.additionalNotes),
               const SizedBox(height: 12),
               _buildTextField(
-                'Ghi chú',
+                l10n.notes,
                 _notesController,
-                'Ví dụ: Uống sau ăn...',
+                l10n.exampleNotes,
                 maxLines: 4,
               ),
               const SizedBox(height: 32),
@@ -644,7 +648,9 @@ class _AddMedScreenState extends State<AddMedScreen> {
                           child: CircularProgressIndicator(color: Colors.white),
                         )
                       : Text(
-                          widget.medicineId == null ? 'Thêm thuốc' : 'Cập nhật',
+                          widget.medicineId == null
+                              ? l10n.addMedicine
+                              : l10n.update,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 16,
@@ -670,9 +676,9 @@ class _AddMedScreenState extends State<AddMedScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text(
-                      'Xóa thuốc',
-                      style: TextStyle(
+                    child: Text(
+                      l10n.deleteMedicine,
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -747,9 +753,9 @@ class _AddMedScreenState extends State<AddMedScreen> {
             child: DropdownButton<int>(
               value: value,
               isExpanded: true,
-              hint: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                child: Text('Chọn loại'),
+              hint: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(l10n.selectType),
               ),
               items: items.asMap().entries.map((entry) {
                 int index = entry.key;
@@ -844,9 +850,9 @@ class _AddMedScreenState extends State<AddMedScreen> {
         ),
         if (_frequencyIndex == 2) ...[
           const SizedBox(height: 16),
-          const Text(
-            'Chọn ngày trong tuần',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          Text(
+            l10n.selectDaysOfWeek,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
           ),
           const SizedBox(height: 8),
           _buildWeekDaySelector(),
@@ -938,7 +944,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
     );
   }
 
-  Widget _buildAddReminderButton() {
+  Widget _buildAddReminderButton(AppLocalizations l10n) {
     return GestureDetector(
       onTap: _addReminder,
       child: Container(
@@ -950,12 +956,12 @@ class _AddMedScreenState extends State<AddMedScreen> {
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Icon(Icons.add, color: Color(0xFF196EB0)),
-            SizedBox(width: 8),
+          children: [
+            const Icon(Icons.add, color: Color(0xFF196EB0)),
+            const SizedBox(width: 8),
             Text(
-              'Thêm thời gian',
-              style: TextStyle(
+              l10n.addTime,
+              style: const TextStyle(
                 color: Color(0xFF196EB0),
                 fontWeight: FontWeight.bold,
               ),
@@ -966,14 +972,14 @@ class _AddMedScreenState extends State<AddMedScreen> {
     );
   }
 
-  Widget _buildDurationSelector() {
+  Widget _buildDurationSelector(AppLocalizations l10n) {
     final durations = [7, 14, 30];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Thời gian uống',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        Text(
+          l10n.timeTaken,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 8),
         SingleChildScrollView(
@@ -987,7 +993,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: ChoiceChip(
-                    label: Text('$days ngày'),
+                    label: Text('$days ${l10n.durationDays}'),
                     selected: isSelected,
                     onSelected: (selected) {
                       if (selected) {
@@ -1004,7 +1010,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
                 );
               }),
               ChoiceChip(
-                label: const Text('Tuỳ chỉnh'),
+                label: Text(l10n.custom),
                 selected:
                     _endDate != null &&
                     !durations.contains(

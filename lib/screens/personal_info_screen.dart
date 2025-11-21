@@ -212,14 +212,14 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                       if (!_isEditing) {
                         showCustomToast(
                           context,
-                          message: l10n.healthSaved,
-                          subtitle: 'Thay đổi đã được lưu',
+                          message: l10n.updateSuccess,
+                          subtitle: l10n.yourInfoSaved,
                           isSuccess: true,
                         );
                       }
                     },
                     child: Text(
-                      _isEditing ? 'Hủy' : 'Sửa',
+                      _isEditing ? l10n.cancel : l10n.edit,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -309,7 +309,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                     const SizedBox(height: 32),
 
                     // Basic Info Section
-                    _buildSectionHeader('THÔNG TIN CƠ BẢN'),
+                    _buildSectionHeader(l10n.personalInfo),
                     const SizedBox(height: 12),
                     Container(
                       decoration: BoxDecoration(
@@ -326,12 +326,12 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                       child: Column(
                         children: [
                           _buildInfoField(
-                            label: 'Họ và tên',
+                            label: l10n.fullName,
                             controller: _fullNameController,
                             isFirst: true,
                           ),
                           _buildDatePickerField(
-                            label: 'Ngày sinh',
+                            label: l10n.dateOfBirth,
                             controller: _dobController,
                           ),
                           _buildGenderDropdown(),
@@ -341,7 +341,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                     const SizedBox(height: 24),
 
                     // Contact Info Section
-                    _buildSectionHeader('THÔNG TIN LIÊN HỆ'),
+                    _buildSectionHeader(l10n.contactInfo),
                     const SizedBox(height: 12),
                     Container(
                       decoration: BoxDecoration(
@@ -358,12 +358,12 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                       child: Column(
                         children: [
                           _buildInfoField(
-                            label: 'Email',
+                            label: l10n.email,
                             controller: _emailController,
                             isFirst: true,
                           ),
                           _buildInfoField(
-                            label: 'Số điện thoại',
+                            label: l10n.phoneNumber,
                             controller: _phoneController,
                             isLast: true,
                           ),
@@ -383,12 +383,12 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                             color: kPrimaryColor,
                             borderRadius: BorderRadius.circular(16),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                'Lưu thay đổi',
-                                style: TextStyle(
+                                l10n.saveChanges,
+                                style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
@@ -484,6 +484,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     required String label,
     required TextEditingController controller,
   }) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
         Divider(height: 1, color: kBorderColor, indent: 16),
@@ -535,7 +536,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                               Expanded(
                                 child: Text(
                                   controller.text.isEmpty
-                                      ? 'Chọn ngày'
+                                      ? l10n.selectDate
                                       : controller.text,
                                   textAlign: TextAlign.right,
                                   style: TextStyle(
@@ -574,8 +575,17 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
 
   /// Dropdown field cho giới tính
   Widget _buildGenderDropdown() {
-    final genderMap = {'Nam': 'male', 'Nữ': 'female', 'Khác': 'other'};
-    final genderDisplay = {'male': 'Nam', 'female': 'Nữ', 'other': 'Khác'};
+    final l10n = AppLocalizations.of(context)!;
+    final genderMap = {
+      l10n.male: 'male',
+      l10n.female: 'female',
+      l10n.other: 'other',
+    };
+    final genderDisplay = {
+      'male': l10n.male,
+      'female': l10n.female,
+      'other': l10n.other,
+    };
 
     return Column(
       children: [
@@ -586,7 +596,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
             children: [
               Expanded(
                 child: Text(
-                  'Giới tính',
+                  l10n.gender,
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
@@ -607,20 +617,17 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                           value: _genderController.text.isEmpty
                               ? null
                               : _genderController.text,
-                          hint: const Text(
-                            'Chọn giới tính',
-                            style: TextStyle(color: kSecondaryTextColor),
+                          hint: Text(
+                            l10n.gender,
+                            style: const TextStyle(color: kSecondaryTextColor),
                           ),
                           isExpanded: true,
                           underline: const SizedBox(),
                           items: genderMap.entries
                               .map(
                                 (entry) => DropdownMenuItem(
-                                  value: entry
-                                      .value, // Lưu 'male', 'female', 'other'
-                                  child: Text(
-                                    entry.key,
-                                  ), // Hiển thị 'Nam', 'Nữ', 'Khác'
+                                  value: entry.value,
+                                  child: Text(entry.key),
                                 ),
                               )
                               .toList(),

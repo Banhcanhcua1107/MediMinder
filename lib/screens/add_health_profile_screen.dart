@@ -63,7 +63,7 @@ class _AddHealthProfileScreenState extends State<AddHealthProfileScreen> {
     if (_bloodPressureController.text.isEmpty) {
       showCustomToast(
         context,
-        message: 'Vui lòng nhập',
+        message: l10n.pleaseEnter,
         subtitle: l10n.enterBloodPressure,
         isSuccess: false,
       );
@@ -73,7 +73,7 @@ class _AddHealthProfileScreenState extends State<AddHealthProfileScreen> {
     if (_heartRateController.text.isEmpty) {
       showCustomToast(
         context,
-        message: 'Vui lòng nhập',
+        message: l10n.pleaseEnter,
         subtitle: l10n.enterHeartRate,
         isSuccess: false,
       );
@@ -83,8 +83,8 @@ class _AddHealthProfileScreenState extends State<AddHealthProfileScreen> {
     // Save success
     showCustomToast(
       context,
-      message: 'Đã lưu thành công',
-      subtitle: 'Các chỉ số sức khỏe của bạn đã được cập nhật',
+      message: l10n.savedSuccessfully,
+      subtitle: l10n.healthMetricsUpdated,
       isSuccess: true,
       duration: const Duration(seconds: 2),
     );
@@ -228,7 +228,7 @@ class _AddHealthProfileScreenState extends State<AddHealthProfileScreen> {
                               20,
                               16,
                             ),
-                            hintText: 'Thêm ghi chú...',
+                            hintText: l10n.addNotes,
                             hintStyle: const TextStyle(
                               color: kSecondaryTextColor,
                               fontSize: 14,
@@ -245,9 +245,9 @@ class _AddHealthProfileScreenState extends State<AddHealthProfileScreen> {
                           child: Container(
                             color: kBackgroundColor,
                             padding: const EdgeInsets.symmetric(horizontal: 4),
-                            child: const Text(
-                              'Ghi chú',
-                              style: TextStyle(
+                            child: Text(
+                              l10n.notes,
+                              style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
                                 color: kSecondaryTextColor,
@@ -285,10 +285,10 @@ class _AddHealthProfileScreenState extends State<AddHealthProfileScreen> {
                         ),
                       ],
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Text(
-                        'Lưu lại',
-                        style: TextStyle(
+                        l10n.save,
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
