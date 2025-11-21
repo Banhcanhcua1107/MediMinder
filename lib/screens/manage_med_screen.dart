@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 
 class ManageMedScreen extends StatefulWidget {
   const ManageMedScreen({super.key});
@@ -10,6 +11,7 @@ class ManageMedScreen extends StatefulWidget {
 class _ManageMedScreenState extends State<ManageMedScreen> {
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: const Color(0xFFFFFFFF),
       body: SafeArea(
@@ -116,7 +118,7 @@ class _ManageMedScreenState extends State<ManageMedScreen> {
 
                     // Title
                     Text(
-                      'Quản Lý Thuốc Của Bạn',
+                      l10n.manageHealth,
                       style: Theme.of(context).textTheme.headlineSmall
                           ?.copyWith(
                             fontSize: 29,
@@ -172,8 +174,8 @@ class _ManageMedScreenState extends State<ManageMedScreen> {
                             children: [
                               Icon(Icons.add, color: Colors.white, size: 24),
                               const SizedBox(width: 8),
-                              const Text(
-                                'Thêm Thuốc',
+                              Text(
+                                l10n.addMedicine,
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 29,
@@ -195,7 +197,7 @@ class _ManageMedScreenState extends State<ManageMedScreen> {
                         _showSignOutDialog(context);
                       },
                       child: Text(
-                        'Đăng Xuất',
+                        l10n.logout,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           fontSize: 19,
                           fontWeight: FontWeight.normal,
@@ -216,16 +218,17 @@ class _ManageMedScreenState extends State<ManageMedScreen> {
   }
 
   void _showSignOutDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Đăng Xuất'),
-          content: const Text('Bạn có chắc chắn muốn đăng xuất?'),
+          title: Text(l10n.logout),
+          content: Text(l10n.signOutConfirm),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Hủy'),
+              child: Text(l10n.cancel),
             ),
             TextButton(
               onPressed: () {
@@ -233,8 +236,8 @@ class _ManageMedScreenState extends State<ManageMedScreen> {
                 // Perform sign out
                 Navigator.pushReplacementNamed(context, '/login');
               },
-              child: const Text(
-                'Đăng Xuất',
+              child: Text(
+                l10n.logout,
                 style: TextStyle(color: Color(0xFFEA4335)),
               ),
             ),

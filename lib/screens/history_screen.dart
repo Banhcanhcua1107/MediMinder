@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
 import '../repositories/medicine_repository.dart';
 import '../models/user_medicine.dart';
+import '../l10n/app_localizations.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -33,9 +34,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Lịch sử uống thuốc'),
+        title: Text(l10n.medicineHistory),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
@@ -49,13 +51,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
           }
 
           if (snapshot.hasError) {
-            return Center(child: Text('Lỗi: ${snapshot.error}'));
+            return Center(child: Text('${l10n.error}: ${snapshot.error}'));
           }
 
           final intakes = snapshot.data ?? [];
 
           if (intakes.isEmpty) {
-            return const Center(child: Text('Chưa có lịch sử uống thuốc.'));
+            return Center(child: Text(l10n.noHistory));
           }
 
           // Group by date

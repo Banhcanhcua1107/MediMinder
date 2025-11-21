@@ -5,6 +5,7 @@ import 'dart:async';
 import '../../providers/app_provider.dart';
 import '../../services/google_signin_service.dart';
 import '../../widgets/custom_toast.dart';
+import '../../l10n/app_localizations.dart';
 
 // --- Bảng màu thống nhất ---
 const Color kPrimaryColor = Color(0xFF196EB0);
@@ -57,6 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleLogin() async {
+    final l10n = AppLocalizations.of(context)!;
     final authProvider = context.read<AuthProvider>();
 
     bool success = await authProvider.signIn(
@@ -69,14 +71,15 @@ class _LoginScreenState extends State<LoginScreen> {
     } else if (mounted) {
       showCustomToast(
         context,
-        message: 'Đăng nhập thất bại',
-        subtitle: authProvider.errorMessage ?? 'Vui lòng thử lại',
+        message: l10n.loginFailed,
+        subtitle: authProvider.errorMessage ?? l10n.pleaseTryAgain,
         isSuccess: false,
       );
     }
   }
 
   Future<void> _handleGoogleLogin() async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final googleService = GoogleSignInService();
       await googleService.signInWithGoogle();
@@ -86,8 +89,8 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) {
         showCustomToast(
           context,
-          message: 'Lỗi đăng nhập',
-          subtitle: 'Google Sign In thất bại',
+          message: l10n.googleSignInError,
+          subtitle: l10n.googleSignInFailed,
           isSuccess: false,
         );
       }
@@ -96,6 +99,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: kBackgroundColor,
       body: SafeArea(
@@ -133,7 +137,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // Welcome text
                 Text(
-                  'Chào mừng trở lại!\nRất vui khi gặp lại bạn!',
+                  l10n.welcomeBack,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontSize: 30,
                     fontWeight: FontWeight.bold,
@@ -161,9 +165,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       child: TextField(
                         controller: _emailController,
-                        decoration: const InputDecoration(
-                          hintText: 'Nhập email của bạn',
-                          hintStyle: TextStyle(
+                        decoration: InputDecoration(
+                          hintText: l10n.enterEmail,
+                          hintStyle: const TextStyle(
                             color: Color(0xFF8391A1),
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
@@ -204,7 +208,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         controller: _passwordController,
                         obscureText: !_showPassword,
                         decoration: InputDecoration(
-                          hintText: 'Nhập mật khẩu của bạn',
+                          hintText: l10n.enterPassword,
                           hintStyle: const TextStyle(
                             color: Color(0xFF8391A1),
                             fontSize: 15,
@@ -251,9 +255,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     onTap: () {
                       Navigator.pushNamed(context, '/forgot-password');
                     },
-                    child: const Text(
-                      'Quên mật khẩu?',
-                      style: TextStyle(
+                    child: Text(
+                      l10n.forgotPassword,
+                      style: const TextStyle(
                         color: Color(0xFF196EB0),
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -293,9 +297,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                   strokeWidth: 2,
                                 ),
                               )
-                            : const Text(
-                                'Đăng nhập',
-                                style: TextStyle(
+                            : Text(
+                                l10n.login,
+                                style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold,
@@ -320,9 +324,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: Text(
-                        'Hoặc',
-                        style: TextStyle(
-                          color: const Color(0xFF6A707C),
+                        l10n.or,
+                        style: const TextStyle(
+                          color: Color(0xFF6A707C),
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
@@ -365,9 +369,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         return const Icon(Icons.account_circle, size: 24);
                       },
                     ),
-                    label: const Text(
-                      'Tiếp tục với Google',
-                      style: TextStyle(
+                    label: Text(
+                      l10n.continueWithGoogle,
+                      style: const TextStyle(
                         color: Color(0xFF414042),
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
@@ -383,9 +387,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: RichText(
                     text: TextSpan(
                       children: [
-                        const TextSpan(
-                          text: 'Chưa có tài khoản? ',
-                          style: TextStyle(
+                        TextSpan(
+                          text: '${l10n.noAccount} ',
+                          style: const TextStyle(
                             color: Color(0xFF1E232C),
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
@@ -395,9 +399,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: GestureDetector(
                             onTap: () =>
                                 Navigator.pushNamed(context, '/register'),
-                            child: const Text(
-                              'Đăng ký',
-                              style: TextStyle(
+                            child: Text(
+                              l10n.register,
+                              style: const TextStyle(
                                 color: Color(0xFF196EB0),
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,

@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 
 class GoogleButton extends StatelessWidget {
   final VoidCallback? onTap;
-  final String text;
+  final String? text;
 
-  const GoogleButton({
-    super.key,
-    this.onTap,
-    this.text = 'Tiếp tục với Google',
-  });
+  const GoogleButton({super.key, this.onTap, this.text});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final buttonText = text ?? l10n.continueWithGoogle;
     return Center(
       child: Container(
         constraints: const BoxConstraints(minWidth: 240, maxWidth: 420),
@@ -50,7 +49,7 @@ class GoogleButton extends StatelessWidget {
                   const SizedBox(width: 12),
                   Flexible(
                     child: Text(
-                      text,
+                      buttonText,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 20,

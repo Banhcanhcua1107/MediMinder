@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_toast.dart';
 import 'health_screen.dart';
+import '../l10n/app_localizations.dart';
 
 const Color kPrimaryColor = Color(0xFF196EB0);
 const Color kBackgroundColor = Color(0xFFF8FAFC);
@@ -47,12 +48,13 @@ class _AddHealthProfileScreenState extends State<AddHealthProfileScreen> {
   }
 
   void _handleSave() {
+    final l10n = AppLocalizations.of(context)!;
     // Validate inputs
     if (_bmiController.text.isEmpty) {
       showCustomToast(
         context,
-        message: 'Vui lòng nhập',
-        subtitle: 'Hãy nhập chỉ số BMI',
+        message: l10n.enterBmi,
+        subtitle: l10n.enterBmi,
         isSuccess: false,
       );
       return;
@@ -62,7 +64,7 @@ class _AddHealthProfileScreenState extends State<AddHealthProfileScreen> {
       showCustomToast(
         context,
         message: 'Vui lòng nhập',
-        subtitle: 'Hãy nhập huyết áp',
+        subtitle: l10n.enterBloodPressure,
         isSuccess: false,
       );
       return;
@@ -72,7 +74,7 @@ class _AddHealthProfileScreenState extends State<AddHealthProfileScreen> {
       showCustomToast(
         context,
         message: 'Vui lòng nhập',
-        subtitle: 'Hãy nhập nhịp tim',
+        subtitle: l10n.enterHeartRate,
         isSuccess: false,
       );
       return;
@@ -99,6 +101,7 @@ class _AddHealthProfileScreenState extends State<AddHealthProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: kBackgroundColor,
       body: SafeArea(
@@ -133,9 +136,9 @@ class _AddHealthProfileScreenState extends State<AddHealthProfileScreen> {
                       ),
                     ),
                   ),
-                  const Text(
-                    'Thêm Hồ sơ Sức khỏe',
-                    style: TextStyle(
+                  Text(
+                    l10n.manageHealth,
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: kPrimaryTextColor,
@@ -156,8 +159,8 @@ class _AddHealthProfileScreenState extends State<AddHealthProfileScreen> {
                   // BMI Input
                   _buildFloatingLabelInput(
                     controller: _bmiController,
-                    label: 'Chỉ số BMI',
-                    placeholder: 'Nhập chỉ số BMI',
+                    label: l10n.bmiIndex,
+                    placeholder: l10n.enterBmiValue,
                   ),
                   const SizedBox(height: 16),
 
@@ -167,7 +170,7 @@ class _AddHealthProfileScreenState extends State<AddHealthProfileScreen> {
                       Expanded(
                         child: _buildFloatingLabelInput(
                           controller: _bloodPressureController,
-                          label: 'Huyết áp',
+                          label: l10n.bloodPressure,
                           placeholder: 'mmHg',
                         ),
                       ),
@@ -175,7 +178,7 @@ class _AddHealthProfileScreenState extends State<AddHealthProfileScreen> {
                       Expanded(
                         child: _buildFloatingLabelInput(
                           controller: _heartRateController,
-                          label: 'Nhịp tim',
+                          label: l10n.heartRate,
                           placeholder: 'BPM',
                         ),
                       ),
@@ -186,7 +189,7 @@ class _AddHealthProfileScreenState extends State<AddHealthProfileScreen> {
                   // Glucose Input
                   _buildFloatingLabelInput(
                     controller: _glucoseController,
-                    label: 'Đường huyết',
+                    label: l10n.glucoseLevel,
                     placeholder: 'mg/dL',
                   ),
                   const SizedBox(height: 16),
@@ -194,7 +197,7 @@ class _AddHealthProfileScreenState extends State<AddHealthProfileScreen> {
                   // Cholesterol Input
                   _buildFloatingLabelInput(
                     controller: _cholesterolController,
-                    label: 'Cholesterol',
+                    label: l10n.cholesterolLevel,
                     placeholder: 'mg/dL',
                   ),
                   const SizedBox(height: 16),

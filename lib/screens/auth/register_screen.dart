@@ -5,6 +5,7 @@ import 'dart:async';
 import '../../providers/app_provider.dart';
 import '../../services/google_signin_service.dart';
 import '../../widgets/custom_toast.dart';
+import '../../l10n/app_localizations.dart';
 
 // --- Bảng màu thống nhất ---
 const Color kPrimaryColor = Color(0xFF196EB0);
@@ -64,11 +65,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _handleRegister() async {
+    final l10n = AppLocalizations.of(context)!;
     // Validate passwords match
     if (_passwordController.text != _confirmPasswordController.text) {
       showCustomToast(
         context,
-        message: 'Mật khẩu không trùng khớp',
+        message: l10n.passwordMismatch,
         subtitle: 'Vui lòng kiểm tra lại',
         isSuccess: false,
       );
@@ -93,8 +95,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     } else if (mounted) {
       showCustomToast(
         context,
-        message: 'Đăng ký thất bại',
-        subtitle: authProvider.errorMessage ?? 'Vui lòng thử lại',
+        message: l10n.registerFailed,
+        subtitle: authProvider.errorMessage ?? l10n.pleaseTryAgain,
         isSuccess: false,
       );
     }
@@ -120,6 +122,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: kBackgroundColor,
       body: SafeArea(
@@ -160,7 +163,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                 // Welcome text
                 Text(
-                  'Xin chào! Đăng ký để\nbắt đầu',
+                  l10n.helloSignUp,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontSize: 30,
                     fontWeight: FontWeight.bold,
@@ -188,9 +191,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       child: TextField(
                         controller: _usernameController,
-                        decoration: const InputDecoration(
-                          hintText: 'Tên đăng nhập',
-                          hintStyle: TextStyle(
+                        decoration: InputDecoration(
+                          hintText: l10n.username,
+                          hintStyle: const TextStyle(
                             color: Color(0xFF8391A1),
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
@@ -400,9 +403,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   strokeWidth: 2,
                                 ),
                               )
-                            : const Text(
-                                'Đăng ký',
-                                style: TextStyle(
+                            : Text(
+                                l10n.register,
+                                style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold,
@@ -427,9 +430,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: Text(
-                        'Hoặc',
-                        style: TextStyle(
-                          color: const Color(0xFF6A707C),
+                        l10n.or,
+                        style: const TextStyle(
+                          color: Color(0xFF6A707C),
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
@@ -472,9 +475,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         return const Icon(Icons.account_circle, size: 24);
                       },
                     ),
-                    label: const Text(
-                      'Tiếp tục với Google',
-                      style: TextStyle(
+                    label: Text(
+                      l10n.continueWithGoogle,
+                      style: const TextStyle(
                         color: Color(0xFF414042),
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
@@ -490,9 +493,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: RichText(
                     text: TextSpan(
                       children: [
-                        const TextSpan(
-                          text: 'Đã có tài khoản? ',
-                          style: TextStyle(
+                        TextSpan(
+                          text: '${l10n.haveAccount} ',
+                          style: const TextStyle(
                             color: Color(0xFF1E232C),
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
@@ -501,9 +504,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         WidgetSpan(
                           child: GestureDetector(
                             onTap: () => Navigator.pushNamed(context, '/login'),
-                            child: const Text(
-                              'Đăng nhập',
-                              style: TextStyle(
+                            child: Text(
+                              l10n.login,
+                              style: const TextStyle(
                                 color: Color(0xFF196EB0),
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,

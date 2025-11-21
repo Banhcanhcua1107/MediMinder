@@ -321,14 +321,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             await NotificationService().showNotification(
                               id: 999999,
                               title: '🔔 ${l10n.testAlarm}',
-                              body: 'Đây là âm thanh báo thức của bạn!',
+                              body: l10n.testNotificationBody,
                               useAlarm: true,
                             );
                             if (context.mounted) {
                               showCustomToast(
                                 context,
-                                message: 'Đã gửi thông báo test',
-                                subtitle: 'Kiểm tra âm thanh ngay',
+                                message: l10n.testNotificationSent,
+                                subtitle: l10n.checkSound,
                                 isSuccess: true,
                               );
                             }
@@ -336,7 +336,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             if (context.mounted) {
                               showCustomToast(
                                 context,
-                                message: 'Lỗi khi test',
+                                message: l10n.errorTesting,
                                 subtitle: e.toString(),
                                 isSuccess: false,
                               );
@@ -638,10 +638,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   setState(() {
                     _isDarkMode = value;
                   });
+                  final l10n = AppLocalizations.of(context)!;
                   showCustomToast(
                     context,
-                    message: value ? 'Bật chế độ tối' : 'Tắt chế độ tối',
-                    subtitle: 'Cài đặt đã được lưu',
+                    message: value ? l10n.turnOnDarkMode : l10n.turnOffDarkMode,
+                    subtitle: l10n.settingsSaved,
                     isSuccess: true,
                   );
                 },
@@ -704,7 +705,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 if (mounted) {
                   showCustomToast(
                     context,
-                    message: 'Lỗi khi đăng xuất',
+                    message: AppLocalizations.of(context)!.logoutError,
                     subtitle: e.toString(),
                     isSuccess: false,
                   );

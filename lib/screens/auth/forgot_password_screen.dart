@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/supabase_service.dart';
 import '../../widgets/custom_toast.dart';
+import '../../l10n/app_localizations.dart';
 
 // --- Bảng màu thống nhất ---
 const Color kPrimaryColor = Color(0xFF196EB0);
@@ -37,18 +38,19 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   Future<void> _handleSendCode() async {
+    final l10n = AppLocalizations.of(context)!;
     final email = _emailController.text.trim();
 
     if (email.isEmpty) {
       setState(() {
-        _errorMessage = 'Vui lòng nhập email của bạn';
+        _errorMessage = l10n.enterEmail;
       });
       return;
     }
 
     if (!email.contains('@')) {
       setState(() {
-        _errorMessage = 'Email không hợp lệ';
+        _errorMessage = l10n.invalidEmail;
       });
       return;
     }
@@ -109,6 +111,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: kBackgroundColor,
       body: SafeArea(
@@ -146,7 +149,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                 // Title
                 Text(
-                  'Quên Mật Khẩu?',
+                  l10n.forgotPasswordTitle,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontSize: 30,
                     fontWeight: FontWeight.bold,
@@ -160,7 +163,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                 // Description
                 Text(
-                  'Đừng lo! Điều này xảy ra. Vui lòng nhập địa chỉ email liên kết với tài khoản của bạn.',
+                  l10n.forgotPasswordDescription,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
@@ -185,15 +188,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   child: TextField(
                     controller: _emailController,
                     enabled: !_codeSent,
-                    decoration: const InputDecoration(
-                      hintText: 'Nhập email của bạn',
-                      hintStyle: TextStyle(
+                    decoration: InputDecoration(
+                      hintText: l10n.enterEmail,
+                      hintStyle: const TextStyle(
                         color: Color(0xFF8391A1),
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
                       ),
                       border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(
+                      contentPadding: const EdgeInsets.symmetric(
                         horizontal: 18,
                         vertical: 16,
                       ),
@@ -261,9 +264,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               strokeWidth: 2,
                             ),
                           )
-                        : const Text(
-                            'Gửi Mã',
-                            style: TextStyle(
+                        : Text(
+                            l10n.sendCode,
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 15,
                               fontWeight: FontWeight.bold,

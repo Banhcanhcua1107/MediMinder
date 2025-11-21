@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../widgets/custom_toast.dart';
 import '../services/user_service.dart';
 import '../services/cloudinary_service.dart';
+import '../l10n/app_localizations.dart';
 
 const Color kPrimaryColor = Color(0xFF196EB0);
 const Color kBackgroundColor = Color(0xFFF8FAFC);
@@ -166,6 +167,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: kBackgroundColor,
       body: SafeArea(
@@ -194,9 +196,9 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                       ),
                     ),
                   ),
-                  const Text(
-                    'Thông tin Cá nhân',
-                    style: TextStyle(
+                  Text(
+                    l10n.personalInfo,
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: kPrimaryTextColor,
@@ -210,7 +212,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                       if (!_isEditing) {
                         showCustomToast(
                           context,
-                          message: 'Thông tin đã được cập nhật',
+                          message: l10n.healthSaved,
                           subtitle: 'Thay đổi đã được lưu',
                           isSuccess: true,
                         );

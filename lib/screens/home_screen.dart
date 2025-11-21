@@ -9,6 +9,7 @@ import '../services/user_service.dart';
 import '../services/notification_service.dart';
 import '../models/user_medicine.dart';
 import '../providers/medicine_provider.dart';
+import '../l10n/app_localizations.dart';
 
 // --- Bảng màu được cải tiến để nhất quán ---
 const Color kPrimaryColor = Color(0xFF196EB0);
@@ -159,12 +160,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final user = Supabase.instance.client.auth.currentUser;
 
     if (user == null) {
       return Scaffold(
         backgroundColor: kBackgroundColor,
-        body: const Center(child: Text('Vui lòng đăng nhập')),
+        body: Center(child: Text(l10n.pleaseLogin)),
       );
     }
 
@@ -178,7 +180,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             }
 
             if (provider.error != null) {
-              return Center(child: Text('Lỗi: ${provider.error}'));
+              return Center(child: Text('${l10n.error}: ${provider.error}'));
             }
 
             final medicines = provider.medicines;
@@ -259,6 +261,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   // Widget: Header Chào mừng
   Widget _buildHeader() {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4.0),
       child: Row(
@@ -267,9 +270,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Chào buổi sáng 👋',
-                style: TextStyle(color: kSecondaryTextColor, fontSize: 16),
+              Text(
+                l10n.goodMorning,
+                style: const TextStyle(
+                  color: kSecondaryTextColor,
+                  fontSize: 16,
+                ),
               ),
               const SizedBox(height: 4),
               Text(
@@ -292,8 +298,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   if (context.mounted) {
                     showCustomToast(
                       context,
-                      message: 'Đã đặt báo thức test',
-                      subtitle: 'Sẽ nổ sau 10 giây...',
+                      message: l10n.testAlarmSet,
+                      subtitle: l10n.willFireIn10Seconds,
                       isSuccess: true,
                     );
                   }
@@ -504,7 +510,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         ),
         const SizedBox(height: 16),
         if (medicines.isEmpty)
-          const Center(child: Text('Không có lịch trình nào cho hôm nay.'))
+          Center(child: Text(AppLocalizations.of(context)!.noScheduleToday))
         else
           ListView.builder(
             shrinkWrap: true,
@@ -537,18 +543,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           context: context,
           barrierDismissible: false,
           builder: (dialogContext) => AlertDialog(
-            title: const Text('Xóa thuốc'),
-            content: const Text('Bạn có chắc chắn muốn xóa thuốc này?'),
+            title: Text(AppLocalizations.of(context)!.deleteConfirmTitle),
+            content: Text(AppLocalizations.of(context)!.deleteConfirmMessage),
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(dialogContext, false),
-                child: const Text('Hủy'),
+                onPressed: () => Navigator.pop(context),
+                child: Text(AppLocalizations.of(context)!.cancel),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(dialogContext, true),
-                child: const Text(
-                  'Xóa',
-                  style: TextStyle(color: Color(0xFFDC2626)),
+                child: Text(
+                  AppLocalizations.of(context)!.delete,
+                  style: const TextStyle(color: Color(0xFFDC2626)),
                 ),
               ),
             ],
@@ -558,6 +564,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       },
       onDismissed: (direction) async {
         try {
+          final l10n = AppLocalizations.of(context)!;
           // Xóa thuốc via provider
           await Provider.of<MedicineProvider>(
             context,
@@ -567,7 +574,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           if (mounted) {
             showCustomToast(
               context,
-              message: 'Đã xóa thuốc',
+              message: l10n.medicineDeleted,
               subtitle: medicine.name,
               isSuccess: true,
             );
@@ -575,10 +582,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         } catch (e) {
           debugPrint('❌ Error deleting medicine: $e');
           if (mounted) {
+            final l10n = AppLocalizations.of(context)!;
             showCustomToast(
               context,
-              message: 'Lỗi',
-              subtitle: 'Không thể xóa thuốc',
+              message: l10n.error,
+              subtitle: l10n.cannotDeleteMedicine,
               isSuccess: false,
             );
           }
@@ -761,9 +769,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     } catch (e) {
       debugPrint('❌ Error toggling taken status: $e');
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${AppLocalizations.of(context)!.error}: $e')),
+        );
       }
     }
   }

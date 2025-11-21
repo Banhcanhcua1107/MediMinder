@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 
 const Color kPrimaryColor = Color(0xFF196EB0);
 const Color kBackgroundColor = Color(0xFFF8FAFC);
@@ -58,6 +59,7 @@ class _CustomBottomBarState extends State<CustomBottomBar>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       height: 100,
       decoration: BoxDecoration(
@@ -77,10 +79,10 @@ class _CustomBottomBarState extends State<CustomBottomBar>
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: List.generate(4, (index) {
             final items = [
-              {'icon': Icons.home, 'label': 'Trang chủ'},
-              {'icon': Icons.medication, 'label': 'Thuốc'},
-              {'icon': Icons.favorite, 'label': 'Sức khỏe'},
-              {'icon': Icons.person, 'label': 'Hồ sơ'},
+              {'icon': Icons.home, 'label': l10n.home},
+              {'icon': Icons.medication, 'label': l10n.medicines},
+              {'icon': Icons.favorite, 'label': l10n.health},
+              {'icon': Icons.person, 'label': l10n.profile},
             ];
 
             return _buildBottomBarItem(

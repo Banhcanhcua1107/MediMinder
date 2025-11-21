@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_toast.dart';
+import '../l10n/app_localizations.dart';
 
 class MedInfoScreen extends StatefulWidget {
   final Map<String, dynamic>? medData;
@@ -48,6 +49,7 @@ class _MedInfoScreenState extends State<MedInfoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
@@ -57,8 +59,8 @@ class _MedInfoScreenState extends State<MedInfoScreen> {
           icon: const Icon(Icons.arrow_back, color: Color(0xFF1E293B)),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Thông Tin Thuốc',
+        title: Text(
+          l10n.medicineInfo,
           style: TextStyle(
             color: Color(0xFF1E293B),
             fontWeight: FontWeight.bold,

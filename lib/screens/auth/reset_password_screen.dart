@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/supabase_service.dart';
 import '../../widgets/custom_toast.dart';
+import '../../l10n/app_localizations.dart';
 
 // --- Bảng màu thống nhất ---
 const Color kPrimaryColor = Color(0xFF196EB0);
@@ -139,6 +140,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: kBackgroundColor,
       body: SafeArea(
@@ -176,7 +178,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
                 // Title
                 Text(
-                  'Đặt Lại Mật Khẩu',
+                  l10n.resetPassword,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontSize: 30,
                     fontWeight: FontWeight.bold,

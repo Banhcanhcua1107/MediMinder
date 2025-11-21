@@ -6,6 +6,7 @@ import 'history_screen.dart';
 import '../models/user_medicine.dart';
 import '../providers/medicine_provider.dart';
 import '../widgets/custom_toast.dart';
+import '../l10n/app_localizations.dart';
 
 const Color kPrimaryColor = Color(0xFF196EB0);
 const Color kBackgroundColor = Color(0xFFF8FAFC);
@@ -42,11 +43,12 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
   @override
   Widget build(BuildContext context) {
     final user = Supabase.instance.client.auth.currentUser;
+    final l10n = AppLocalizations.of(context)!;
 
     if (user == null) {
       return Scaffold(
         backgroundColor: kBackgroundColor,
-        body: const Center(child: Text('Vui lòng đăng nhập')),
+        body: Center(child: Text(l10n.pleaseLogin)),
       );
     }
 
@@ -60,7 +62,7 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
             }
 
             if (provider.error != null) {
-              return Center(child: Text('Lỗi: ${provider.error}'));
+              return Center(child: Text('${l10n.error}: ${provider.error}'));
             }
 
             final medicines = provider.medicines;
@@ -82,9 +84,9 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Thuốc của bạn',
-                            style: TextStyle(
+                          Text(
+                            l10n.yourMedicines,
+                            style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
                               color: kPrimaryTextColor,
@@ -92,7 +94,7 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '${medicines.length} loại thuốc đang dùng',
+                            '${medicines.length} ${l10n.medicinesInUse}',
                             style: const TextStyle(
                               fontSize: 13,
                               color: kSecondaryTextColor,
@@ -140,7 +142,7 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 40),
                     child: Center(
                       child: Text(
-                        'Bạn chưa có thuốc nào. Nhấn nút + để thêm.',
+                        l10n.noMedicinesAdded,
                         style: TextStyle(
                           fontSize: 14,
                           color: kSecondaryTextColor,

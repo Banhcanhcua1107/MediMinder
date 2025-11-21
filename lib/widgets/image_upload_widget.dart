@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import 'package:image_picker/image_picker.dart';
+import '../l10n/app_localizations.dart';
 
 /// Widget ví dụ upload ảnh lên Cloudinary
 class ImageUploadWidget extends StatefulWidget {
@@ -26,9 +27,10 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
+        ).showSnackBar(SnackBar(content: Text('${l10n.uploadError}: $e')));
       }
     }
   }
@@ -45,15 +47,17 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
+        ).showSnackBar(SnackBar(content: Text('${l10n.uploadError}: $e')));
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Consumer<ImageUploadProvider>(
       builder: (context, imageProvider, _) {
         return Column(
@@ -78,7 +82,7 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Text(
-                  'Lỗi: ${imageProvider.errorMessage}',
+                  '${l10n.uploadError}: ${imageProvider.errorMessage}',
                   style: const TextStyle(color: Colors.red),
                 ),
               ),
@@ -92,7 +96,7 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
                     const CircularProgressIndicator(),
                     const SizedBox(height: 8),
                     Text(
-                      'Đang upload... ${(imageProvider.uploadProgress * 100).toStringAsFixed(0)}%',
+                      '${l10n.uploadPhoto}... ${(imageProvider.uploadProgress * 100).toStringAsFixed(0)}%',
                     ),
                   ],
                 ),
@@ -131,7 +135,7 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
                   onPressed: () {
                     imageProvider.resetUploadState();
                   },
-                  child: const Text('Upload ảnh khác'),
+                  child: Text(l10n.uploadPhoto),
                 ),
               ),
           ],

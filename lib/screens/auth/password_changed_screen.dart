@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 
 // --- Bảng màu thống nhất ---
 const Color kPrimaryColor = Color(0xFF196EB0);
@@ -10,6 +11,7 @@ class PasswordChangedScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: kBackgroundColor,
       body: SafeArea(
@@ -31,7 +33,7 @@ class PasswordChangedScreen extends StatelessWidget {
 
             // Title
             Text(
-              'Mật Khẩu Đã Thay Đổi!',
+              l10n.passwordChanged,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontSize: 26,
@@ -47,7 +49,7 @@ class PasswordChangedScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 50),
               child: Text(
-                'Mật khẩu của bạn đã được thay đổi thành công.',
+                l10n.passwordChangedSuccess,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   fontSize: 15,
@@ -77,9 +79,9 @@ class PasswordChangedScreen extends StatelessWidget {
                     ),
                     elevation: 0,
                   ),
-                  child: const Text(
-                    'Quay Lại Đăng Nhập',
-                    style: TextStyle(
+                  child: Text(
+                    l10n.backToLogin,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 15,
                       fontWeight: FontWeight.bold,

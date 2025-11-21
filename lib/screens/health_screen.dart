@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'add_health_profile_screen.dart';
 import '../widgets/custom_toast.dart';
+import '../l10n/app_localizations.dart';
 
 // --- Bảng màu ---
 const Color kPrimaryColor = Color(0xFF196EB0);
@@ -33,6 +34,7 @@ class _HealthScreenState extends State<HealthScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: kBackgroundColor,
       body: SafeArea(
@@ -45,7 +47,7 @@ class _HealthScreenState extends State<HealthScreen> {
           ),
           children: [
             // Header
-            _buildHeader(),
+            _buildHeader(l10n),
             const SizedBox(height: 24),
 
             // BMI Card
@@ -65,7 +67,7 @@ class _HealthScreenState extends State<HealthScreen> {
   }
 
   // Widget: Header
-  Widget _buildHeader() {
+  Widget _buildHeader(AppLocalizations l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -74,10 +76,10 @@ class _HealthScreenState extends State<HealthScreen> {
           children: [
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Text(
-                  'Sức khỏe của bạn',
-                  style: TextStyle(
+                  l10n.manageHealth,
+                  style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: kPrimaryTextColor,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import '../../widgets/primary_button.dart';
+import '../../l10n/app_localizations.dart';
 
 // --- Bảng màu thống nhất ---
 const Color kPrimaryColor = Color(0xFF196EB0);
@@ -14,6 +14,8 @@ class WelcomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: kBackgroundColor,
       body: SafeArea(
@@ -75,7 +77,7 @@ class WelcomeScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 12),
                   Text(
-                    'Welcome To',
+                    l10n.welcome,
                     style: TextStyle(fontSize: 14, color: kSecondaryTextColor),
                   ),
                   SizedBox(height: 6),
@@ -96,7 +98,7 @@ class WelcomeScreen extends StatelessWidget {
                   SizedBox(height: 22),
 
                   PrimaryButton(
-                    text: 'Đăng nhập',
+                    text: l10n.login,
                     onPressed: () => Navigator.pushNamed(context, '/login'),
                   ),
                   SizedBox(height: 12),
@@ -109,7 +111,7 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                     onPressed: () => Navigator.pushNamed(context, '/register'),
                     child: Text(
-                      'Đăng ký',
+                      l10n.register,
                       style: TextStyle(
                         color: kPrimaryColor,
                         fontWeight: FontWeight.w600,

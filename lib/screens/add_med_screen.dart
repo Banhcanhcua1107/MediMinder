@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/user_medicine.dart';
 import '../repositories/medicine_repository.dart';
 import '../services/notification_service.dart';
+import '../l10n/app_localizations.dart';
 
 class AddMedScreen extends StatefulWidget {
   final String? medicineId;
@@ -21,8 +22,9 @@ class _AddMedScreenState extends State<AddMedScreen> {
   late TextEditingController _quantityController;
   late TextEditingController _notesController;
 
-  String? _selectedType;
-  String _selectedFrequency = 'Hàng ngày';
+  int? _medicineTypeIndex; // 0=tablet, 1=capsule, 2=syrup, 3=injection
+  String _selectedFrequency = '';
+  int _frequencyIndex = 0; // 0 = daily, 1 = every other day, 2 = custom
   List<bool> _selectedWeekDays = List.filled(7, false);
   List<String> _reminders = [];
   bool _isLoading = false;
@@ -35,15 +37,6 @@ class _AddMedScreenState extends State<AddMedScreen> {
   UserMedicine? _editingMedicine;
   MedicineSchedule? _existingSchedule;
 
-  final List<String> _medicineTypes = [
-    'Viên nén',
-    'Viên nang',
-    'Siro',
-    'Thuốc tiêm',
-  ];
-
-  final List<String> _frequencies = ['Hàng ngày', 'Cách ngày', 'Tuỳ chỉnh'];
-
   @override
   void initState() {
     super.initState();
@@ -54,6 +47,16 @@ class _AddMedScreenState extends State<AddMedScreen> {
     _dosageController = TextEditingController();
     _quantityController = TextEditingController();
     _notesController = TextEditingController();
+
+    // Set default frequency after localization is available
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final l10n = AppLocalizations.of(context)!;
+      if (mounted && _selectedFrequency.isEmpty) {
+        setState(() {
+          _selectedFrequency = l10n.daily;
+        });
+      }
+    });
 
     // Mặc định không có giờ uống
     _reminders = [];
@@ -80,9 +83,20 @@ class _AddMedScreenState extends State<AddMedScreen> {
           _quantityController.text = _editingMedicine!.quantityPerDose
               .toString();
           _notesController.text = _editingMedicine!.notes ?? '';
-          _selectedType = _medicineTypes.contains(_editingMedicine!.dosageForm)
-              ? _editingMedicine!.dosageForm
-              : 'Viên nén';
+          // Map dosage form to index (0=tablet, 1=capsule, 2=syrup, 3=injection)
+          final dosageForm = _editingMedicine!.dosageForm.toLowerCase();
+          if (dosageForm.contains('capsule') ||
+              dosageForm.contains('viên nang')) {
+            _medicineTypeIndex = 1;
+          } else if (dosageForm.contains('syrup') ||
+              dosageForm.contains('siro')) {
+            _medicineTypeIndex = 2;
+          } else if (dosageForm.contains('injection') ||
+              dosageForm.contains('tiêm')) {
+            _medicineTypeIndex = 3;
+          } else {
+            _medicineTypeIndex = 0; // default to tablet
+          }
           _startDate = _editingMedicine!.startDate;
           _endDate = _editingMedicine!.endDate;
 
@@ -94,10 +108,14 @@ class _AddMedScreenState extends State<AddMedScreen> {
 
           if (_editingMedicine!.schedules.isNotEmpty) {
             _existingSchedule = _editingMedicine!.schedules.first;
-            _selectedFrequency =
-                _existingSchedule!.getFrequencyText() == 'Tuỳ chỉnh'
-                ? 'Tuỳ chỉnh'
-                : _existingSchedule!.getFrequencyText();
+            // Map frequency type to index
+            if (_existingSchedule!.frequencyType == 'daily') {
+              _frequencyIndex = 0;
+            } else if (_existingSchedule!.frequencyType == 'alternate_days') {
+              _frequencyIndex = 1;
+            } else {
+              _frequencyIndex = 2;
+            }
 
             if (_existingSchedule!.daysOfWeek != null &&
                 _existingSchedule!.daysOfWeek!.length == 7) {
@@ -130,7 +148,21 @@ class _AddMedScreenState extends State<AddMedScreen> {
     super.dispose();
   }
 
+  List<String> _getMedicineTypes(AppLocalizations l10n) => [
+    l10n.tablet,
+    l10n.capsule,
+    l10n.syrup,
+    l10n.injection,
+  ];
+
+  List<String> _getFrequencies(AppLocalizations l10n) => [
+    l10n.daily,
+    l10n.everyOtherDay,
+    l10n.custom,
+  ];
+
   Future<void> _selectTime(int index) async {
+    final l10n = AppLocalizations.of(context)!;
     final timeStr = _reminders[index];
     final parts = timeStr.split(':');
     int hour = int.parse(parts[0]);
@@ -146,9 +178,9 @@ class _AddMedScreenState extends State<AddMedScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'Chọn giờ uống',
-                style: TextStyle(
+              Text(
+                l10n.selectIntakeTimes,
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF196EB0),
@@ -181,9 +213,9 @@ class _AddMedScreenState extends State<AddMedScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
-                    'Xong',
-                    style: TextStyle(
+                  child: Text(
+                    l10n.done,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -227,18 +259,18 @@ class _AddMedScreenState extends State<AddMedScreen> {
   }
 
   void _handleSave() async {
+    final l10n = AppLocalizations.of(context)!;
     // Validation
     if (_nameController.text.isEmpty ||
-        _selectedType == null ||
+        _medicineTypeIndex == null ||
         _dosageController.text.isEmpty ||
         _quantityController.text.isEmpty ||
         _reminders.isEmpty) {
-      setState(() => _errorMessage = 'Vui lòng điền đầy đủ thông tin');
+      setState(() => _errorMessage = l10n.emptyField);
       return;
     }
 
-    if (_selectedFrequency == 'Tuỳ chỉnh' &&
-        !_selectedWeekDays.contains(true)) {
+    if (_frequencyIndex == 2 && !_selectedWeekDays.contains(true)) {
       setState(
         () => _errorMessage = 'Vui lòng chọn ít nhất một ngày uống thuốc',
       );
@@ -263,7 +295,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
           userId: user.id,
           name: _nameController.text,
           dosageStrength: _dosageController.text,
-          dosageForm: _selectedType!,
+          dosageForm: _getMedicineTypes(l10n)[_medicineTypeIndex ?? 0],
           quantityPerDose: int.parse(_quantityController.text),
           startDate: _startDate,
           endDate: _endDate,
@@ -273,12 +305,12 @@ class _AddMedScreenState extends State<AddMedScreen> {
 
         final schedule = await _medicineRepository.createSchedule(
           medicine.id,
-          frequencyType: _selectedFrequency == 'Hàng ngày'
+          frequencyType: _frequencyIndex == 0
               ? 'daily'
-              : _selectedFrequency == 'Cách ngày'
+              : _frequencyIndex == 1
               ? 'alternate_days'
               : 'custom',
-          daysOfWeek: _selectedFrequency == 'Tuỳ chỉnh'
+          daysOfWeek: _frequencyIndex == 2
               ? _selectedWeekDays.map((e) => e ? '1' : '0').join('')
               : null,
         );
@@ -301,7 +333,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
           widget.medicineId!,
           name: _nameController.text,
           dosageStrength: _dosageController.text,
-          dosageForm: _selectedType!,
+          dosageForm: _getMedicineTypes(l10n)[_medicineTypeIndex ?? 0],
           quantityPerDose: int.parse(_quantityController.text),
           startDate: _startDate,
           endDate: _endDate,
@@ -311,12 +343,12 @@ class _AddMedScreenState extends State<AddMedScreen> {
         if (_existingSchedule != null) {
           await _medicineRepository.updateSchedule(
             _existingSchedule!.id,
-            frequencyType: _selectedFrequency == 'Hàng ngày'
+            frequencyType: _frequencyIndex == 0
                 ? 'daily'
-                : _selectedFrequency == 'Cách ngày'
+                : _frequencyIndex == 1
                 ? 'alternate_days'
                 : 'custom',
-            daysOfWeek: _selectedFrequency == 'Tuỳ chỉnh'
+            daysOfWeek: _frequencyIndex == 2
                 ? _selectedWeekDays.map((e) => e ? '1' : '0').join('')
                 : null,
           );
@@ -379,7 +411,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
       if (mounted) {
         showCustomToast(
           context,
-          message: 'Lưu thành công',
+          message: l10n.addMedicineSuccess,
           subtitle: 'Đã đặt lịch nhắc thuốc',
           isSuccess: true,
         );
@@ -387,7 +419,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
       }
     } catch (e) {
       print('Error saving medicine: $e');
-      setState(() => _errorMessage = 'Lỗi: $e');
+      setState(() => _errorMessage = '${l10n.error}: $e');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -462,6 +494,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (_isFetchingData) {
       return const Scaffold(
         backgroundColor: Color(0xFFF6F7F8),
@@ -516,15 +549,19 @@ class _AddMedScreenState extends State<AddMedScreen> {
             children: [
               _buildSectionTitle('Thông tin thuốc'),
               const SizedBox(height: 16),
-              _buildTextField('Tên thuốc', _nameController, 'Nhập tên thuốc'),
+              _buildTextField(
+                l10n.medicineName,
+                _nameController,
+                'Nhập tên thuốc',
+              ),
               const SizedBox(height: 16),
-              _buildDropdown('Loại thuốc', _selectedType),
+              _buildDropdown(l10n.medicineType, _medicineTypeIndex, l10n),
               const SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
                     child: _buildTextField(
-                      'Liều lượng',
+                      l10n.dosage,
                       _dosageController,
                       'ví dụ: 500mg',
                     ),
@@ -532,7 +569,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
                   const SizedBox(width: 16),
                   Expanded(
                     child: _buildTextField(
-                      'Số viên/lần',
+                      l10n.quantity,
                       _quantityController,
                       'ví dụ: 1',
                       isNumber: true,
@@ -559,7 +596,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
               const SizedBox(height: 32),
               _buildSectionTitle('Lịch uống thuốc'),
               const SizedBox(height: 16),
-              _buildFrequencySelector(),
+              _buildFrequencySelector(l10n),
               const SizedBox(height: 20),
               const Text(
                 'Thời gian uống',
@@ -690,7 +727,8 @@ class _AddMedScreenState extends State<AddMedScreen> {
     );
   }
 
-  Widget _buildDropdown(String label, String? value) {
+  Widget _buildDropdown(String label, int? value, AppLocalizations l10n) {
+    final items = _getMedicineTypes(l10n);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -706,25 +744,25 @@ class _AddMedScreenState extends State<AddMedScreen> {
             color: Colors.white,
           ),
           child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
+            child: DropdownButton<int>(
               value: value,
               isExpanded: true,
               hint: const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16),
                 child: Text('Chọn loại'),
               ),
-              items: _medicineTypes
-                  .map(
-                    (e) => DropdownMenuItem(
-                      value: e,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(e),
-                      ),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (v) => setState(() => _selectedType = v),
+              items: items.asMap().entries.map((entry) {
+                int index = entry.key;
+                String text = entry.value;
+                return DropdownMenuItem<int>(
+                  value: index,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(text),
+                  ),
+                );
+              }).toList(),
+              onChanged: (v) => setState(() => _medicineTypeIndex = v),
             ),
           ),
         ),
@@ -767,16 +805,19 @@ class _AddMedScreenState extends State<AddMedScreen> {
     );
   }
 
-  Widget _buildFrequencySelector() {
+  Widget _buildFrequencySelector(AppLocalizations l10n) {
+    final frequencies = _getFrequencies(l10n);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Wrap(
           spacing: 8,
-          children: _frequencies.map((freq) {
-            final isSelected = freq == _selectedFrequency;
+          children: frequencies.asMap().entries.map((entry) {
+            int index = entry.key;
+            String freq = entry.value;
+            final isSelected = index == _frequencyIndex;
             return GestureDetector(
-              onTap: () => setState(() => _selectedFrequency = freq),
+              onTap: () => setState(() => _frequencyIndex = index),
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -801,7 +842,7 @@ class _AddMedScreenState extends State<AddMedScreen> {
             );
           }).toList(),
         ),
-        if (_selectedFrequency == 'Tuỳ chỉnh') ...[
+        if (_frequencyIndex == 2) ...[
           const SizedBox(height: 16),
           const Text(
             'Chọn ngày trong tuần',
