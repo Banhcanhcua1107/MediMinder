@@ -1049,9 +1049,8 @@ class AppLocalizationsVi extends AppLocalizations {
   String get reminderSet => 'Đã đặt lịch nhắc thuốc';
 
   @override
-  String get durationDays => 'Khoảng thời gian (ngày)';
+  String get durationDays => 'ngày';
 
   @override
-  String get healthMetricsUpdated =>
-      'Các chỉ số sức khỏe của bạn đã được cập nhật';
+  String get healthMetricsUpdated => 'Your health metrics have been updated';
 }
