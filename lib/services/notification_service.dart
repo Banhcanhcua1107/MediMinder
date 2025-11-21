@@ -5,6 +5,7 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:flutter/material.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 // Top-level function để handle notification tap từ background
 @pragma('vm:entry-point')
@@ -99,10 +100,23 @@ class NotificationService {
     }
   }
 
+  // Xin quyền bỏ qua tối ưu hóa pin (Quan trọng cho báo thức)
+  Future<void> requestBatteryPermission() async {
+    if (Platform.isAndroid) {
+      final status = await Permission.ignoreBatteryOptimizations.status;
+      if (status.isDenied) {
+        debugPrint('🔋 Requesting ignore battery optimizations...');
+        await Permission.ignoreBatteryOptimizations.request();
+      } else {
+        debugPrint('✅ Battery optimizations already ignored.');
+      }
+    }
+  }
+
   // Cấu hình chi tiết thông báo dạng Báo thức
   AndroidNotificationDetails _getAlarmNotificationDetails() {
     return AndroidNotificationDetails(
-      'medicine_alarm_channel_v4', // ID kênh (Đổi ID để reset cài đặt âm thanh)
+      'medicine_alarm_channel_v5', // ID kênh (Đổi ID để reset cài đặt âm thanh)
       'Nhắc nhở uống thuốc', // Tên hiển thị
       channelDescription: 'Kênh thông báo quan trọng cho việc uống thuốc',
       importance: Importance.max,
@@ -213,6 +227,35 @@ class NotificationService {
       );
     } catch (e) {
       debugPrint('❌ Error scheduling daily notification: $e');
+    }
+  }
+
+  // Test Alarm: Nổ sau 10 giây
+  Future<void> scheduleTestAlarm() async {
+    try {
+      final now = tz.TZDateTime.now(tz.local);
+      final scheduledDate = now.add(const Duration(seconds: 10));
+
+      await _flutterLocalNotificationsPlugin.zonedSchedule(
+        999999, // ID đặc biệt cho test
+        '🔔 TEST ALARM',
+        'Nếu bạn thấy cái này, báo thức đang hoạt động tốt! 🎉',
+        scheduledDate,
+        NotificationDetails(
+          android: _getAlarmNotificationDetails(),
+          iOS: const DarwinNotificationDetails(
+            presentSound: true,
+            interruptionLevel: InterruptionLevel.critical,
+          ),
+        ),
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+      );
+
+      debugPrint('✅ Scheduled Test Alarm in 10 seconds');
+    } catch (e) {
+      debugPrint('❌ Error scheduling test alarm: $e');
     }
   }
 

@@ -119,22 +119,55 @@ class UserMedicine {
     );
   }
 
-  /// Kiểm tra xem thuốc còn hợp lệ không (trong khoảng ngày)
-  bool isValidToday() {
-    final today = DateTime.now();
-    final todayDate = DateTime(today.year, today.month, today.day);
+  /// Kiểm tra xem thuốc có lịch uống vào ngày cụ thể không
+  bool isScheduledForDate(DateTime date) {
+    // 1. Check range
+    final checkDate = DateTime(date.year, date.month, date.day);
     final startDateOnly = DateTime(
       startDate.year,
       startDate.month,
       startDate.day,
     );
 
-    if (todayDate.isBefore(startDateOnly)) return false;
+    if (checkDate.isBefore(startDateOnly)) return false;
     if (endDate != null) {
       final endDateOnly = DateTime(endDate!.year, endDate!.month, endDate!.day);
-      if (todayDate.isAfter(endDateOnly)) return false;
+      if (checkDate.isAfter(endDateOnly)) return false;
     }
-    return isActive;
+    if (!isActive) return false;
+
+    // 2. Check frequency
+    if (schedules.isEmpty)
+      return true; // Default to daily if no schedule? Or false? Assuming daily for now if missing.
+
+    final schedule = schedules.first;
+    switch (schedule.frequencyType) {
+      case 'daily':
+        return true;
+      case 'alternate_days':
+        final diff = checkDate.difference(startDateOnly).inDays;
+        return diff % 2 == 0;
+      case 'custom':
+        if (schedule.customIntervalDays != null) {
+          final diff = checkDate.difference(startDateOnly).inDays;
+          return diff % schedule.customIntervalDays! == 0;
+        } else if (schedule.daysOfWeek != null) {
+          // daysOfWeek: '0101010' (Mon, Wed, Fri) - Index 0 is Mon
+          // DateTime.weekday: 1 (Mon) -> 7 (Sun)
+          final weekdayIndex = checkDate.weekday - 1; // 0-6
+          if (weekdayIndex < schedule.daysOfWeek!.length) {
+            return schedule.daysOfWeek![weekdayIndex] == '1';
+          }
+        }
+        return true;
+      default:
+        return true;
+    }
+  }
+
+  /// Kiểm tra xem thuốc còn hợp lệ không (trong khoảng ngày) - Legacy
+  bool isValidToday() {
+    return isScheduledForDate(DateTime.now());
   }
 
   /// Lấy giờ uống tiếp theo (gần nhất)

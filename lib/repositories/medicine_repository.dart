@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/user_medicine.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MedicineRepository {
   final SupabaseClient supabase;
@@ -27,8 +29,14 @@ class MedicineRepository {
         // Lấy schedule times
         final times = await _getScheduleTimesForMedicine(userMed.id);
 
+        // Lấy tất cả intakes (hoặc giới hạn 30 ngày gần nhất nếu cần tối ưu)
+        final intakes = await getMedicineIntakes(userId);
+
         userMed.schedules = schedules;
         userMed.scheduleTimes = times;
+        userMed.intakes = intakes
+            .where((intake) => intake.userMedicineId == userMed.id)
+            .toList();
 
         medicines.add(userMed);
       }
@@ -98,10 +106,43 @@ class MedicineRepository {
         return aMinutes.compareTo(bMinutes);
       });
 
+      // Save to local cache
+      await saveMedicinesToLocal(medicines);
+
       return medicines;
     } catch (e) {
       print('Error getting today medicines: $e');
       rethrow;
+    }
+  }
+
+  /// Save medicines to local cache
+  Future<void> saveMedicinesToLocal(List<UserMedicine> medicines) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final String encodedData = jsonEncode(
+        medicines.map((m) => m.toJson()).toList(),
+      );
+      await prefs.setString('cached_medicines', encodedData);
+      print('✅ Saved ${medicines.length} medicines to local cache');
+    } catch (e) {
+      print('❌ Error saving to local cache: $e');
+    }
+  }
+
+  /// Get medicines from local cache
+  Future<List<UserMedicine>> getLocalMedicines() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final String? encodedData = prefs.getString('cached_medicines');
+
+      if (encodedData == null) return [];
+
+      final List<dynamic> decodedData = jsonDecode(encodedData);
+      return decodedData.map((json) => UserMedicine.fromJson(json)).toList();
+    } catch (e) {
+      print('❌ Error getting from local cache: $e');
+      return [];
     }
   }
 
@@ -184,12 +225,12 @@ class MedicineRepository {
     }
   }
 
-  /// Soft delete (set is_active = false)
+  /// Hard delete (Xóa vĩnh viễn khỏi database)
   Future<void> deleteMedicine(String medicineId) async {
     try {
       await supabase
           .from('user_medicines')
-          .update({'is_active': false})
+          .delete() // Xóa cứng
           .eq('id', medicineId);
     } catch (e) {
       print('Error deleting medicine: $e');

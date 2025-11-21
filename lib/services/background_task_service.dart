@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'notification_service.dart';
 import '../repositories/medicine_repository.dart';
 import '../config/constants.dart';
+import '../models/user_medicine.dart';
 
 /// Task ID constants
 const String taskCheckMedicineReminder = 'check_medicine_reminder';
@@ -162,7 +163,17 @@ Future<void> _handleMedicineCheckTask() async {
 
     // Lấy dữ liệu thuốc hôm nay
     final medicineRepository = MedicineRepository(supabase);
-    final medicines = await medicineRepository.getTodayMedicines(user.id);
+
+    // 1. Thử lấy từ cache trước (Ưu tiên tốc độ)
+    List<UserMedicine> medicines = await medicineRepository.getLocalMedicines();
+
+    if (medicines.isNotEmpty) {
+      debugPrint('⚡ Loaded ${medicines.length} medicines from local cache');
+    } else {
+      // 2. Nếu cache rỗng, mới gọi API (Fallback)
+      debugPrint('⚠️ Local cache empty, fetching from Supabase...');
+      medicines = await medicineRepository.getTodayMedicines(user.id);
+    }
 
     if (medicines.isEmpty) {
       debugPrint('ℹ️ No medicines today');
@@ -226,7 +237,7 @@ Future<void> _handleMedicineCheckTask() async {
 
         if (!hasAlreadySentToday &&
             differenceInSeconds <= 0 &&
-            differenceInSeconds > -120) {
+            differenceInSeconds > -3600) {
           // Thông báo ngay lập tức vì đã tới giờ
           await notificationService.showImmediateNotification(
             id: notificationId,
@@ -315,9 +326,9 @@ Future<void> _handleMedicineSyncTask() async {
       return;
     }
 
-    // Lấy dữ liệu thuốc
+    // Lấy dữ liệu thuốc và lưu vào cache (trong getTodayMedicines đã có save)
     final medicineRepository = MedicineRepository(supabase);
-    final medicines = await medicineRepository.getUserMedicines(user.id);
+    final medicines = await medicineRepository.getTodayMedicines(user.id);
 
     debugPrint(
       '✅ Medicine sync completed - ${medicines.length} medicines synced',

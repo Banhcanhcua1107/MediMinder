@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import '../widgets/custom_toast.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/user_medicine.dart';
@@ -22,8 +23,10 @@ class _AddMedScreenState extends State<AddMedScreen> {
 
   String? _selectedType;
   String _selectedFrequency = 'Hàng ngày';
+  List<bool> _selectedWeekDays = List.filled(7, false);
   List<String> _reminders = [];
   bool _isLoading = false;
+  bool _isFetchingData = false;
   String? _errorMessage;
 
   DateTime _startDate = DateTime.now();
@@ -52,10 +55,11 @@ class _AddMedScreenState extends State<AddMedScreen> {
     _quantityController = TextEditingController();
     _notesController = TextEditingController();
 
-    // Mặc định gợi ý giờ uống
-    _reminders = ['08:00', '20:00'];
+    // Mặc định không có giờ uống
+    _reminders = [];
 
     if (widget.medicineId != null) {
+      _isFetchingData = true;
       _loadMedicineData();
     }
   }
@@ -90,13 +94,30 @@ class _AddMedScreenState extends State<AddMedScreen> {
 
           if (_editingMedicine!.schedules.isNotEmpty) {
             _existingSchedule = _editingMedicine!.schedules.first;
-            _selectedFrequency = _existingSchedule!.getFrequencyText();
+            _selectedFrequency =
+                _existingSchedule!.getFrequencyText() == 'Tuỳ chỉnh'
+                ? 'Tuỳ chỉnh'
+                : _existingSchedule!.getFrequencyText();
+
+            if (_existingSchedule!.daysOfWeek != null &&
+                _existingSchedule!.daysOfWeek!.length == 7) {
+              _selectedWeekDays = _existingSchedule!.daysOfWeek!
+                  .split('')
+                  .map((e) => e == '1')
+                  .toList();
+            }
           }
           setState(() {});
         }
       }
     } catch (e) {
       debugPrint('Error loading medicine: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isFetchingData = false;
+        });
+      }
     }
   }
 
@@ -115,17 +136,66 @@ class _AddMedScreenState extends State<AddMedScreen> {
     int hour = int.parse(parts[0]);
     int minute = int.parse(parts[1]);
 
-    final result = await showTimePicker(
+    await showDialog(
       context: context,
-      initialTime: TimeOfDay(hour: hour, minute: minute),
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Container(
+          height: 350,
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Chọn giờ uống',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF196EB0),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: CupertinoDatePicker(
+                  initialDateTime: DateTime(2024, 1, 1, hour, minute),
+                  mode: CupertinoDatePickerMode.time,
+                  use24hFormat: true,
+                  itemExtent: 50,
+                  onDateTimeChanged: (DateTime newTime) {
+                    setState(() {
+                      _reminders[index] =
+                          '${newTime.hour.toString().padLeft(2, '0')}:${newTime.minute.toString().padLeft(2, '0')}';
+                    });
+                  },
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF196EB0),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Xong',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
-
-    if (result != null) {
-      setState(() {
-        _reminders[index] =
-            '${result.hour.toString().padLeft(2, '0')}:${result.minute.toString().padLeft(2, '0')}';
-      });
-    }
   }
 
   void _deleteReminder(int index) {
@@ -167,6 +237,14 @@ class _AddMedScreenState extends State<AddMedScreen> {
       return;
     }
 
+    if (_selectedFrequency == 'Tuỳ chỉnh' &&
+        !_selectedWeekDays.contains(true)) {
+      setState(
+        () => _errorMessage = 'Vui lòng chọn ít nhất một ngày uống thuốc',
+      );
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -200,6 +278,9 @@ class _AddMedScreenState extends State<AddMedScreen> {
               : _selectedFrequency == 'Cách ngày'
               ? 'alternate_days'
               : 'custom',
+          daysOfWeek: _selectedFrequency == 'Tuỳ chỉnh'
+              ? _selectedWeekDays.map((e) => e ? '1' : '0').join('')
+              : null,
         );
 
         for (int i = 0; i < _reminders.length; i++) {
@@ -228,6 +309,18 @@ class _AddMedScreenState extends State<AddMedScreen> {
         );
 
         if (_existingSchedule != null) {
+          await _medicineRepository.updateSchedule(
+            _existingSchedule!.id,
+            frequencyType: _selectedFrequency == 'Hàng ngày'
+                ? 'daily'
+                : _selectedFrequency == 'Cách ngày'
+                ? 'alternate_days'
+                : 'custom',
+            daysOfWeek: _selectedFrequency == 'Tuỳ chỉnh'
+                ? _selectedWeekDays.map((e) => e ? '1' : '0').join('')
+                : null,
+          );
+
           // Xóa giờ cũ, thêm giờ mới (Đơn giản hóa logic update)
           for (var time in _editingMedicine!.scheduleTimes) {
             await _medicineRepository.deleteScheduleTime(time.id);
@@ -369,6 +462,15 @@ class _AddMedScreenState extends State<AddMedScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isFetchingData) {
+      return const Scaffold(
+        backgroundColor: Color(0xFFF6F7F8),
+        body: Center(
+          child: CircularProgressIndicator(color: Color(0xFF196EB0)),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7F8),
       appBar: AppBar(
@@ -442,6 +544,8 @@ class _AddMedScreenState extends State<AddMedScreen> {
               const Divider(),
               const SizedBox(height: 32),
               _buildSectionTitle('Khoảng thời gian'),
+              const SizedBox(height: 16),
+              _buildDurationSelector(),
               const SizedBox(height: 16),
               _buildDatePicker('Ngày bắt đầu', _startDate, _selectStartDate),
               const SizedBox(height: 16),
@@ -664,30 +768,88 @@ class _AddMedScreenState extends State<AddMedScreen> {
   }
 
   Widget _buildFrequencySelector() {
-    return Wrap(
-      spacing: 8,
-      children: _frequencies.map((freq) {
-        final isSelected = freq == _selectedFrequency;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 8,
+          children: _frequencies.map((freq) {
+            final isSelected = freq == _selectedFrequency;
+            return GestureDetector(
+              onTap: () => setState(() => _selectedFrequency = freq),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: isSelected ? const Color(0xFF196EB0) : Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: isSelected
+                        ? const Color(0xFF196EB0)
+                        : const Color(0xFFDBE0E6),
+                  ),
+                ),
+                child: Text(
+                  freq,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : Colors.black,
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+        if (_selectedFrequency == 'Tuỳ chỉnh') ...[
+          const SizedBox(height: 16),
+          const Text(
+            'Chọn ngày trong tuần',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(height: 8),
+          _buildWeekDaySelector(),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildWeekDaySelector() {
+    final days = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: List.generate(7, (index) {
+        final isSelected = _selectedWeekDays[index];
         return GestureDetector(
-          onTap: () => setState(() => _selectedFrequency = freq),
+          onTap: () {
+            setState(() {
+              _selectedWeekDays[index] = !_selectedWeekDays[index];
+            });
+          },
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
+              shape: BoxShape.circle,
               color: isSelected ? const Color(0xFF196EB0) : Colors.white,
-              borderRadius: BorderRadius.circular(8),
               border: Border.all(
                 color: isSelected
                     ? const Color(0xFF196EB0)
                     : const Color(0xFFDBE0E6),
               ),
             ),
+            alignment: Alignment.center,
             child: Text(
-              freq,
-              style: TextStyle(color: isSelected ? Colors.white : Colors.black),
+              days[index],
+              style: TextStyle(
+                color: isSelected ? Colors.white : const Color(0xFF64748B),
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                fontSize: 12,
+              ),
             ),
           ),
         );
-      }).toList(),
+      }),
     );
   }
 
@@ -760,6 +922,73 @@ class _AddMedScreenState extends State<AddMedScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildDurationSelector() {
+    final durations = [7, 14, 30];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Thời gian uống',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 8),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              ...durations.map((days) {
+                final isSelected =
+                    _endDate != null &&
+                    _endDate!.difference(_startDate).inDays == days;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: ChoiceChip(
+                    label: Text('$days ngày'),
+                    selected: isSelected,
+                    onSelected: (selected) {
+                      if (selected) {
+                        setState(() {
+                          _endDate = _startDate.add(Duration(days: days));
+                        });
+                      }
+                    },
+                    selectedColor: const Color(0xFF196EB0),
+                    labelStyle: TextStyle(
+                      color: isSelected ? Colors.white : Colors.black,
+                    ),
+                  ),
+                );
+              }),
+              ChoiceChip(
+                label: const Text('Tuỳ chỉnh'),
+                selected:
+                    _endDate != null &&
+                    !durations.contains(
+                      _endDate!.difference(_startDate).inDays,
+                    ),
+                onSelected: (selected) {
+                  if (selected) {
+                    _selectEndDate();
+                  }
+                },
+                selectedColor: const Color(0xFF196EB0),
+                labelStyle: TextStyle(
+                  color:
+                      (_endDate != null &&
+                          !durations.contains(
+                            _endDate!.difference(_startDate).inDays,
+                          ))
+                      ? Colors.white
+                      : Colors.black,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

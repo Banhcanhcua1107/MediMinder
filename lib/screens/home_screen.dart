@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'profile_screen.dart';
 import 'add_med_screen.dart';
@@ -7,7 +8,7 @@ import '../widgets/custom_toast.dart';
 import '../services/user_service.dart';
 import '../services/notification_service.dart';
 import '../models/user_medicine.dart';
-import '../repositories/medicine_repository.dart';
+import '../providers/medicine_provider.dart';
 
 // --- Bảng màu được cải tiến để nhất quán ---
 const Color kPrimaryColor = Color(0xFF196EB0);
@@ -30,25 +31,32 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   DateTime _selectedDate = DateTime.now();
   String _userName = 'Người dùng';
   String? _avatarUrl;
-  late MedicineRepository _medicineRepository;
-  late Future<List<UserMedicine>> _medicinesFuture;
-  late List<UserMedicine> _medicines = [];
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    final supabase = Supabase.instance.client;
-    _medicineRepository = MedicineRepository(supabase);
     _loadUserInfo();
-    _loadMedicines();
+
+    // Fetch medicines via provider
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Provider.of<MedicineProvider>(
+          context,
+          listen: false,
+        ).fetchMedicines(user.id);
+      });
+    }
 
     // Thêm dòng này
     _checkPermissions();
   }
 
   Future<void> _checkPermissions() async {
-    await NotificationService().requestPermissions();
+    final notificationService = NotificationService();
+    await notificationService.requestPermissions();
+    await notificationService.requestBatteryPermission();
   }
 
   @override
@@ -56,7 +64,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) {
       // App quay lại foreground - refresh dữ liệu
       debugPrint('🔄 App resumed - refreshing medicines');
-      _loadMedicines();
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user != null) {
+        Provider.of<MedicineProvider>(
+          context,
+          listen: false,
+        ).fetchMedicines(user.id);
+      }
 
       // Khởi động lại kiểm tra notifications
       _restartNotifications();
@@ -68,7 +82,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       final user = Supabase.instance.client.auth.currentUser;
       if (user != null) {
         debugPrint('🔔 Restarting notifications check on app resume...');
-        final medicines = await _medicineRepository.getTodayMedicines(user.id);
+        // Use provider's medicines if available, or wait for fetch
+        // For simplicity, we can just trigger a fetch and let the provider handle it
+        // But here we need the list to check notifications.
+        // Let's access the provider directly.
+        final provider = Provider.of<MedicineProvider>(context, listen: false);
+        final medicines = provider.medicines;
 
         if (medicines.isNotEmpty) {
           final notificationService = NotificationService();
@@ -116,19 +135,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  void _loadMedicines() {
-    final user = Supabase.instance.client.auth.currentUser;
-    if (user != null) {
-      _medicinesFuture = _medicineRepository.getTodayMedicines(user.id).then((
-        meds,
-      ) {
-        setState(() {
-          _medicines = meds;
-        });
-        return meds;
-      });
-    }
-  }
+  // _loadMedicines removed as it is handled by provider
 
   Future<void> _loadUserInfo() async {
     try {
@@ -164,22 +171,41 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     return Scaffold(
       backgroundColor: kBackgroundColor,
       body: SafeArea(
-        child: FutureBuilder<List<UserMedicine>>(
-          future: _medicinesFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
+        child: Consumer<MedicineProvider>(
+          builder: (context, provider, child) {
+            if (provider.isLoading && provider.medicines.isEmpty) {
               return const Center(child: CircularProgressIndicator());
             }
 
-            if (snapshot.hasError) {
-              return Center(child: Text('Lỗi: ${snapshot.error}'));
+            if (provider.error != null) {
+              return Center(child: Text('Lỗi: ${provider.error}'));
             }
 
-            final medicines = _medicines;
+            final medicines = provider.medicines;
+
+            // Filter medicines for selected date
+            final visibleMedicines = medicines.where((m) {
+              return m.isScheduledForDate(_selectedDate);
+            }).toList();
+
+            // Sort by time
+            visibleMedicines.sort((a, b) {
+              final aNext = a.getNextIntakeTime();
+              final bNext = b.getNextIntakeTime();
+              if (aNext == null && bNext == null) return 0;
+              if (aNext == null) return 1;
+              if (bNext == null) return -1;
+              final aMinutes = aNext.hour * 60 + aNext.minute;
+              final bMinutes = bNext.hour * 60 + bNext.minute;
+              return aMinutes.compareTo(bMinutes);
+            });
 
             // Tính toán thuốc đã uống theo ngày được chọn
-            final takenCount = _calculateTakenCount(medicines);
-            final totalCount = _calculateTotalSchedules(medicines);
+            final takenCount = _calculateTakenCount(
+              visibleMedicines,
+              _selectedDate,
+            );
+            final totalCount = _calculateTotalSchedules(visibleMedicines);
             final progress = totalCount > 0 ? takenCount / totalCount : 0.0;
 
             return ListView(
@@ -196,7 +222,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 const SizedBox(height: 24),
                 _buildProgressCard(progress, takenCount, totalCount),
                 const SizedBox(height: 24),
-                _buildMedicineList(medicines),
+                _buildMedicineList(visibleMedicines),
               ],
             );
           },
@@ -213,18 +239,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     return total;
   }
 
-  int _calculateTakenCount(List<UserMedicine> medicines) {
+  int _calculateTakenCount(List<UserMedicine> medicines, DateTime date) {
     int count = 0;
-    final now = DateTime.now();
-    final todayStr =
-        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final dateStr =
+        '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
     for (var med in medicines) {
-      // Kiểm tra xem có intake record cho hôm nay không
+      // Kiểm tra xem có intake record cho ngày này không
       for (var intake in med.intakes) {
         final intakeDateStr =
             '${intake.scheduledDate.year}-${intake.scheduledDate.month.toString().padLeft(2, '0')}-${intake.scheduledDate.day.toString().padLeft(2, '0')}';
-        if (intakeDateStr == todayStr && intake.status == 'taken') {
+        if (intakeDateStr == dateStr && intake.status == 'taken') {
           count++;
         }
       }
@@ -257,40 +282,62 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               ),
             ],
           ),
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const ProfileScreen()),
-              );
-            },
-            child: Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFFE2E8F0),
+          Row(
+            children: [
+              // Test Alarm Button
+              IconButton(
+                icon: const Icon(Icons.alarm_add, color: kPrimaryColor),
+                onPressed: () async {
+                  await NotificationService().scheduleTestAlarm();
+                  if (context.mounted) {
+                    showCustomToast(
+                      context,
+                      message: 'Đã đặt báo thức test',
+                      subtitle: 'Sẽ nổ sau 10 giây...',
+                      isSuccess: true,
+                    );
+                  }
+                },
               ),
-              child: _avatarUrl != null && _avatarUrl!.isNotEmpty
-                  ? ClipOval(
-                      child: Image.network(
-                        _avatarUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Icon(
-                            Icons.person,
-                            color: kSecondaryTextColor,
-                            size: 24,
-                          );
-                        },
-                      ),
-                    )
-                  : const Icon(
-                      Icons.person,
-                      color: kSecondaryTextColor,
-                      size: 24,
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ProfileScreen(),
                     ),
-            ),
+                  );
+                },
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFFE2E8F0),
+                  ),
+                  child: _avatarUrl != null && _avatarUrl!.isNotEmpty
+                      ? ClipOval(
+                          child: Image.network(
+                            _avatarUrl!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Icon(
+                                Icons.person,
+                                color: kSecondaryTextColor,
+                                size: 24,
+                              );
+                            },
+                          ),
+                        )
+                      : const Icon(
+                          Icons.person,
+                          color: kSecondaryTextColor,
+                          size: 24,
+                        ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -511,23 +558,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       },
       onDismissed: (direction) async {
         try {
-          // Xóa tất cả notifications
-          final notificationService = NotificationService();
-          for (int i = 0; i < 20; i++) {
-            await notificationService.cancelNotification(
-              NotificationService.generateNotificationId(medicine.id, i),
-            );
-          }
-
-          // Xóa thuốc
-          await _medicineRepository.deleteMedicine(medicine.id);
+          // Xóa thuốc via provider
+          await Provider.of<MedicineProvider>(
+            context,
+            listen: false,
+          ).deleteMedicine(medicine.id);
 
           if (mounted) {
-            // Xóa khỏi list mà không reload toàn bộ trang
-            setState(() {
-              _medicines.removeWhere((m) => m.id == medicine.id);
-            });
-
             showCustomToast(
               context,
               message: 'Đã xóa thuốc',
@@ -556,7 +593,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             ),
           );
           if (result == true) {
-            _loadMedicines();
+            final user = Supabase.instance.client.auth.currentUser;
+            if (user != null) {
+              Provider.of<MedicineProvider>(
+                context,
+                listen: false,
+              ).fetchMedicines(user.id);
+            }
           }
         },
         child: Card(
@@ -708,43 +751,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     try {
       final user = Supabase.instance.client.auth.currentUser;
       if (user != null) {
-        if (taken) {
-          // Tạo intake record với status 'taken'
-          await Supabase.instance.client.from('medicine_intakes').insert({
-            'user_id': user.id,
-            'user_medicine_id': medicine.id,
-            'medicine_name': medicine.name,
-            'dosage_strength': medicine.dosageStrength,
-            'quantity_per_dose': medicine.quantityPerDose,
-            'scheduled_date':
-                '${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}-${DateTime.now().day.toString().padLeft(2, '0')}',
-            'scheduled_time':
-                '${scheduleTime.timeOfDay.hour.toString().padLeft(2, '0')}:${scheduleTime.timeOfDay.minute.toString().padLeft(2, '0')}:00',
-            'status': 'taken',
-            'taken_at': DateTime.now().toIso8601String(),
-          });
-          debugPrint(
-            '✅ Marked as taken: ${medicine.name} at ${scheduleTime.timeOfDay}',
-          );
-        } else {
-          // Xóa intake record
-          final dateStr =
-              '${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}-${DateTime.now().day.toString().padLeft(2, '0')}';
-          final timeStr =
-              '${scheduleTime.timeOfDay.hour.toString().padLeft(2, '0')}:${scheduleTime.timeOfDay.minute.toString().padLeft(2, '0')}:00';
+        await Provider.of<MedicineProvider>(
+          context,
+          listen: false,
+        ).toggleTaken(user.id, medicine, scheduleTime, taken);
 
-          await Supabase.instance.client
-              .from('medicine_intakes')
-              .delete()
-              .eq('user_id', user.id)
-              .eq('user_medicine_id', medicine.id)
-              .eq('scheduled_date', dateStr)
-              .eq('scheduled_time', timeStr)
-              .eq('status', 'taken');
-
-          debugPrint('❌ Removed taken status: ${medicine.name}');
-        }
-        setState(() {});
+        debugPrint(taken ? '✅ Marked as taken' : '❌ Removed taken status');
       }
     } catch (e) {
       debugPrint('❌ Error toggling taken status: $e');

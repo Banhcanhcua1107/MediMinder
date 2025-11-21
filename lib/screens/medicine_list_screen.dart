@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:provider/provider.dart';
 import 'add_med_screen.dart';
+import 'history_screen.dart';
 import '../models/user_medicine.dart';
-import '../repositories/medicine_repository.dart';
+import '../providers/medicine_provider.dart';
 import '../widgets/custom_toast.dart';
-import '../services/notification_service.dart';
 
 const Color kPrimaryColor = Color(0xFF196EB0);
 const Color kBackgroundColor = Color(0xFFF8FAFC);
@@ -22,31 +23,21 @@ class MedicineListScreen extends StatefulWidget {
 }
 
 class _MedicineListScreenState extends State<MedicineListScreen> {
-  late MedicineRepository _medicineRepository;
-  late Future<List<UserMedicine>> _medicinesFuture;
-  late List<UserMedicine> _medicines = [];
-
   @override
   void initState() {
     super.initState();
-    final supabase = Supabase.instance.client;
-    _medicineRepository = MedicineRepository(supabase);
-    _loadMedicines();
-  }
-
-  void _loadMedicines() {
     final user = Supabase.instance.client.auth.currentUser;
     if (user != null) {
-      _medicinesFuture = _medicineRepository.getTodayMedicines(user.id).then((
-        meds,
-      ) {
-        setState(() {
-          _medicines = meds;
-        });
-        return meds;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Provider.of<MedicineProvider>(
+          context,
+          listen: false,
+        ).fetchMedicines(user.id);
       });
     }
   }
+
+  // _loadMedicines removed as it is handled by provider
 
   @override
   Widget build(BuildContext context) {
@@ -62,18 +53,17 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
     return Scaffold(
       backgroundColor: kBackgroundColor,
       body: SafeArea(
-        child: FutureBuilder<List<UserMedicine>>(
-          future: _medicinesFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
+        child: Consumer<MedicineProvider>(
+          builder: (context, provider, child) {
+            if (provider.isLoading && provider.medicines.isEmpty) {
               return const Center(child: CircularProgressIndicator());
             }
 
-            if (snapshot.hasError) {
-              return Center(child: Text('Lỗi: ${snapshot.error}'));
+            if (provider.error != null) {
+              return Center(child: Text('Lỗi: ${provider.error}'));
             }
 
-            final medicines = _medicines;
+            final medicines = provider.medicines;
 
             return ListView(
               padding: const EdgeInsets.only(
@@ -112,7 +102,12 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
                       ),
                       GestureDetector(
                         onTap: () {
-                          // TODO: Implement history feature
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const HistoryScreen(),
+                            ),
+                          );
                         },
                         child: Container(
                           width: 48,
@@ -170,9 +165,14 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
                         );
 
                         if (result == true) {
-                          setState(() {
-                            _loadMedicines();
-                          });
+                          final user =
+                              Supabase.instance.client.auth.currentUser;
+                          if (user != null) {
+                            Provider.of<MedicineProvider>(
+                              context,
+                              listen: false,
+                            ).fetchMedicines(user.id);
+                          }
                         }
                       },
                       child: Container(
@@ -262,23 +262,13 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
       },
       onDismissed: (direction) async {
         try {
-          // Xóa tất cả notifications
-          final notificationService = NotificationService();
-          for (int i = 0; i < 20; i++) {
-            await notificationService.cancelNotification(
-              NotificationService.generateNotificationId(medicine.id, i),
-            );
-          }
-
-          // Xóa thuốc
-          await _medicineRepository.deleteMedicine(medicine.id);
+          // Xóa thuốc via provider
+          await Provider.of<MedicineProvider>(
+            context,
+            listen: false,
+          ).deleteMedicine(medicine.id);
 
           if (mounted) {
-            // Xóa khỏi list mà không reload toàn bộ trang
-            setState(() {
-              _medicines.removeWhere((m) => m.id == medicine.id);
-            });
-
             showCustomToast(
               context,
               message: 'Đã xóa ${medicine.name}',
@@ -305,9 +295,13 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
           );
 
           if (result == true) {
-            setState(() {
-              _loadMedicines();
-            });
+            final user = Supabase.instance.client.auth.currentUser;
+            if (user != null) {
+              Provider.of<MedicineProvider>(
+                context,
+                listen: false,
+              ).fetchMedicines(user.id);
+            }
           }
         },
         child: Container(
