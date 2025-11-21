@@ -1,6 +1,8 @@
 {
-  "@@locale": "vi",
   "appTitle": "MediMinder",
+  "@appTitle": {
+    "description": "Tiêu đề ứng dụng"
+  },
   "settings": "Cài đặt",
   "account": "Tài khoản",
   "security": "Bảo mật",
@@ -8,27 +10,14 @@
   "notifications": "Thông báo",
   "darkMode": "Chế độ tối",
   "language": "Ngôn ngữ",
+  "vietnamese": "Tiếng Việt",
+  "english": "Tiếng Anh",
   "testAlarm": "Test Nhạc Chuông",
   "info": "Thông tin",
   "helpSupport": "Trợ giúp & Hỗ trợ",
   "termsPolicy": "Điều khoản & Chính sách",
   "logout": "Đăng xuất",
-  "logoutConfirmTitle": "Đăng xuất",
-  "logoutConfirmMessage": "Bạn có chắc chắn muốn đăng xuất?",
+  "logoutConfirmation": "Bạn có chắc chắn muốn đăng xuất?",
   "cancel": "Hủy",
-  "featureInDev": "Tính năng đang phát triển",
-  "notificationTestSent": "Đã gửi thông báo test",
-  "checkSoundNow": "Kiểm tra âm thanh ngay",
-  "error": "Lỗi",
-  "notificationSettings": "Cài đặt thông báo",
-  "allowNotifications": "Cho phép thông báo",
-  "sound": "Âm thanh",
-  "vibration": "Rung",
-  "reminderTime": "Thời gian nhắc nhở",
-  "helpAndSupport": "Trợ giúp & Hỗ trợ",
-  "faq": "Câu hỏi thường gặp",
-  "contactUs": "Liên hệ với chúng tôi",
-  "termsAndPrivacy": "Điều khoản & Chính sách",
-  "termsOfService": "Điều khoản dịch vụ",
-  "privacyPolicy": "Chính sách bảo mật"
+  "featureInDevelopment": "Tính năng đang phát triển"
 }

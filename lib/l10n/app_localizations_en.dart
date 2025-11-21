@@ -33,6 +33,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get language => 'Language';
 
   @override
+  String get vietnamese => 'Vietnamese';
+
+  @override
+  String get english => 'English';
+
+  @override
   String get testAlarm => 'Test Alarm';
 
   @override
@@ -48,56 +54,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logout => 'Log Out';
 
   @override
-  String get logoutConfirmTitle => 'Log Out';
-
-  @override
-  String get logoutConfirmMessage => 'Are you sure you want to log out?';
+  String get logoutConfirmation => 'Are you sure you want to log out?';
 
   @override
   String get cancel => 'Cancel';
 
   @override
-  String get featureInDev => 'Feature in development';
-
-  @override
-  String get notificationTestSent => 'Test notification sent';
-
-  @override
-  String get checkSoundNow => 'Check sound now';
-
-  @override
-  String get error => 'Error';
-
-  @override
-  String get notificationSettings => 'Notification Settings';
-
-  @override
-  String get allowNotifications => 'Allow Notifications';
-
-  @override
-  String get sound => 'Sound';
-
-  @override
-  String get vibration => 'Vibration';
-
-  @override
-  String get reminderTime => 'Reminder Time';
-
-  @override
-  String get helpAndSupport => 'Help & Support';
-
-  @override
-  String get faq => 'FAQ';
-
-  @override
-  String get contactUs => 'Contact Us';
-
-  @override
-  String get termsAndPrivacy => 'Terms & Privacy';
-
-  @override
-  String get termsOfService => 'Terms of Service';
-
-  @override
-  String get privacyPolicy => 'Privacy Policy';
+  String get featureInDevelopment => 'Feature in development';
 }

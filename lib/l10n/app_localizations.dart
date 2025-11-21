@@ -98,7 +98,7 @@ abstract class AppLocalizations {
     Locale('vi'),
   ];
 
-  /// No description provided for @appTitle.
+  /// Tiêu đề ứng dụng
   ///
   /// In vi, this message translates to:
   /// **'MediMinder'**
@@ -146,6 +146,18 @@ abstract class AppLocalizations {
   /// **'Ngôn ngữ'**
   String get language;
 
+  /// No description provided for @vietnamese.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tiếng Việt'**
+  String get vietnamese;
+
+  /// No description provided for @english.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tiếng Anh'**
+  String get english;
+
   /// No description provided for @testAlarm.
   ///
   /// In vi, this message translates to:
@@ -176,17 +188,11 @@ abstract class AppLocalizations {
   /// **'Đăng xuất'**
   String get logout;
 
-  /// No description provided for @logoutConfirmTitle.
-  ///
-  /// In vi, this message translates to:
-  /// **'Đăng xuất'**
-  String get logoutConfirmTitle;
-
-  /// No description provided for @logoutConfirmMessage.
+  /// No description provided for @logoutConfirmation.
   ///
   /// In vi, this message translates to:
   /// **'Bạn có chắc chắn muốn đăng xuất?'**
-  String get logoutConfirmMessage;
+  String get logoutConfirmation;
 
   /// No description provided for @cancel.
   ///
@@ -194,95 +200,11 @@ abstract class AppLocalizations {
   /// **'Hủy'**
   String get cancel;
 
-  /// No description provided for @featureInDev.
+  /// No description provided for @featureInDevelopment.
   ///
   /// In vi, this message translates to:
   /// **'Tính năng đang phát triển'**
-  String get featureInDev;
-
-  /// No description provided for @notificationTestSent.
-  ///
-  /// In vi, this message translates to:
-  /// **'Đã gửi thông báo test'**
-  String get notificationTestSent;
-
-  /// No description provided for @checkSoundNow.
-  ///
-  /// In vi, this message translates to:
-  /// **'Kiểm tra âm thanh ngay'**
-  String get checkSoundNow;
-
-  /// No description provided for @error.
-  ///
-  /// In vi, this message translates to:
-  /// **'Lỗi'**
-  String get error;
-
-  /// No description provided for @notificationSettings.
-  ///
-  /// In vi, this message translates to:
-  /// **'Cài đặt thông báo'**
-  String get notificationSettings;
-
-  /// No description provided for @allowNotifications.
-  ///
-  /// In vi, this message translates to:
-  /// **'Cho phép thông báo'**
-  String get allowNotifications;
-
-  /// No description provided for @sound.
-  ///
-  /// In vi, this message translates to:
-  /// **'Âm thanh'**
-  String get sound;
-
-  /// No description provided for @vibration.
-  ///
-  /// In vi, this message translates to:
-  /// **'Rung'**
-  String get vibration;
-
-  /// No description provided for @reminderTime.
-  ///
-  /// In vi, this message translates to:
-  /// **'Thời gian nhắc nhở'**
-  String get reminderTime;
-
-  /// No description provided for @helpAndSupport.
-  ///
-  /// In vi, this message translates to:
-  /// **'Trợ giúp & Hỗ trợ'**
-  String get helpAndSupport;
-
-  /// No description provided for @faq.
-  ///
-  /// In vi, this message translates to:
-  /// **'Câu hỏi thường gặp'**
-  String get faq;
-
-  /// No description provided for @contactUs.
-  ///
-  /// In vi, this message translates to:
-  /// **'Liên hệ với chúng tôi'**
-  String get contactUs;
-
-  /// No description provided for @termsAndPrivacy.
-  ///
-  /// In vi, this message translates to:
-  /// **'Điều khoản & Chính sách'**
-  String get termsAndPrivacy;
-
-  /// No description provided for @termsOfService.
-  ///
-  /// In vi, this message translates to:
-  /// **'Điều khoản dịch vụ'**
-  String get termsOfService;
-
-  /// No description provided for @privacyPolicy.
-  ///
-  /// In vi, this message translates to:
-  /// **'Chính sách bảo mật'**
-  String get privacyPolicy;
+  String get featureInDevelopment;
 }
 
 class _AppLocalizationsDelegate

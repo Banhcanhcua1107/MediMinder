@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'app.dart';
 import 'providers/app_provider.dart';
 import 'providers/medicine_provider.dart';
+import 'providers/language_provider.dart';
 import 'config/constants.dart';
 import 'services/notification_service.dart';
 import 'services/background_task_service.dart';
@@ -60,6 +61,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ImageUploadProvider()),
         ChangeNotifierProvider(create: (_) => MedicineProvider(supabase)),
+        ChangeNotifierProvider(create: (_) => LanguageProvider()),
       ],
       child: const MediMinderAppOverride(),
     ),

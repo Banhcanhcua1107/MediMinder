@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../l10n/app_localizations.dart';
 import 'personal_info_screen.dart';
 import '../widgets/custom_toast.dart';
 import '../providers/app_provider.dart';
+import '../providers/language_provider.dart';
 import '../services/google_signin_service.dart';
 import '../services/user_service.dart';
 import '../services/notification_service.dart';
@@ -28,7 +29,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _isDarkMode = false;
   String _userName = 'User';
   String _userEmail = 'email@example.com';
-  String? _avatarUrl; // Lưu URL avatar từ database
+  String? _avatarUrl;
 
   @override
   void initState() {
@@ -40,14 +41,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       final user = Supabase.instance.client.auth.currentUser;
       if (user != null && mounted) {
-        // Load từ auth
         String name =
             user.userMetadata?['full_name'] ??
             user.email?.split('@').first ??
             'User';
         String email = user.email ?? 'email@example.com';
 
-        // Load avatar từ database
         String? avatarUrl;
         try {
           final userService = UserService();
@@ -55,7 +54,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           final userInfo = await userService.getUserInfo(userId);
           if (userInfo != null) {
             avatarUrl = userInfo['avatar_url'];
-            name = userInfo['full_name'] ?? name; // Ưu tiên dùng từ DB
+            name = userInfo['full_name'] ?? name;
             email = userInfo['email'] ?? email;
           }
         } catch (e) {
@@ -68,8 +67,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _userEmail = email;
             _avatarUrl = avatarUrl;
           });
-          debugPrint('✅ User info loaded: $_userName, $_userEmail');
-          debugPrint('🖼️ Avatar URL: $_avatarUrl');
         }
       }
     } catch (e) {
@@ -77,8 +74,68 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  void _showLanguageBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Consumer<LanguageProvider>(
+          builder: (context, languageProvider, child) {
+            final l10n = AppLocalizations.of(context)!;
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    l10n.language,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ListTile(
+                    leading: const Text('🇻🇳', style: TextStyle(fontSize: 24)),
+                    title: Text(l10n.vietnamese),
+                    trailing: languageProvider.locale.languageCode == 'vi'
+                        ? const Icon(Icons.check, color: kPrimaryColor)
+                        : null,
+                    onTap: () {
+                      languageProvider.setLocale(const Locale('vi'));
+                      Navigator.pop(context);
+                    },
+                  ),
+                  ListTile(
+                    leading: const Text('🇺🇸', style: TextStyle(fontSize: 24)),
+                    title: Text(l10n.english),
+                    trailing: languageProvider.locale.languageCode == 'en'
+                        ? const Icon(Icons.check, color: kPrimaryColor)
+                        : null,
+                    onTap: () {
+                      languageProvider.setLocale(const Locale('en'));
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final languageProvider = Provider.of<LanguageProvider>(context);
+    final currentLanguage = languageProvider.locale.languageCode == 'vi'
+        ? l10n.vietnamese
+        : l10n.english;
+
     return Scaffold(
       backgroundColor: kBackgroundColor,
       body: SafeArea(
@@ -95,10 +152,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               padding: const EdgeInsets.only(bottom: 24),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
+                children: [
                   Text(
-                    'Cài đặt',
-                    style: TextStyle(
+                    l10n.settings,
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: kPrimaryTextColor,
@@ -203,7 +260,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 24),
 
                 // Account Section
-                _buildSectionHeader('Tài khoản'),
+                _buildSectionHeader(l10n.account),
                 const SizedBox(height: 8),
                 Container(
                   decoration: BoxDecoration(
@@ -219,7 +276,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   child: _buildMenuItem(
                     icon: Icons.shield,
-                    title: 'Bảo mật',
+                    title: l10n.security,
                     isFirst: true,
                     isLast: true,
                   ),
@@ -227,7 +284,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 24),
 
                 // General Settings Section
-                _buildSectionHeader('Cài đặt chung'),
+                _buildSectionHeader(l10n.generalSettings),
                 const SizedBox(height: 8),
                 Container(
                   decoration: BoxDecoration(
@@ -245,15 +302,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       _buildMenuItem(
                         icon: Icons.notifications,
-                        title: 'Thông báo',
+                        title: l10n.notifications,
                         isFirst: true,
                       ),
-                      _buildDarkModeToggle(),
+                      _buildDarkModeToggle(l10n.darkMode),
                       _buildMenuItemWithTrailing(
                         icon: Icons.translate,
-                        title: 'Ngôn ngữ',
-                        trailing: 'Tiếng Việt',
+                        title: l10n.language,
+                        trailing: currentLanguage,
                         isLast: true,
+                        onTap: () => _showLanguageBottomSheet(context),
                       ),
                       // Test Alarm Button
                       Divider(height: 1, color: kBorderColor, indent: 64),
@@ -262,7 +320,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           try {
                             await NotificationService().showNotification(
                               id: 999999,
-                              title: '🔔 Test Nhạc Chuông',
+                              title: '🔔 ${l10n.testAlarm}',
                               body: 'Đây là âm thanh báo thức của bạn!',
                               useAlarm: true,
                             );
@@ -306,10 +364,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ),
                               ),
                               const SizedBox(width: 16),
-                              const Expanded(
+                              Expanded(
                                 child: Text(
-                                  'Test Nhạc Chuông',
-                                  style: TextStyle(
+                                  l10n.testAlarm,
+                                  style: const TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w500,
                                     color: kPrimaryTextColor,
@@ -331,7 +389,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 24),
 
                 // Info Section
-                _buildSectionHeader('Thông tin'),
+                _buildSectionHeader(l10n.info),
                 const SizedBox(height: 8),
                 Container(
                   decoration: BoxDecoration(
@@ -349,12 +407,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       _buildMenuItem(
                         icon: Icons.help_outline,
-                        title: 'Trợ giúp & Hỗ trợ',
+                        title: l10n.helpSupport,
                         isFirst: true,
                       ),
                       _buildMenuItem(
                         icon: Icons.description,
-                        title: 'Điều khoản & Chính sách',
+                        title: l10n.termsPolicy,
                         isLast: true,
                       ),
                     ],
@@ -364,7 +422,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 // Logout Button
                 GestureDetector(
-                  onTap: _showLogoutDialog,
+                  onTap: () => _showLogoutDialog(l10n),
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     decoration: BoxDecoration(
@@ -373,12 +431,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Icon(Icons.logout, color: Color(0xFFDC2626), size: 20),
-                        SizedBox(width: 8),
+                      children: [
+                        const Icon(
+                          Icons.logout,
+                          color: Color(0xFFDC2626),
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
                         Text(
-                          'Đăng xuất',
-                          style: TextStyle(
+                          l10n.logout,
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFFDC2626),
@@ -426,7 +488,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             showCustomToast(
               context,
               message: title,
-              subtitle: 'Tính năng đang phát triển',
+              subtitle: AppLocalizations.of(context)!.featureInDevelopment,
               isSuccess: true,
             );
           },
@@ -473,19 +535,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required String trailing,
     bool isFirst = false,
     bool isLast = false,
+    VoidCallback? onTap,
   }) {
     return Column(
       children: [
         if (!isFirst) Divider(height: 1, color: kBorderColor, indent: 64),
         GestureDetector(
-          onTap: () {
-            showCustomToast(
-              context,
-              message: title,
-              subtitle: 'Tính năng đang phát triển',
-              isSuccess: true,
-            );
-          },
+          onTap:
+              onTap ??
+              () {
+                showCustomToast(
+                  context,
+                  message: title,
+                  subtitle: AppLocalizations.of(context)!.featureInDevelopment,
+                  isSuccess: true,
+                );
+              },
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
@@ -535,7 +600,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildDarkModeToggle() {
+  Widget _buildDarkModeToggle(String title) {
     return Column(
       children: [
         Divider(height: 1, color: kBorderColor, indent: 64),
@@ -559,7 +624,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
-                  'Chế độ tối',
+                  title,
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
@@ -590,29 +655,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _showLogoutDialog() {
+  void _showLogoutDialog(AppLocalizations l10n) {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Đăng xuất'),
-        content: const Text('Bạn có chắc chắn muốn đăng xuất?'),
+        title: Text(l10n.logout),
+        content: Text(l10n.logoutConfirmation),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Hủy'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () async {
               try {
-                // Đóng dialog xác nhận ngay
                 if (mounted) {
                   Navigator.pop(dialogContext);
                 }
 
                 debugPrint('🔐 Starting logout process...');
 
-                // Đăng xuất từ Google Sign In nếu tồn tại
                 try {
                   final googleSignInService = GoogleSignInService();
                   if (await googleSignInService.isGoogleSignedIn()) {
@@ -624,14 +687,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   debugPrint('⚠️ Google sign out error (not critical): $e');
                 }
 
-                // Đăng xuất từ Supabase
                 if (mounted) {
                   debugPrint('🔐 Signing out from Supabase...');
                   await context.read<AuthProvider>().signOut();
                   debugPrint('✅ Signed out from Supabase');
                 }
 
-                // Chuyển hướng ngay lập tức (StreamBuilder sẽ xử lý)
                 if (mounted) {
                   debugPrint('✅ Logout completed - Navigating to welcome...');
                   Navigator.of(
@@ -650,9 +711,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 }
               }
             },
-            child: const Text(
-              'Đăng xuất',
-              style: TextStyle(color: Color(0xFFDC2626)),
+            child: Text(
+              l10n.logout,
+              style: const TextStyle(color: Color(0xFFDC2626)),
             ),
           ),
         ],

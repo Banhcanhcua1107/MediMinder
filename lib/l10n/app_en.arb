@@ -1,6 +1,8 @@
 {
-  "@@locale": "en",
   "appTitle": "MediMinder",
+  "@appTitle": {
+    "description": "App title"
+  },
   "settings": "Settings",
   "account": "Account",
   "security": "Security",
@@ -8,27 +10,14 @@
   "notifications": "Notifications",
   "darkMode": "Dark Mode",
   "language": "Language",
+  "vietnamese": "Vietnamese",
+  "english": "English",
   "testAlarm": "Test Alarm",
   "info": "Info",
   "helpSupport": "Help & Support",
   "termsPolicy": "Terms & Policy",
   "logout": "Log Out",
-  "logoutConfirmTitle": "Log Out",
-  "logoutConfirmMessage": "Are you sure you want to log out?",
+  "logoutConfirmation": "Are you sure you want to log out?",
   "cancel": "Cancel",
-  "featureInDev": "Feature in development",
-  "notificationTestSent": "Test notification sent",
-  "checkSoundNow": "Check sound now",
-  "error": "Error",
-  "notificationSettings": "Notification Settings",
-  "allowNotifications": "Allow Notifications",
-  "sound": "Sound",
-  "vibration": "Vibration",
-  "reminderTime": "Reminder Time",
-  "helpAndSupport": "Help & Support",
-  "faq": "FAQ",
-  "contactUs": "Contact Us",
-  "termsAndPrivacy": "Terms & Privacy",
-  "termsOfService": "Terms of Service",
-  "privacyPolicy": "Privacy Policy"
+  "featureInDevelopment": "Feature in development"
 }
