@@ -336,7 +336,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get medicineDeleted => 'Xóa thành công';
 
   @override
-  String get errorSaving => 'Lỗi khi lưu thuốc';
+  String get errorSaving => 'Lỗi khi lưu';
 
   @override
   String get errorDeleting => 'Lỗi khi xóa thuốc';
@@ -795,7 +795,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get checkYourEmail => 'Vui lòng kiểm tra email của bạn';
 
   @override
-  String get tryAgain => 'Thử lại';
+  String get tryAgain => 'Vui lòng thử lại';
 
   @override
   String get forgotPasswordDescription =>
@@ -890,7 +890,7 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get lastUpdated => 'Cập nhật ngày 15/07';
+  String get lastUpdated => 'Cập nhật lần cuối';
 
   @override
   String get normal => 'Bình thường';
@@ -1052,5 +1052,170 @@ class AppLocalizationsVi extends AppLocalizations {
   String get durationDays => 'ngày';
 
   @override
-  String get healthMetricsUpdated => 'Your health metrics have been updated';
+  String get healthMetricsUpdated =>
+      'Thông tin chỉ số sức khỏe của bạn đã được cập nhật';
+
+  @override
+  String get myHealth => 'Sức khỏe của tôi';
+
+  @override
+  String get noHealthInfo => 'Chưa có thông tin sức khỏe';
+
+  @override
+  String get addInfoToStart => 'Thêm thông tin để bắt đầu theo dõi';
+
+  @override
+  String get enterInfo => 'Nhập thông tin';
+
+  @override
+  String get bmiStatus => 'BMI';
+
+  @override
+  String get bloodPressureStatus => 'Huyết áp';
+
+  @override
+  String get heartRateStatus => 'Nhịp tim';
+
+  @override
+  String get mmHg => 'mmHg';
+
+  @override
+  String get bpm => 'BPM';
+
+  @override
+  String get healthAssessment => 'Đánh giá sức khỏe';
+
+  @override
+  String get excellent => 'Xuất sắc';
+
+  @override
+  String get good => 'Tốt';
+
+  @override
+  String get caution => 'Cần chú ý';
+
+  @override
+  String get warning => 'Cảnh báo';
+
+  @override
+  String get bmiUnderweight => 'Thiếu cân';
+
+  @override
+  String get bmiNormal => 'Bình thường';
+
+  @override
+  String get bmiOverweight => 'Thừa cân';
+
+  @override
+  String get bmiObese => 'Béo phì';
+
+  @override
+  String get bpNormal => 'Bình thường';
+
+  @override
+  String get bpElevated => 'Cao hơn bình thường';
+
+  @override
+  String get bpStage1 => 'Cao huyết áp giai đoạn 1';
+
+  @override
+  String get bpStage2 => 'Cao huyết áp giai đoạn 2';
+
+  @override
+  String get bpCritical => 'Tình trạng tới hạn';
+
+  @override
+  String get hrNormal => 'Bình thường';
+
+  @override
+  String get hrSlow => 'Quá chậm';
+
+  @override
+  String get hrFast => 'Quá nhanh';
+
+  @override
+  String get recommendation => 'Khuyến nghị';
+
+  @override
+  String get bmiRecommendation =>
+      'Duy trì chế độ ăn uống lành mạnh và tập thể dục thường xuyên';
+
+  @override
+  String get bpRecommendation =>
+      'Theo dõi huyết áp thường xuyên và tư vấn bác sĩ nếu cao';
+
+  @override
+  String get hrRecommendation =>
+      'Kiểm tra lại nhịp tim và tư vấn bác sĩ nếu bất thường';
+
+  @override
+  String get addHealthInfo => 'Thêm thông tin sức khỏe';
+
+  @override
+  String get healthInfoSaved => 'Thông tin sức khỏe đã được lưu thành công';
+
+  @override
+  String get glucoseStatus => 'Đường huyết';
+
+  @override
+  String get cholesterolStatus => 'Cholesterol';
+
+  @override
+  String get mgDL => 'mg/dL';
+
+  @override
+  String get glucoseLow => 'Hạ đường huyết';
+
+  @override
+  String get glucoseNormal => 'Bình thường';
+
+  @override
+  String get glucosePrediabetic => 'Tiền tiểu đường';
+
+  @override
+  String get glucoseDiabetic => 'Tiểu đường';
+
+  @override
+  String get glucoseHigh => 'Cao rất nhiều';
+
+  @override
+  String get cholesterolDesirable => 'Mức lý tưởng';
+
+  @override
+  String get cholesterolBorderline => 'Cao hơi';
+
+  @override
+  String get cholesterolHigh => 'Cao';
+
+  @override
+  String get glucoseRecommendation =>
+      'Theo dõi đường huyết thường xuyên và tư vấn bác sĩ nếu cao';
+
+  @override
+  String get cholesterolRecommendation =>
+      'Duy trì chế độ ăn uống ít chất béo bão hòa và tập thể dục thường xuyên';
+
+  @override
+  String get height => 'Chiều cao';
+
+  @override
+  String get weight => 'Cân nặng';
+
+  @override
+  String get enterHeightAndWeight => 'Nhập chiều cao & cân nặng để tính';
+
+  @override
+  String get pleaseEnterHeight => 'Vui lòng nhập chiều cao';
+
+  @override
+  String get pleaseEnterWeight => 'Vui lòng nhập cân nặng';
+
+  @override
+  String get invalidHeight => 'Chiều cao không hợp lệ';
+
+  @override
+  String get invalidWeight => 'Cân nặng không hợp lệ';
+
+  @override
+  String get enterPositiveNumber => 'Vui lòng nhập số dương';
 }

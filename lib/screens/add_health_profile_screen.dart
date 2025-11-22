@@ -86,7 +86,7 @@ class _AddHealthProfileScreenState extends State<AddHealthProfileScreen> {
       showCustomToast(
         context,
         message: l10n.pleaseEnter,
-        subtitle: 'Vui lòng nhập chiều cao',
+        subtitle: l10n.pleaseEnterHeight,
         isSuccess: false,
       );
       return;
@@ -96,7 +96,7 @@ class _AddHealthProfileScreenState extends State<AddHealthProfileScreen> {
       showCustomToast(
         context,
         message: l10n.pleaseEnter,
-        subtitle: 'Vui lòng nhập cân nặng',
+        subtitle: l10n.pleaseEnterWeight,
         isSuccess: false,
       );
       return;
@@ -109,8 +109,8 @@ class _AddHealthProfileScreenState extends State<AddHealthProfileScreen> {
     if (heightVal == null || heightVal <= 0) {
       showCustomToast(
         context,
-        message: 'Chiều cao không hợp lệ',
-        subtitle: 'Vui lòng nhập số dương',
+        message: l10n.invalidHeight,
+        subtitle: l10n.enterPositiveNumber,
         isSuccess: false,
       );
       return;
@@ -119,8 +119,8 @@ class _AddHealthProfileScreenState extends State<AddHealthProfileScreen> {
     if (weightVal == null || weightVal <= 0) {
       showCustomToast(
         context,
-        message: 'Cân nặng không hợp lệ',
-        subtitle: 'Vui lòng nhập số dương',
+        message: l10n.invalidWeight,
+        subtitle: l10n.enterPositiveNumber,
         isSuccess: false,
       );
       return;
@@ -215,8 +215,8 @@ class _AddHealthProfileScreenState extends State<AddHealthProfileScreen> {
 
       showCustomToast(
         context,
-        message: 'Lỗi khi lưu',
-        subtitle: 'Vui lòng thử lại: ${e.toString()}',
+        message: l10n.errorSaving,
+        subtitle: '${l10n.tryAgain}: ${e.toString()}',
         isSuccess: false,
       );
     } finally {
@@ -289,7 +289,7 @@ class _AddHealthProfileScreenState extends State<AddHealthProfileScreen> {
                       Expanded(
                         child: _buildFloatingLabelInput(
                           controller: _heightController,
-                          label: 'Chiều cao',
+                          label: l10n.height,
                           placeholder: 'cm',
                         ),
                       ),
@@ -297,7 +297,7 @@ class _AddHealthProfileScreenState extends State<AddHealthProfileScreen> {
                       Expanded(
                         child: _buildFloatingLabelInput(
                           controller: _weightController,
-                          label: 'Cân nặng',
+                          label: l10n.weight,
                           placeholder: 'kg',
                         ),
                       ),
@@ -329,9 +329,9 @@ class _AddHealthProfileScreenState extends State<AddHealthProfileScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Chỉ số BMI',
-                          style: TextStyle(
+                        Text(
+                          l10n.bmiIndex,
+                          style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
                             color: kSecondaryTextColor,
@@ -348,9 +348,9 @@ class _AddHealthProfileScreenState extends State<AddHealthProfileScreen> {
                             ),
                           )
                         else
-                          const Text(
-                            'Nhập chiều cao & cân nặng để tính',
-                            style: TextStyle(
+                          Text(
+                            l10n.enterHeightAndWeight,
+                            style: const TextStyle(
                               fontSize: 14,
                               color: kSecondaryTextColor,
                             ),

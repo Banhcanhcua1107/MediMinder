@@ -749,7 +749,7 @@ abstract class AppLocalizations {
   /// No description provided for @errorSaving.
   ///
   /// In en, this message translates to:
-  /// **'Error saving medicine'**
+  /// **'Error saving'**
   String get errorSaving;
 
   /// No description provided for @errorDeleting.
@@ -1661,7 +1661,7 @@ abstract class AppLocalizations {
   /// No description provided for @tryAgain.
   ///
   /// In en, this message translates to:
-  /// **'Try again'**
+  /// **'Please try again'**
   String get tryAgain;
 
   /// No description provided for @forgotPasswordDescription.
@@ -1835,7 +1835,7 @@ abstract class AppLocalizations {
   /// No description provided for @lastUpdated.
   ///
   /// In en, this message translates to:
-  /// **'Last updated 15/07'**
+  /// **'Last Updated'**
   String get lastUpdated;
 
   /// No description provided for @normal.
@@ -2131,6 +2131,324 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your health metrics have been updated'**
   String get healthMetricsUpdated;
+
+  /// No description provided for @myHealth.
+  ///
+  /// In en, this message translates to:
+  /// **'My Health'**
+  String get myHealth;
+
+  /// No description provided for @noHealthInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'No health information'**
+  String get noHealthInfo;
+
+  /// No description provided for @addInfoToStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Add information to get started'**
+  String get addInfoToStart;
+
+  /// No description provided for @enterInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Info'**
+  String get enterInfo;
+
+  /// No description provided for @bmiStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'BMI'**
+  String get bmiStatus;
+
+  /// No description provided for @bloodPressureStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Blood Pressure'**
+  String get bloodPressureStatus;
+
+  /// No description provided for @heartRateStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Heart Rate'**
+  String get heartRateStatus;
+
+  /// No description provided for @mmHg.
+  ///
+  /// In en, this message translates to:
+  /// **'mmHg'**
+  String get mmHg;
+
+  /// No description provided for @bpm.
+  ///
+  /// In en, this message translates to:
+  /// **'BPM'**
+  String get bpm;
+
+  /// No description provided for @healthAssessment.
+  ///
+  /// In en, this message translates to:
+  /// **'Health Assessment'**
+  String get healthAssessment;
+
+  /// No description provided for @excellent.
+  ///
+  /// In en, this message translates to:
+  /// **'Excellent'**
+  String get excellent;
+
+  /// No description provided for @good.
+  ///
+  /// In en, this message translates to:
+  /// **'Good'**
+  String get good;
+
+  /// No description provided for @caution.
+  ///
+  /// In en, this message translates to:
+  /// **'Caution'**
+  String get caution;
+
+  /// No description provided for @warning.
+  ///
+  /// In en, this message translates to:
+  /// **'Warning'**
+  String get warning;
+
+  /// No description provided for @bmiUnderweight.
+  ///
+  /// In en, this message translates to:
+  /// **'Underweight'**
+  String get bmiUnderweight;
+
+  /// No description provided for @bmiNormal.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal weight'**
+  String get bmiNormal;
+
+  /// No description provided for @bmiOverweight.
+  ///
+  /// In en, this message translates to:
+  /// **'Overweight'**
+  String get bmiOverweight;
+
+  /// No description provided for @bmiObese.
+  ///
+  /// In en, this message translates to:
+  /// **'Obese'**
+  String get bmiObese;
+
+  /// No description provided for @bpNormal.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get bpNormal;
+
+  /// No description provided for @bpElevated.
+  ///
+  /// In en, this message translates to:
+  /// **'Elevated'**
+  String get bpElevated;
+
+  /// No description provided for @bpStage1.
+  ///
+  /// In en, this message translates to:
+  /// **'Stage 1 Hypertension'**
+  String get bpStage1;
+
+  /// No description provided for @bpStage2.
+  ///
+  /// In en, this message translates to:
+  /// **'Stage 2 Hypertension'**
+  String get bpStage2;
+
+  /// No description provided for @bpCritical.
+  ///
+  /// In en, this message translates to:
+  /// **'Hypertensive Crisis'**
+  String get bpCritical;
+
+  /// No description provided for @hrNormal.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get hrNormal;
+
+  /// No description provided for @hrSlow.
+  ///
+  /// In en, this message translates to:
+  /// **'Too slow'**
+  String get hrSlow;
+
+  /// No description provided for @hrFast.
+  ///
+  /// In en, this message translates to:
+  /// **'Too fast'**
+  String get hrFast;
+
+  /// No description provided for @recommendation.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommendation'**
+  String get recommendation;
+
+  /// No description provided for @bmiRecommendation.
+  ///
+  /// In en, this message translates to:
+  /// **'Maintain healthy diet and exercise regularly'**
+  String get bmiRecommendation;
+
+  /// No description provided for @bpRecommendation.
+  ///
+  /// In en, this message translates to:
+  /// **'Monitor blood pressure regularly and consult doctor if elevated'**
+  String get bpRecommendation;
+
+  /// No description provided for @hrRecommendation.
+  ///
+  /// In en, this message translates to:
+  /// **'Check heart rate again and consult doctor if abnormal'**
+  String get hrRecommendation;
+
+  /// No description provided for @addHealthInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Health Information'**
+  String get addHealthInfo;
+
+  /// No description provided for @healthInfoSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Health information saved successfully'**
+  String get healthInfoSaved;
+
+  /// No description provided for @glucoseStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Glucose'**
+  String get glucoseStatus;
+
+  /// No description provided for @cholesterolStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Cholesterol'**
+  String get cholesterolStatus;
+
+  /// No description provided for @mgDL.
+  ///
+  /// In en, this message translates to:
+  /// **'mg/dL'**
+  String get mgDL;
+
+  /// No description provided for @glucoseLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Low blood sugar'**
+  String get glucoseLow;
+
+  /// No description provided for @glucoseNormal.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get glucoseNormal;
+
+  /// No description provided for @glucosePrediabetic.
+  ///
+  /// In en, this message translates to:
+  /// **'Prediabetic'**
+  String get glucosePrediabetic;
+
+  /// No description provided for @glucoseDiabetic.
+  ///
+  /// In en, this message translates to:
+  /// **'Diabetic'**
+  String get glucoseDiabetic;
+
+  /// No description provided for @glucoseHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'Very high'**
+  String get glucoseHigh;
+
+  /// No description provided for @cholesterolDesirable.
+  ///
+  /// In en, this message translates to:
+  /// **'Desirable'**
+  String get cholesterolDesirable;
+
+  /// No description provided for @cholesterolBorderline.
+  ///
+  /// In en, this message translates to:
+  /// **'Borderline high'**
+  String get cholesterolBorderline;
+
+  /// No description provided for @cholesterolHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get cholesterolHigh;
+
+  /// No description provided for @glucoseRecommendation.
+  ///
+  /// In en, this message translates to:
+  /// **'Monitor blood sugar regularly and consult doctor if elevated'**
+  String get glucoseRecommendation;
+
+  /// No description provided for @cholesterolRecommendation.
+  ///
+  /// In en, this message translates to:
+  /// **'Maintain healthy diet low in saturated fats and exercise regularly'**
+  String get cholesterolRecommendation;
+
+  /// No description provided for @height.
+  ///
+  /// In en, this message translates to:
+  /// **'Height'**
+  String get height;
+
+  /// No description provided for @weight.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight'**
+  String get weight;
+
+  /// No description provided for @enterHeightAndWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter height & weight to calculate'**
+  String get enterHeightAndWeight;
+
+  /// No description provided for @pleaseEnterHeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter height'**
+  String get pleaseEnterHeight;
+
+  /// No description provided for @pleaseEnterWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter weight'**
+  String get pleaseEnterWeight;
+
+  /// No description provided for @invalidHeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid height'**
+  String get invalidHeight;
+
+  /// No description provided for @invalidWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid weight'**
+  String get invalidWeight;
+
+  /// No description provided for @enterPositiveNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a positive number'**
+  String get enterPositiveNumber;
 }
 
 class _AppLocalizationsDelegate

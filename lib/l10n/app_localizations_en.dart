@@ -336,7 +336,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get medicineDeleted => 'Medicine deleted';
 
   @override
-  String get errorSaving => 'Error saving medicine';
+  String get errorSaving => 'Error saving';
 
   @override
   String get errorDeleting => 'Error deleting medicine';
@@ -798,7 +798,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get checkYourEmail => 'Please check your email';
 
   @override
-  String get tryAgain => 'Try again';
+  String get tryAgain => 'Please try again';
 
   @override
   String get forgotPasswordDescription =>
@@ -893,7 +893,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get lastUpdated => 'Last updated 15/07';
+  String get lastUpdated => 'Last Updated';
 
   @override
   String get normal => 'Normal';
@@ -1057,4 +1057,168 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get healthMetricsUpdated => 'Your health metrics have been updated';
+
+  @override
+  String get myHealth => 'My Health';
+
+  @override
+  String get noHealthInfo => 'No health information';
+
+  @override
+  String get addInfoToStart => 'Add information to get started';
+
+  @override
+  String get enterInfo => 'Enter Info';
+
+  @override
+  String get bmiStatus => 'BMI';
+
+  @override
+  String get bloodPressureStatus => 'Blood Pressure';
+
+  @override
+  String get heartRateStatus => 'Heart Rate';
+
+  @override
+  String get mmHg => 'mmHg';
+
+  @override
+  String get bpm => 'BPM';
+
+  @override
+  String get healthAssessment => 'Health Assessment';
+
+  @override
+  String get excellent => 'Excellent';
+
+  @override
+  String get good => 'Good';
+
+  @override
+  String get caution => 'Caution';
+
+  @override
+  String get warning => 'Warning';
+
+  @override
+  String get bmiUnderweight => 'Underweight';
+
+  @override
+  String get bmiNormal => 'Normal weight';
+
+  @override
+  String get bmiOverweight => 'Overweight';
+
+  @override
+  String get bmiObese => 'Obese';
+
+  @override
+  String get bpNormal => 'Normal';
+
+  @override
+  String get bpElevated => 'Elevated';
+
+  @override
+  String get bpStage1 => 'Stage 1 Hypertension';
+
+  @override
+  String get bpStage2 => 'Stage 2 Hypertension';
+
+  @override
+  String get bpCritical => 'Hypertensive Crisis';
+
+  @override
+  String get hrNormal => 'Normal';
+
+  @override
+  String get hrSlow => 'Too slow';
+
+  @override
+  String get hrFast => 'Too fast';
+
+  @override
+  String get recommendation => 'Recommendation';
+
+  @override
+  String get bmiRecommendation =>
+      'Maintain healthy diet and exercise regularly';
+
+  @override
+  String get bpRecommendation =>
+      'Monitor blood pressure regularly and consult doctor if elevated';
+
+  @override
+  String get hrRecommendation =>
+      'Check heart rate again and consult doctor if abnormal';
+
+  @override
+  String get addHealthInfo => 'Add Health Information';
+
+  @override
+  String get healthInfoSaved => 'Health information saved successfully';
+
+  @override
+  String get glucoseStatus => 'Glucose';
+
+  @override
+  String get cholesterolStatus => 'Cholesterol';
+
+  @override
+  String get mgDL => 'mg/dL';
+
+  @override
+  String get glucoseLow => 'Low blood sugar';
+
+  @override
+  String get glucoseNormal => 'Normal';
+
+  @override
+  String get glucosePrediabetic => 'Prediabetic';
+
+  @override
+  String get glucoseDiabetic => 'Diabetic';
+
+  @override
+  String get glucoseHigh => 'Very high';
+
+  @override
+  String get cholesterolDesirable => 'Desirable';
+
+  @override
+  String get cholesterolBorderline => 'Borderline high';
+
+  @override
+  String get cholesterolHigh => 'High';
+
+  @override
+  String get glucoseRecommendation =>
+      'Monitor blood sugar regularly and consult doctor if elevated';
+
+  @override
+  String get cholesterolRecommendation =>
+      'Maintain healthy diet low in saturated fats and exercise regularly';
+
+  @override
+  String get height => 'Height';
+
+  @override
+  String get weight => 'Weight';
+
+  @override
+  String get enterHeightAndWeight => 'Enter height & weight to calculate';
+
+  @override
+  String get pleaseEnterHeight => 'Please enter height';
+
+  @override
+  String get pleaseEnterWeight => 'Please enter weight';
+
+  @override
+  String get invalidHeight => 'Invalid height';
+
+  @override
+  String get invalidWeight => 'Invalid weight';
+
+  @override
+  String get enterPositiveNumber => 'Please enter a positive number';
 }
