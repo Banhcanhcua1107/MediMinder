@@ -17,6 +17,11 @@
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" /> <!-- Dùng cho app chuyên báo thức -->
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    
+    <!-- Permissions for Health/Fitness and Google Fit -->
+    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
+    <uses-permission android:name="android.permission.BODY_SENSORS" />
+    <uses-permission android:name="android.permission.BODY_SENSORS_BACKGROUND" />
 
     <application
         android:label="mediminder"

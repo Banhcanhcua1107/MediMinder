@@ -20,12 +20,16 @@ android {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
 
+    packagingOptions {
+        exclude("META-INF/proguard/androidx-*.pro")
+    }
+
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.mediminder.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        minSdk = 26
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -42,6 +46,10 @@ android {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+    
+    // Health package dependencies
+    implementation("androidx.work:work-runtime-ktx:2.8.1")
+    implementation("com.google.android.gms:play-services-fitness:21.1.0")
 }
 
 flutter {

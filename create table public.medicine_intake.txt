@@ -1,0 +1,313 @@
+create table public.medicine_intakes (
+  id uuid not null default gen_random_uuid (),
+  user_id uuid not null,
+  user_medicine_id uuid null,
+  medicine_schedule_time_id uuid null,
+  medicine_name character varying(255) not null,
+  dosage_strength character varying(100) null,
+  quantity_per_dose integer null,
+  scheduled_date date not null,
+  scheduled_time time without time zone not null,
+  taken_at timestamp with time zone null,
+  status character varying(20) not null default 'pending'::character varying,
+  notes text null,
+  created_at timestamp with time zone null default CURRENT_TIMESTAMP,
+  updated_at timestamp with time zone null default CURRENT_TIMESTAMP,
+  constraint medicine_intakes_pkey primary key (id),
+  constraint medicine_intakes_medicine_schedule_time_id_fkey foreign KEY (medicine_schedule_time_id) references medicine_schedule_times (id) on delete set null,
+  constraint medicine_intakes_user_id_fkey foreign KEY (user_id) references users (id) on delete CASCADE,
+  constraint medicine_intakes_user_medicine_id_fkey foreign KEY (user_medicine_id) references user_medicines (id) on delete set null
+) TABLESPACE pg_default;
+
+create index IF not exists idx_medicine_intakes_user_id on public.medicine_intakes using btree (user_id) TABLESPACE pg_default;
+
+create index IF not exists idx_medicine_intakes_scheduled_date on public.medicine_intakes using btree (scheduled_date) TABLESPACE pg_default;
+
+create index IF not exists idx_medicine_intakes_status on public.medicine_intakes using btree (status) TABLESPACE pg_default;
+
+create index IF not exists idx_medicine_intakes_scheduled_datetime on public.medicine_intakes using btree (scheduled_date, scheduled_time) TABLESPACE pg_default;
+
+create trigger medicine_intakes_update_updated_at BEFORE
+update on medicine_intakes for EACH row
+execute FUNCTION update_updated_at_column ();
+////
+create table public.medicine_logs (
+  id uuid not null default gen_random_uuid (),
+  user_id uuid not null,
+  reminder_id uuid null,
+  medicine_name character varying(255) not null,
+  dosage character varying(100) null,
+  scheduled_time timestamp with time zone null,
+  taken_time timestamp with time zone null,
+  status character varying(20) null,
+  notes text null,
+  created_at timestamp with time zone null default CURRENT_TIMESTAMP,
+  constraint medicine_logs_pkey primary key (id),
+  constraint medicine_logs_reminder_id_fkey foreign KEY (reminder_id) references reminders (id) on delete set null,
+  constraint medicine_logs_user_id_fkey foreign KEY (user_id) references users (id) on delete CASCADE
+) TABLESPACE pg_default;
+
+create index IF not exists idx_medicine_logs_user_id on public.medicine_logs using btree (user_id) TABLESPACE pg_default;
+
+create index IF not exists idx_medicine_logs_scheduled_time on public.medicine_logs using btree (scheduled_time) TABLESPACE pg_default;
+
+create index IF not exists idx_medicine_logs_status on public.medicine_logs using btree (status) TABLESPACE pg_default;
+///
+create table public.medicine_schedule_times (
+  id uuid not null default gen_random_uuid (),
+  medicine_schedule_id uuid not null,
+  time_of_day time without time zone not null,
+  order_index integer null default 0,
+  created_at timestamp with time zone null default CURRENT_TIMESTAMP,
+  updated_at timestamp with time zone null default CURRENT_TIMESTAMP,
+  last_notification_sent_date date null,
+  notification_sent_count integer null default 0,
+  constraint medicine_schedule_times_pkey primary key (id),
+  constraint medicine_schedule_times_medicine_schedule_id_fkey foreign KEY (medicine_schedule_id) references medicine_schedules (id) on delete CASCADE
+) TABLESPACE pg_default;
+
+create index IF not exists idx_medicine_schedule_times_schedule_id on public.medicine_schedule_times using btree (medicine_schedule_id) TABLESPACE pg_default;
+
+create index IF not exists idx_medicine_schedule_times_time_of_day on public.medicine_schedule_times using btree (time_of_day) TABLESPACE pg_default;
+
+create index IF not exists idx_medicine_schedule_times_last_notification_sent_date on public.medicine_schedule_times using btree (last_notification_sent_date) TABLESPACE pg_default;
+
+create trigger medicine_schedule_times_update_updated_at BEFORE
+update on medicine_schedule_times for EACH row
+execute FUNCTION update_updated_at_column ();
+///
+create table public.medicine_schedules (
+  id uuid not null default gen_random_uuid (),
+  user_medicine_id uuid not null,
+  frequency_type character varying(50) not null,
+  custom_interval_days integer null,
+  days_of_week character varying(7) null,
+  created_at timestamp with time zone null default CURRENT_TIMESTAMP,
+  updated_at timestamp with time zone null default CURRENT_TIMESTAMP,
+  constraint medicine_schedules_pkey primary key (id),
+  constraint medicine_schedules_user_medicine_id_fkey foreign KEY (user_medicine_id) references user_medicines (id) on delete CASCADE
+) TABLESPACE pg_default;
+
+create index IF not exists idx_medicine_schedules_user_medicine_id on public.medicine_schedules using btree (user_medicine_id) TABLESPACE pg_default;
+
+create trigger medicine_schedules_update_updated_at BEFORE
+update on medicine_schedules for EACH row
+execute FUNCTION update_updated_at_column ();
+///
+create table public.medicines (
+  id uuid not null default gen_random_uuid (),
+  name character varying(255) not null,
+  generic_name character varying(255) null,
+  description text null,
+  dosage_form character varying(50) null,
+  dosage_strength character varying(50) null,
+  usage_instructions text null,
+  side_effects text null,
+  contraindications text null,
+  created_at timestamp with time zone null default CURRENT_TIMESTAMP,
+  updated_at timestamp with time zone null default CURRENT_TIMESTAMP,
+  constraint medicines_pkey primary key (id)
+) TABLESPACE pg_default;
+
+create index IF not exists idx_medicines_name on public.medicines using btree (name) TABLESPACE pg_default;
+
+create trigger medicines_update_updated_at BEFORE
+update on medicines for EACH row
+execute FUNCTION update_updated_at_column ();
+///
+create view public.missed_reminders as
+select
+  ml.id,
+  ml.user_id,
+  ml.medicine_name,
+  ml.scheduled_time,
+  ml.status,
+  u.email
+from
+  medicine_logs ml
+  join users u on ml.user_id = u.id
+where
+  (
+    ml.status::text = any (
+      array[
+        'missed'::character varying,
+        'skipped'::character varying
+      ]::text[]
+    )
+  )
+  and ml.scheduled_time >= (CURRENT_DATE - '7 days'::interval);
+///
+create table public.reminders (
+  id uuid not null default gen_random_uuid (),
+  user_id uuid not null,
+  medicine_id uuid null,
+  medicine_name character varying(255) not null,
+  dosage character varying(100) null,
+  frequency character varying(50) null,
+  times_per_day integer null,
+  time_of_day time without time zone [] null,
+  start_date date not null,
+  end_date date null,
+  reason_for_use character varying(255) null,
+  notes text null,
+  is_active boolean null default true,
+  created_at timestamp with time zone null default CURRENT_TIMESTAMP,
+  updated_at timestamp with time zone null default CURRENT_TIMESTAMP,
+  constraint reminders_pkey primary key (id),
+  constraint reminders_medicine_id_fkey foreign KEY (medicine_id) references medicines (id) on delete set null,
+  constraint reminders_user_id_fkey foreign KEY (user_id) references users (id) on delete CASCADE
+) TABLESPACE pg_default;
+
+create index IF not exists idx_reminders_user_id on public.reminders using btree (user_id) TABLESPACE pg_default;
+
+create index IF not exists idx_reminders_is_active on public.reminders using btree (is_active) TABLESPACE pg_default;
+
+create index IF not exists idx_reminders_start_date on public.reminders using btree (start_date) TABLESPACE pg_default;
+
+create trigger reminders_update_updated_at BEFORE
+update on reminders for EACH row
+execute FUNCTION update_updated_at_column ();
+///
+create view public.today_medicines as
+select
+  um.id as medicine_id,
+  um.user_id,
+  um.name,
+  um.dosage_strength,
+  um.quantity_per_dose,
+  um.dosage_form,
+  mst.id as schedule_time_id,
+  mst.time_of_day,
+  mst.order_index,
+  ms.frequency_type
+from
+  user_medicines um
+  join medicine_schedules ms on ms.user_medicine_id = um.id
+  join medicine_schedule_times mst on mst.medicine_schedule_id = ms.id
+where
+  um.is_active = true
+  and um.start_date <= CURRENT_DATE
+  and (
+    um.end_date is null
+    or um.end_date >= CURRENT_DATE
+  )
+order by
+  mst.time_of_day;
+///
+create view public.today_reminders as
+select
+  r.id,
+  r.user_id,
+  r.medicine_name,
+  r.dosage,
+  r.times_per_day,
+  r.time_of_day,
+  u.email,
+  u.full_name
+from
+  reminders r
+  join users u on r.user_id = u.id
+where
+  r.is_active = true
+  and r.start_date <= CURRENT_DATE
+  and (
+    r.end_date is null
+    or r.end_date >= CURRENT_DATE
+  );
+///
+create table public.user_medicines (
+  id uuid not null default gen_random_uuid (),
+  user_id uuid not null,
+  name character varying(255) not null,
+  dosage_strength character varying(100) null,
+  dosage_form character varying(50) null,
+  quantity_per_dose integer null,
+  start_date date not null,
+  end_date date null,
+  reason_for_use character varying(255) null,
+  notes text null,
+  is_active boolean null default true,
+  created_at timestamp with time zone null default CURRENT_TIMESTAMP,
+  updated_at timestamp with time zone null default CURRENT_TIMESTAMP,
+  constraint user_medicines_pkey primary key (id),
+  constraint user_medicines_user_id_fkey foreign KEY (user_id) references users (id) on delete CASCADE
+) TABLESPACE pg_default;
+
+create index IF not exists idx_user_medicines_user_id on public.user_medicines using btree (user_id) TABLESPACE pg_default;
+
+create index IF not exists idx_user_medicines_is_active on public.user_medicines using btree (is_active) TABLESPACE pg_default;
+
+create index IF not exists idx_user_medicines_start_date on public.user_medicines using btree (start_date) TABLESPACE pg_default;
+
+create trigger user_medicines_update_updated_at BEFORE
+update on user_medicines for EACH row
+execute FUNCTION update_updated_at_column ();
+///
+create table public.users (
+  id uuid not null,
+  email character varying not null,
+  full_name character varying(255) null,
+  phone_number character varying(20) null,
+  date_of_birth date null,
+  gender character varying(20) null,
+  avatar_url text null,
+  address character varying(255) null,
+  city character varying(100) null,
+  country character varying(100) null,
+  postal_code character varying(20) null,
+  blood_type character varying(10) null,
+  allergies text null,
+  medical_notes text null,
+  is_active boolean null default true,
+  is_verified boolean null default false,
+  created_at timestamp with time zone null default CURRENT_TIMESTAMP,
+  updated_at timestamp with time zone null default CURRENT_TIMESTAMP,
+  last_login_at timestamp with time zone null,
+  constraint users_pkey primary key (id),
+  constraint users_email_key unique (email),
+  constraint users_id_fkey foreign KEY (id) references auth.users (id) on delete CASCADE,
+  constraint valid_blood_type check (
+    (
+      (blood_type is null)
+      or (
+        (blood_type)::text = any (
+          (
+            array[
+              'A+'::character varying,
+              'A-'::character varying,
+              'B+'::character varying,
+              'B-'::character varying,
+              'O+'::character varying,
+              'O-'::character varying,
+              'AB+'::character varying,
+              'AB-'::character varying
+            ]
+          )::text[]
+        )
+      )
+    )
+  ),
+  constraint valid_gender check (
+    (
+      (gender)::text = any (
+        (
+          array[
+            'male'::character varying,
+            'female'::character varying,
+            'other'::character varying
+          ]
+        )::text[]
+      )
+    )
+  )
+) TABLESPACE pg_default;
+
+create index IF not exists idx_users_email on public.users using btree (email) TABLESPACE pg_default;
+
+create index IF not exists idx_users_is_active on public.users using btree (is_active) TABLESPACE pg_default;
+
+create index IF not exists idx_users_created_at on public.users using btree (created_at desc) TABLESPACE pg_default;
+
+create trigger users_update_updated_at BEFORE
+update on users for EACH row
+execute FUNCTION update_updated_at_column ();

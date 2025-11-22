@@ -9,6 +9,7 @@ import '../screens/auth/create_new_password_screen.dart';
 import '../screens/auth/password_changed_screen.dart';
 import '../screens/dashboard_screen.dart';
 import '../screens/add_med_screen.dart';
+import '../screens/health_screen.dart';
 
 class RouteNames {
   static const String welcome = '/';
@@ -22,6 +23,7 @@ class RouteNames {
   static const String home = '/home';
   static const String addMed = '/add-med';
   static const String profile = '/profile';
+  static const String health = '/health';
 }
 
 final Map<String, WidgetBuilder> appRoutes = {
@@ -33,6 +35,7 @@ final Map<String, WidgetBuilder> appRoutes = {
   RouteNames.home: (context) => const DashboardScreen(),
   RouteNames.addMed: (context) => const AddMedScreen(),
   RouteNames.profile: (context) => const DashboardScreen(),
+  RouteNames.health: (context) => const HealthScreen(),
 };
 
 // Route generator for routes with arguments

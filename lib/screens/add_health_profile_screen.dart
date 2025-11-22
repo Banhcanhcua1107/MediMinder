@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_toast.dart';
-import 'health_screen.dart';
 import '../l10n/app_localizations.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../repositories/health_metrics_repository.dart';
 
 const Color kPrimaryColor = Color(0xFF196EB0);
 const Color kBackgroundColor = Color(0xFFF8FAFC);
@@ -18,27 +19,38 @@ class AddHealthProfileScreen extends StatefulWidget {
 }
 
 class _AddHealthProfileScreenState extends State<AddHealthProfileScreen> {
-  late TextEditingController _bmiController;
+  late TextEditingController _heightController;
+  late TextEditingController _weightController;
   late TextEditingController _bloodPressureController;
   late TextEditingController _heartRateController;
   late TextEditingController _glucoseController;
   late TextEditingController _cholesterolController;
   late TextEditingController _notesController;
 
+  double? _calculatedBmi;
+  bool _isSaving = false;
+  final _healthRepo = HealthMetricsRepository();
+
   @override
   void initState() {
     super.initState();
-    _bmiController = TextEditingController();
+    _heightController = TextEditingController();
+    _weightController = TextEditingController();
     _bloodPressureController = TextEditingController();
     _heartRateController = TextEditingController();
     _glucoseController = TextEditingController();
     _cholesterolController = TextEditingController();
     _notesController = TextEditingController();
+
+    // Listen to height and weight changes to recalculate BMI
+    _heightController.addListener(_calculateBmi);
+    _weightController.addListener(_calculateBmi);
   }
 
   @override
   void dispose() {
-    _bmiController.dispose();
+    _heightController.dispose();
+    _weightController.dispose();
     _bloodPressureController.dispose();
     _heartRateController.dispose();
     _glucoseController.dispose();
@@ -47,56 +59,171 @@ class _AddHealthProfileScreenState extends State<AddHealthProfileScreen> {
     super.dispose();
   }
 
-  void _handleSave() {
+  /// Tính BMI từ chiều cao (cm) và cân nặng (kg)
+  /// BMI = cân nặng (kg) / (chiều cao (m))^2
+  void _calculateBmi() {
+    final height = double.tryParse(_heightController.text);
+    final weight = double.tryParse(_weightController.text);
+
+    if (height != null && weight != null && height > 0 && weight > 0) {
+      final heightInMeters = height / 100;
+      final bmi = weight / (heightInMeters * heightInMeters);
+      setState(() {
+        _calculatedBmi = double.parse(bmi.toStringAsFixed(1));
+      });
+    } else {
+      setState(() {
+        _calculatedBmi = null;
+      });
+    }
+  }
+
+  void _handleSave() async {
     final l10n = AppLocalizations.of(context)!;
-    // Validate inputs
-    if (_bmiController.text.isEmpty) {
-      showCustomToast(
-        context,
-        message: l10n.enterBmi,
-        subtitle: l10n.enterBmi,
-        isSuccess: false,
-      );
-      return;
-    }
 
-    if (_bloodPressureController.text.isEmpty) {
+    // Validate required inputs
+    if (_heightController.text.isEmpty) {
       showCustomToast(
         context,
         message: l10n.pleaseEnter,
-        subtitle: l10n.enterBloodPressure,
+        subtitle: 'Vui lòng nhập chiều cao',
         isSuccess: false,
       );
       return;
     }
 
-    if (_heartRateController.text.isEmpty) {
+    if (_weightController.text.isEmpty) {
       showCustomToast(
         context,
         message: l10n.pleaseEnter,
-        subtitle: l10n.enterHeartRate,
+        subtitle: 'Vui lòng nhập cân nặng',
         isSuccess: false,
       );
       return;
     }
 
-    // Save success
-    showCustomToast(
-      context,
-      message: l10n.savedSuccessfully,
-      subtitle: l10n.healthMetricsUpdated,
-      isSuccess: true,
-      duration: const Duration(seconds: 2),
-    );
+    // Validate numeric inputs
+    final heightVal = double.tryParse(_heightController.text);
+    final weightVal = double.tryParse(_weightController.text);
 
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HealthScreen()),
+    if (heightVal == null || heightVal <= 0) {
+      showCustomToast(
+        context,
+        message: 'Chiều cao không hợp lệ',
+        subtitle: 'Vui lòng nhập số dương',
+        isSuccess: false,
+      );
+      return;
+    }
+
+    if (weightVal == null || weightVal <= 0) {
+      showCustomToast(
+        context,
+        message: 'Cân nặng không hợp lệ',
+        subtitle: 'Vui lòng nhập số dương',
+        isSuccess: false,
+      );
+      return;
+    }
+
+    if (_isSaving) return;
+
+    setState(() => _isSaving = true);
+
+    try {
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Parse optional fields
+      int? systolic;
+      int? diastolic;
+      if (_bloodPressureController.text.isNotEmpty) {
+        final parts = _bloodPressureController.text.split('/');
+        if (parts.length == 2) {
+          systolic = int.tryParse(parts[0].trim());
+          diastolic = int.tryParse(parts[1].trim());
+        }
+      }
+
+      int? heartRate;
+      if (_heartRateController.text.isNotEmpty) {
+        heartRate = int.tryParse(_heartRateController.text);
+      }
+
+      double? glucose;
+      if (_glucoseController.text.isNotEmpty) {
+        glucose = double.tryParse(_glucoseController.text);
+      }
+
+      double? cholesterol;
+      if (_cholesterolController.text.isNotEmpty) {
+        cholesterol = double.tryParse(_cholesterolController.text);
+      }
+
+      // Save to database
+      final existingProfile = await _healthRepo.getUserHealthProfile(userId);
+
+      if (existingProfile == null) {
+        // Create new profile
+        await _healthRepo.createHealthProfile(
+          userId,
+          bmi: _calculatedBmi,
+          bloodPressureSystolic: systolic,
+          bloodPressureDiastolic: diastolic,
+          heartRate: heartRate,
+          glucoseLevel: glucose,
+          cholesterolLevel: cholesterol,
+          notes: _notesController.text.isEmpty ? null : _notesController.text,
+        );
+      } else {
+        // Update existing profile
+        await _healthRepo.updateHealthProfile(
+          userId,
+          bmi: _calculatedBmi,
+          bloodPressureSystolic: systolic,
+          bloodPressureDiastolic: diastolic,
+          heartRate: heartRate,
+          glucoseLevel: glucose,
+          cholesterolLevel: cholesterol,
+          notes: _notesController.text.isEmpty ? null : _notesController.text,
         );
       }
-    });
+
+      if (!mounted) return;
+
+      // Show success message
+      showCustomToast(
+        context,
+        message: l10n.savedSuccessfully,
+        subtitle: l10n.healthMetricsUpdated,
+        isSuccess: true,
+        duration: const Duration(seconds: 2),
+      );
+
+      // Navigate back after delay
+      await Future.delayed(const Duration(seconds: 2));
+
+      if (!mounted) return;
+
+      // Pop back to HealthScreen (which is inside DashboardScreen with bottom bar)
+      Navigator.pop(context);
+    } catch (e) {
+      print('Error saving health profile: $e');
+      if (!mounted) return;
+
+      showCustomToast(
+        context,
+        message: 'Lỗi khi lưu',
+        subtitle: 'Vui lòng thử lại: ${e.toString()}',
+        isSuccess: false,
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
+    }
   }
 
   @override
@@ -156,11 +283,80 @@ class _AddHealthProfileScreenState extends State<AddHealthProfileScreen> {
                 children: [
                   const SizedBox(height: 8),
 
-                  // BMI Input
-                  _buildFloatingLabelInput(
-                    controller: _bmiController,
-                    label: l10n.bmiIndex,
-                    placeholder: l10n.enterBmiValue,
+                  // Height & Weight Input
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildFloatingLabelInput(
+                          controller: _heightController,
+                          label: 'Chiều cao',
+                          placeholder: 'cm',
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildFloatingLabelInput(
+                          controller: _weightController,
+                          label: 'Cân nặng',
+                          placeholder: 'kg',
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // BMI Display (calculated)
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: _calculatedBmi != null
+                          ? const Color(0xFFE8F5E9)
+                          : kCardColor,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: _calculatedBmi != null
+                            ? Colors.green
+                            : kBorderColor,
+                        width: 1,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.03),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Chỉ số BMI',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: kSecondaryTextColor,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        if (_calculatedBmi != null)
+                          Text(
+                            '$_calculatedBmi (kg/m²)',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green,
+                            ),
+                          )
+                        else
+                          const Text(
+                            'Nhập chiều cao & cân nặng để tính',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: kSecondaryTextColor,
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 16),
 
@@ -270,29 +466,43 @@ class _AddHealthProfileScreenState extends State<AddHealthProfileScreen> {
               child: SafeArea(
                 top: false,
                 child: GestureDetector(
-                  onTap: _handleSave,
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    decoration: BoxDecoration(
-                      color: kPrimaryColor,
-                      borderRadius: BorderRadius.circular(30),
-                      boxShadow: [
-                        BoxShadow(
-                          color: kPrimaryColor.withValues(alpha: 0.3),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Text(
-                        l10n.save,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
+                  onTap: _isSaving ? null : _handleSave,
+                  child: Opacity(
+                    opacity: _isSaving ? 0.6 : 1.0,
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      decoration: BoxDecoration(
+                        color: kPrimaryColor,
+                        borderRadius: BorderRadius.circular(30),
+                        boxShadow: [
+                          BoxShadow(
+                            color: kPrimaryColor.withValues(alpha: 0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: _isSaving
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation(
+                                    Colors.white,
+                                  ),
+                                ),
+                              )
+                            : Text(
+                                l10n.save,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
                       ),
                     ),
                   ),
