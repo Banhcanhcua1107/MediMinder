@@ -226,14 +226,20 @@ class MedicineRepository {
   }
 
   /// Hard delete (Xóa vĩnh viễn khỏi database)
+  /// Cascade delete sẽ tự động xóa tất cả schedules và schedule_times
   Future<void> deleteMedicine(String medicineId) async {
     try {
-      await supabase
+      debugPrint('🗑️ Deleting medicine $medicineId from database...');
+
+      final response = await supabase
           .from('user_medicines')
-          .delete() // Xóa cứng
-          .eq('id', medicineId);
+          .delete()
+          .eq('id', medicineId)
+          .select(); // Select để kiểm tra được xóa bao nhiêu rows
+
+      debugPrint('✅ Medicine deleted successfully. Response: $response');
     } catch (e) {
-      print('Error deleting medicine: $e');
+      debugPrint('❌ Error deleting medicine: $e');
       rethrow;
     }
   }

@@ -2,6 +2,7 @@
 import 'package:workmanager/workmanager.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'notification_service.dart';
 import '../repositories/medicine_repository.dart';
 import '../config/constants.dart';
@@ -69,15 +70,15 @@ class BackgroundTaskService {
     }
   }
 
-  /// Lên lịch kiểm tra thuốc hàng giờ (mỗi 15 phút để không bỏ lỡ)
+  /// Lên lịch kiểm tra thuốc hàng giờ (mỗi 2 phút để giảm delay)
   Future<void> scheduleMedicineCheckTask() async {
     try {
       await Workmanager().registerPeriodicTask(
         taskCheckMedicineReminder,
         taskCheckMedicineReminder,
         frequency: const Duration(
-          minutes: 15,
-        ), // Kiểm tra mỗi 15 phút để không bỏ lỡ
+          minutes: 2,
+        ), // Kiểm tra mỗi 2 phút để giảm delay từ 5+ phút xuống còn <2 phút
         initialDelay: const Duration(seconds: 5),
         constraints: Constraints(
           networkType: NetworkType.connected,
@@ -88,7 +89,7 @@ class BackgroundTaskService {
         ),
       );
 
-      debugPrint('✅ Medicine check task scheduled (every 15 minutes)');
+      debugPrint('✅ Medicine check task scheduled (every 2 minutes)');
     } catch (e) {
       debugPrint('❌ Error scheduling medicine check task: $e');
     }
@@ -160,6 +161,11 @@ Future<void> _handleMedicineCheckTask() async {
       debugPrint('⚠️ No user logged in, skipping medicine check');
       return;
     }
+
+    // Lấy repeat interval setting từ SharedPreferences (default 10 phút)
+    final prefs = await SharedPreferences.getInstance();
+    final repeatInterval = prefs.getInt('repeat_notification_interval') ?? 10;
+    debugPrint('⏱️ Repeat notification interval: $repeatInterval minutes');
 
     // Lấy dữ liệu thuốc hôm nay
     final medicineRepository = MedicineRepository(supabase);
@@ -236,9 +242,10 @@ Future<void> _handleMedicineCheckTask() async {
         );
 
         if (!hasAlreadySentToday &&
-            differenceInSeconds <= 0 &&
+            differenceInSeconds <= 300 &&
             differenceInSeconds > -3600) {
-          // Thông báo ngay lập tức vì đã tới giờ
+          // Thông báo ngay lập tức vì đã tới giờ (hoặc chậm tối đa 5 phút)
+          // differenceInSeconds <= 300: Nếu đã qua giờ hoặc sắp tới (trong 5 phút)
           await notificationService.showImmediateNotification(
             id: notificationId,
             title: '⏰ Đến giờ uống thuốc! 💊',

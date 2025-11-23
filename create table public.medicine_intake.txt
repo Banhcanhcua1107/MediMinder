@@ -1,4 +1,50 @@
-create table public.medicine_intakes (
+1. create table public.health_metric_history (
+  id uuid not null default gen_random_uuid (),
+  user_id uuid not null,
+  metric_type character varying(50) not null,
+  value_numeric numeric(10, 2) null,
+  value_secondary smallint null,
+  unit character varying(20) null,
+  source character varying(50) null,
+  notes text null,
+  measured_at timestamp with time zone not null,
+  created_at timestamp with time zone null default CURRENT_TIMESTAMP,
+  updated_at timestamp with time zone null default CURRENT_TIMESTAMP,
+  constraint health_metric_history_pkey primary key (id),
+  constraint health_metric_history_user_id_fkey foreign KEY (user_id) references users (id) on delete CASCADE,
+  constraint check_metric_type check (
+    (
+      (metric_type)::text = any (
+        (
+          array[
+            'bmi'::character varying,
+            'blood_pressure'::character varying,
+            'heart_rate'::character varying,
+            'glucose'::character varying,
+            'cholesterol'::character varying,
+            'weight'::character varying
+          ]
+        )::text[]
+      )
+    )
+  )
+) TABLESPACE pg_default;
+
+create index IF not exists idx_health_metric_history_user_id on public.health_metric_history using btree (user_id) TABLESPACE pg_default;
+
+create index IF not exists idx_health_metric_history_metric_type on public.health_metric_history using btree (metric_type) TABLESPACE pg_default;
+
+create index IF not exists idx_health_metric_history_measured_at on public.health_metric_history using btree (measured_at desc) TABLESPACE pg_default;
+
+create index IF not exists idx_health_metric_history_source on public.health_metric_history using btree (source) TABLESPACE pg_default;
+
+create index IF not exists idx_health_metric_history_user_metric_date on public.health_metric_history using btree (user_id, metric_type, measured_at desc) TABLESPACE pg_default;
+
+create trigger health_metric_history_update_updated_at BEFORE
+update on health_metric_history for EACH row
+execute FUNCTION update_updated_at_column ();
+
+2. create table public.medicine_intakes (
   id uuid not null default gen_random_uuid (),
   user_id uuid not null,
   user_medicine_id uuid null,
@@ -30,8 +76,7 @@ create index IF not exists idx_medicine_intakes_scheduled_datetime on public.med
 create trigger medicine_intakes_update_updated_at BEFORE
 update on medicine_intakes for EACH row
 execute FUNCTION update_updated_at_column ();
-////
-create table public.medicine_logs (
+3. create table public.medicine_logs (
   id uuid not null default gen_random_uuid (),
   user_id uuid not null,
   reminder_id uuid null,
@@ -52,8 +97,7 @@ create index IF not exists idx_medicine_logs_user_id on public.medicine_logs usi
 create index IF not exists idx_medicine_logs_scheduled_time on public.medicine_logs using btree (scheduled_time) TABLESPACE pg_default;
 
 create index IF not exists idx_medicine_logs_status on public.medicine_logs using btree (status) TABLESPACE pg_default;
-///
-create table public.medicine_schedule_times (
+4. create table public.medicine_schedule_times (
   id uuid not null default gen_random_uuid (),
   medicine_schedule_id uuid not null,
   time_of_day time without time zone not null,
@@ -62,6 +106,8 @@ create table public.medicine_schedule_times (
   updated_at timestamp with time zone null default CURRENT_TIMESTAMP,
   last_notification_sent_date date null,
   notification_sent_count integer null default 0,
+  reminder_minutes_before integer null default 15,
+  reminder_enabled boolean null default true,
   constraint medicine_schedule_times_pkey primary key (id),
   constraint medicine_schedule_times_medicine_schedule_id_fkey foreign KEY (medicine_schedule_id) references medicine_schedules (id) on delete CASCADE
 ) TABLESPACE pg_default;
@@ -75,8 +121,7 @@ create index IF not exists idx_medicine_schedule_times_last_notification_sent_da
 create trigger medicine_schedule_times_update_updated_at BEFORE
 update on medicine_schedule_times for EACH row
 execute FUNCTION update_updated_at_column ();
-///
-create table public.medicine_schedules (
+5. create table public.medicine_schedules (
   id uuid not null default gen_random_uuid (),
   user_medicine_id uuid not null,
   frequency_type character varying(50) not null,
@@ -93,8 +138,7 @@ create index IF not exists idx_medicine_schedules_user_medicine_id on public.med
 create trigger medicine_schedules_update_updated_at BEFORE
 update on medicine_schedules for EACH row
 execute FUNCTION update_updated_at_column ();
-///
-create table public.medicines (
+6. create table public.medicines (
   id uuid not null default gen_random_uuid (),
   name character varying(255) not null,
   generic_name character varying(255) null,
@@ -114,8 +158,7 @@ create index IF not exists idx_medicines_name on public.medicines using btree (n
 create trigger medicines_update_updated_at BEFORE
 update on medicines for EACH row
 execute FUNCTION update_updated_at_column ();
-///
-create view public.missed_reminders as
+7. create view public.missed_reminders as
 select
   ml.id,
   ml.user_id,
@@ -136,8 +179,49 @@ where
     )
   )
   and ml.scheduled_time >= (CURRENT_DATE - '7 days'::interval);
-///
-create table public.reminders (
+8. create view public.monthly_health_metrics as
+select
+  user_id,
+  metric_type,
+  value_numeric,
+  value_secondary,
+  measured_at::date as measurement_date,
+  source
+from
+  health_metric_history
+where
+  measured_at >= (CURRENT_DATE - '30 days'::interval)
+order by
+  measured_at desc;
+8. create table public.notification_tracking (
+  id uuid not null default gen_random_uuid (),
+  user_id uuid not null,
+  user_medicine_id uuid not null,
+  medicine_schedule_time_id uuid not null,
+  medicine_intake_id uuid null,
+  scheduled_date date not null,
+  scheduled_time time without time zone not null,
+  reminder_scheduled_at timestamp with time zone not null,
+  notification_status character varying(50) not null default 'pending'::character varying,
+  notification_sent_at timestamp with time zone null,
+  repeat_count integer null default 0,
+  last_reminder_at timestamp with time zone null,
+  next_reminder_at timestamp with time zone null,
+  intake_status character varying(50) not null default 'pending'::character varying,
+  taken_at timestamp with time zone null,
+  created_at timestamp with time zone null default CURRENT_TIMESTAMP,
+  updated_at timestamp with time zone null default CURRENT_TIMESTAMP,
+  constraint notification_tracking_pkey primary key (id),
+  constraint notification_tracking_medicine_intake_id_fkey foreign KEY (medicine_intake_id) references medicine_intakes (id) on delete set null,
+  constraint notification_tracking_medicine_schedule_time_id_fkey foreign KEY (medicine_schedule_time_id) references medicine_schedule_times (id) on delete CASCADE,
+  constraint notification_tracking_user_id_fkey foreign KEY (user_id) references users (id) on delete CASCADE,
+  constraint notification_tracking_user_medicine_id_fkey foreign KEY (user_medicine_id) references user_medicines (id) on delete CASCADE
+) TABLESPACE pg_default;
+
+create index IF not exists idx_notification_tracking_user_id on public.notification_tracking using btree (user_id) TABLESPACE pg_default;
+
+create index IF not exists idx_notification_tracking_status on public.notification_tracking using btree (notification_status) TABLESPACE pg_default;
+9. create table public.reminders (
   id uuid not null default gen_random_uuid (),
   user_id uuid not null,
   medicine_id uuid null,
@@ -167,8 +251,22 @@ create index IF not exists idx_reminders_start_date on public.reminders using bt
 create trigger reminders_update_updated_at BEFORE
 update on reminders for EACH row
 execute FUNCTION update_updated_at_column ();
-///
-create view public.today_medicines as
+10. create view public.today_health_metrics as
+select
+  user_id,
+  metric_type,
+  value_numeric,
+  value_secondary,
+  unit,
+  source,
+  measured_at
+from
+  health_metric_history
+where
+  measured_at::date = CURRENT_DATE
+order by
+  measured_at desc;
+11. create view public.today_medicines as
 select
   um.id as medicine_id,
   um.user_id,
@@ -193,8 +291,7 @@ where
   )
 order by
   mst.time_of_day;
-///
-create view public.today_reminders as
+12. create view public.today_reminders as
 select
   r.id,
   r.user_id,
@@ -214,7 +311,32 @@ where
     r.end_date is null
     or r.end_date >= CURRENT_DATE
   );
-///
+13. create table public.user_health_profiles (
+  id uuid not null default gen_random_uuid (),
+  user_id uuid not null,
+  bmi numeric(5, 2) null,
+  blood_pressure_systolic smallint null,
+  blood_pressure_diastolic smallint null,
+  heart_rate smallint null,
+  glucose_level numeric(6, 2) null,
+  cholesterol_level numeric(6, 2) null,
+  notes text null,
+  last_updated_at timestamp with time zone null default CURRENT_TIMESTAMP,
+  created_at timestamp with time zone null default CURRENT_TIMESTAMP,
+  updated_at timestamp with time zone null default CURRENT_TIMESTAMP,
+  constraint user_health_profiles_pkey primary key (id),
+  constraint user_health_profiles_user_id_key unique (user_id),
+  constraint user_health_profiles_user_id_fkey foreign KEY (user_id) references users (id) on delete CASCADE
+) TABLESPACE pg_default;
+
+create index IF not exists idx_user_health_profiles_user_id on public.user_health_profiles using btree (user_id) TABLESPACE pg_default;
+
+create index IF not exists idx_user_health_profiles_last_updated_at on public.user_health_profiles using btree (last_updated_at desc) TABLESPACE pg_default;
+
+create trigger user_health_profiles_update_updated_at BEFORE
+update on user_health_profiles for EACH row
+execute FUNCTION update_updated_at_column ();
+14. 
 create table public.user_medicines (
   id uuid not null default gen_random_uuid (),
   user_id uuid not null,
@@ -242,8 +364,7 @@ create index IF not exists idx_user_medicines_start_date on public.user_medicine
 create trigger user_medicines_update_updated_at BEFORE
 update on user_medicines for EACH row
 execute FUNCTION update_updated_at_column ();
-///
-create table public.users (
+15. create table public.users (
   id uuid not null,
   email character varying not null,
   full_name character varying(255) null,
@@ -311,3 +432,17 @@ create index IF not exists idx_users_created_at on public.users using btree (cre
 create trigger users_update_updated_at BEFORE
 update on users for EACH row
 execute FUNCTION update_updated_at_column ();
+16. create view public.weekly_health_metrics as
+select
+  user_id,
+  metric_type,
+  value_numeric,
+  value_secondary,
+  measured_at::date as measurement_date,
+  source
+from
+  health_metric_history
+where
+  measured_at >= (CURRENT_DATE - '7 days'::interval)
+order by
+  measured_at desc;

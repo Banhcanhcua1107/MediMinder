@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../l10n/app_localizations.dart';
 import 'personal_info_screen.dart';
+import 'notification_settings_screen.dart';
 import '../widgets/custom_toast.dart';
 import '../providers/app_provider.dart';
 import '../providers/language_provider.dart';
@@ -304,6 +305,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         icon: Icons.notifications,
                         title: l10n.notifications,
                         isFirst: true,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const NotificationSettingsScreen(),
+                            ),
+                          );
+                        },
                       ),
                       _buildDarkModeToggle(l10n.darkMode),
                       _buildMenuItemWithTrailing(
@@ -479,19 +489,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required String title,
     bool isFirst = false,
     bool isLast = false,
+    VoidCallback? onTap,
   }) {
     return Column(
       children: [
         if (!isFirst) Divider(height: 1, color: kBorderColor, indent: 64),
         GestureDetector(
-          onTap: () {
-            showCustomToast(
-              context,
-              message: title,
-              subtitle: AppLocalizations.of(context)!.featureInDevelopment,
-              isSuccess: true,
-            );
-          },
+          onTap:
+              onTap ??
+              () {
+                showCustomToast(
+                  context,
+                  message: title,
+                  subtitle: AppLocalizations.of(context)!.featureInDevelopment,
+                  isSuccess: true,
+                );
+              },
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(

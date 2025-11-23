@@ -1254,4 +1254,62 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get markAllTaken => 'Mark All Taken';
+
+  @override
+  String get enableNotifications => 'Enable Notifications';
+
+  @override
+  String get notificationDescription => 'Get reminders for your medicines';
+
+  @override
+  String get notificationsEnabled => 'Notifications enabled';
+
+  @override
+  String get notificationsDisabled => 'Notifications disabled';
+
+  @override
+  String get medicineReminders => 'MEDICINE REMINDERS';
+
+  @override
+  String get enableMedicineReminders => 'Enable Medicine Reminders';
+
+  @override
+  String get reminderTime => 'Reminder Time';
+
+  @override
+  String get reminderTimeSet => 'Reminder time set';
+
+  @override
+  String get notSet => 'Not set';
+
+  @override
+  String get reminderBefore => 'Remind me';
+
+  @override
+  String get minutes => 'minutes';
+
+  @override
+  String get remindBefore => 'Remind before';
+
+  @override
+  String get repeatInterval => 'Repeat every';
+
+  @override
+  String get repeatIntervalSet => 'Repeat every';
+
+  @override
+  String get soundAndVibration => 'SOUND & VIBRATION';
+
+  @override
+  String get notificationSound => 'Notification Sound';
+
+  @override
+  String get vibration => 'Vibration';
+
+  @override
+  String get testNotificationDescription => 'Send test notification with alarm';
+
+  @override
+  String get notificationInfo =>
+      'Enable notifications to receive timely reminders for taking your medicines. Customize sound, vibration, and reminder timing.';
 }

@@ -1037,7 +1037,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get timeTaken => 'Thời gian uống';
 
   @override
-  String get addTime => '+ Thêm thời gian';
+  String get addTime => 'Thêm thời gian';
 
   @override
   String get exampleNotes => 'ví dụ: Uống sau ăn...';
@@ -1251,4 +1251,63 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get markAllTaken => 'Đánh dấu tất cả đã uống';
+
+  @override
+  String get enableNotifications => 'Bật thông báo';
+
+  @override
+  String get notificationDescription => 'Nhận nhắc nhở uống thuốc';
+
+  @override
+  String get notificationsEnabled => 'Đã bật thông báo';
+
+  @override
+  String get notificationsDisabled => 'Đã tắt thông báo';
+
+  @override
+  String get medicineReminders => 'NHẮC NHỞ UỐNG THUỐC';
+
+  @override
+  String get enableMedicineReminders => 'Bật nhắc nhở uống thuốc';
+
+  @override
+  String get reminderTime => 'Giờ nhắc nhở';
+
+  @override
+  String get reminderTimeSet => 'Đã đặt giờ nhắc nhở';
+
+  @override
+  String get notSet => 'Chưa đặt';
+
+  @override
+  String get reminderBefore => 'Nhắc nhở trước';
+
+  @override
+  String get minutes => 'phút';
+
+  @override
+  String get remindBefore => 'Nhắc trước';
+
+  @override
+  String get repeatInterval => 'Lặp lại mỗi';
+
+  @override
+  String get repeatIntervalSet => 'Lặp lại mỗi';
+
+  @override
+  String get soundAndVibration => 'ÂM THANH & RÈN';
+
+  @override
+  String get notificationSound => 'Âm thanh thông báo';
+
+  @override
+  String get vibration => 'Rền';
+
+  @override
+  String get testNotificationDescription =>
+      'Gửi thông báo test với âm báo thức';
+
+  @override
+  String get notificationInfo =>
+      'Bật thông báo để nhận nhắc nhở kịp thời khi uống thuốc. Tùy chỉnh âm thanh, rền và thời gian nhắc nhở.';
 }

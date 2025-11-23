@@ -35,6 +35,8 @@ class MedicineProvider extends ChangeNotifier {
 
   Future<void> deleteMedicine(String medicineId) async {
     try {
+      debugPrint('🗑️ Provider: Starting delete for medicine $medicineId');
+
       // 1. Cancel notifications
       final notificationService = NotificationService();
       for (int i = 0; i < 20; i++) {
@@ -42,13 +44,18 @@ class MedicineProvider extends ChangeNotifier {
           NotificationService.generateNotificationId(medicineId, i),
         );
       }
+      debugPrint('✅ Notifications cancelled for $medicineId');
 
       // 2. Delete from DB
       await _medicineRepository.deleteMedicine(medicineId);
+      debugPrint('✅ Medicine deleted from database');
 
       // 3. Update local state
       _medicines.removeWhere((m) => m.id == medicineId);
+      debugPrint('✅ Medicine removed from local state');
+
       notifyListeners();
+      debugPrint('✅ Listeners notified');
     } catch (e) {
       debugPrint('❌ Error deleting medicine: $e');
       rethrow;

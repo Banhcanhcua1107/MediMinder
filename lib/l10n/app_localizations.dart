@@ -2515,6 +2515,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Mark All Taken'**
   String get markAllTaken;
+
+  /// No description provided for @enableNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Notifications'**
+  String get enableNotifications;
+
+  /// No description provided for @notificationDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Get reminders for your medicines'**
+  String get notificationDescription;
+
+  /// No description provided for @notificationsEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications enabled'**
+  String get notificationsEnabled;
+
+  /// No description provided for @notificationsDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications disabled'**
+  String get notificationsDisabled;
+
+  /// No description provided for @medicineReminders.
+  ///
+  /// In en, this message translates to:
+  /// **'MEDICINE REMINDERS'**
+  String get medicineReminders;
+
+  /// No description provided for @enableMedicineReminders.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Medicine Reminders'**
+  String get enableMedicineReminders;
+
+  /// No description provided for @reminderTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder Time'**
+  String get reminderTime;
+
+  /// No description provided for @reminderTimeSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder time set'**
+  String get reminderTimeSet;
+
+  /// No description provided for @notSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set'**
+  String get notSet;
+
+  /// No description provided for @reminderBefore.
+  ///
+  /// In en, this message translates to:
+  /// **'Remind me'**
+  String get reminderBefore;
+
+  /// No description provided for @minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'minutes'**
+  String get minutes;
+
+  /// No description provided for @remindBefore.
+  ///
+  /// In en, this message translates to:
+  /// **'Remind before'**
+  String get remindBefore;
+
+  /// No description provided for @repeatInterval.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat every'**
+  String get repeatInterval;
+
+  /// No description provided for @repeatIntervalSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat every'**
+  String get repeatIntervalSet;
+
+  /// No description provided for @soundAndVibration.
+  ///
+  /// In en, this message translates to:
+  /// **'SOUND & VIBRATION'**
+  String get soundAndVibration;
+
+  /// No description provided for @notificationSound.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification Sound'**
+  String get notificationSound;
+
+  /// No description provided for @vibration.
+  ///
+  /// In en, this message translates to:
+  /// **'Vibration'**
+  String get vibration;
+
+  /// No description provided for @testNotificationDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Send test notification with alarm'**
+  String get testNotificationDescription;
+
+  /// No description provided for @notificationInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable notifications to receive timely reminders for taking your medicines. Customize sound, vibration, and reminder timing.'**
+  String get notificationInfo;
 }
 
 class _AppLocalizationsDelegate

@@ -593,198 +593,275 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       return intakeDateStr == todayStr && intake.status == 'taken';
     });
 
-    return GestureDetector(
-      onTap: () async {
-        final result = await Navigator.push<bool>(
-          context,
-          MaterialPageRoute(
-            builder: (context) => AddMedScreen(medicineId: medicine.id),
+    return Dismissible(
+      key: Key(medicine.id),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFDC2626),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 16),
+        child: const Icon(Icons.delete, color: Colors.white, size: 28),
+      ),
+      confirmDismiss: (direction) async {
+        final shouldDelete = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: Colors.white,
+            title: const Text(
+              'Xóa thuốc',
+              style: TextStyle(
+                color: Color(0xFF111418),
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            content: Text(
+              'Bạn chắc chắn muốn xóa "${medicine.name}"?',
+              style: const TextStyle(color: Color(0xFF666D80), fontSize: 14),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text(
+                  'Hủy',
+                  style: TextStyle(color: Color(0xFF666D80)),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text(
+                  'Xóa',
+                  style: TextStyle(color: Color(0xFFDC2626)),
+                ),
+              ),
+            ],
           ),
         );
-        if (result == true) {
-          final user = Supabase.instance.client.auth.currentUser;
-          if (user != null) {
-            Provider.of<MedicineProvider>(
+        return shouldDelete ?? false;
+      },
+      onDismissed: (direction) async {
+        try {
+          await Provider.of<MedicineProvider>(
+            context,
+            listen: false,
+          ).deleteMedicine(medicine.id);
+
+          if (mounted) {
+            showCustomToast(
               context,
-              listen: false,
-            ).fetchMedicines(user.id);
+              message: 'Đã xóa ${medicine.name}',
+              isSuccess: true,
+            );
+          }
+        } catch (e) {
+          if (mounted) {
+            showCustomToast(
+              context,
+              message: 'Lỗi khi xóa: $e',
+              isSuccess: false,
+            );
           }
         }
       },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: kCardColor,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isTaken
-                ? kSuccessColor.withOpacity(0.3)
-                : Colors.transparent,
-            width: 2,
+      child: GestureDetector(
+        onTap: () async {
+          final result = await Navigator.push<bool>(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AddMedScreen(medicineId: medicine.id),
+            ),
+          );
+          if (result == true) {
+            final user = Supabase.instance.client.auth.currentUser;
+            if (user != null) {
+              Provider.of<MedicineProvider>(
+                context,
+                listen: false,
+              ).fetchMedicines(user.id);
+            }
+          }
+        },
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: kCardColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isTaken
+                  ? kSuccessColor.withOpacity(0.3)
+                  : Colors.transparent,
+              width: 2,
+            ),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
+            ],
           ),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
-          ],
-        ),
-        child: Column(
-          children: [
-            // Header row
-            Row(
-              children: [
-                // Icon with background
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: isTaken
-                        ? kSuccessColor.withOpacity(0.1)
-                        : kAccentColor,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Center(
-                    child: Icon(
-                      isTaken ? Icons.check_circle : Icons.medication,
-                      color: isTaken ? kSuccessColor : kPrimaryColor,
-                      size: 28,
+          child: Column(
+            children: [
+              // Header row
+              Row(
+                children: [
+                  // Icon with background
+                  Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: isTaken
+                          ? kSuccessColor.withOpacity(0.1)
+                          : kAccentColor,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Center(
+                      child: Icon(
+                        isTaken ? Icons.check_circle : Icons.medication,
+                        color: isTaken ? kSuccessColor : kPrimaryColor,
+                        size: 28,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                // Medicine info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        medicine.name,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: kPrimaryTextColor,
+                  const SizedBox(width: 12),
+                  // Medicine info
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          medicine.name,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: kPrimaryTextColor,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                        const SizedBox(height: 4),
+                        Text(
+                          '${l10n.dosageInfo}: ${medicine.quantityPerDose} × ${medicine.dosageStrength}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: kSecondaryTextColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Status badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isTaken
+                          ? kSuccessColor.withOpacity(0.1)
+                          : kWarningColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      isTaken ? l10n.taken : l10n.untaken,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: isTaken ? kSuccessColor : kWarningColor,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${l10n.dosageInfo}: ${medicine.quantityPerDose} × ${medicine.dosageStrength}',
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              // Time and action row
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.intakeTime,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: kSecondaryTextColor,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: medicine.scheduleTimes.take(3).map((
+                            scheduleTime,
+                          ) {
+                            final timeStr =
+                                '${scheduleTime.timeOfDay.hour.toString().padLeft(2, '0')}:${scheduleTime.timeOfDay.minute.toString().padLeft(2, '0')}';
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
+                              margin: const EdgeInsets.only(right: 6),
+                              decoration: BoxDecoration(
+                                color: kAccentColor,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                timeStr,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: kPrimaryColor,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Action button
+                  SizedBox(
+                    height: 40,
+                    width: 100,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isTaken
+                            ? kSuccessColor
+                            : kPrimaryColor,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      onPressed: () async {
+                        if (medicine.scheduleTimes.isNotEmpty) {
+                          final firstSchedule = medicine.scheduleTimes.first;
+                          await _handleToggleTaken(
+                            medicine,
+                            firstSchedule,
+                            !isTaken,
+                          );
+                        }
+                      },
+                      child: Text(
+                        isTaken ? l10n.taken : l10n.markTaken,
                         style: const TextStyle(
                           fontSize: 12,
-                          color: kSecondaryTextColor,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Status badge
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isTaken
-                        ? kSuccessColor.withOpacity(0.1)
-                        : kWarningColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    isTaken ? l10n.taken : l10n.untaken,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: isTaken ? kSuccessColor : kWarningColor,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            // Time and action row
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.intakeTime,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: kSecondaryTextColor,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: medicine.scheduleTimes.take(3).map((
-                          scheduleTime,
-                        ) {
-                          final timeStr =
-                              '${scheduleTime.timeOfDay.hour.toString().padLeft(2, '0')}:${scheduleTime.timeOfDay.minute.toString().padLeft(2, '0')}';
-                          return Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
-                            ),
-                            margin: const EdgeInsets.only(right: 6),
-                            decoration: BoxDecoration(
-                              color: kAccentColor,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              timeStr,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: kPrimaryColor,
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                // Action button
-                SizedBox(
-                  height: 40,
-                  width: 100,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isTaken ? kSuccessColor : kPrimaryColor,
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        textAlign: TextAlign.center,
                       ),
                     ),
-                    onPressed: () async {
-                      if (medicine.scheduleTimes.isNotEmpty) {
-                        final firstSchedule = medicine.scheduleTimes.first;
-                        await _handleToggleTaken(
-                          medicine,
-                          firstSchedule,
-                          !isTaken,
-                        );
-                      }
-                    },
-                    child: Text(
-                      isTaken ? l10n.taken : l10n.markTaken,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
