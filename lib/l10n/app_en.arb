@@ -588,5 +588,17 @@
   "invalidWeight": "Invalid weight",
   "enterPositiveNumber": "Please enter a positive number",
   "errorSaving": "Error saving",
-  "tryAgain": "Please try again"
+  "tryAgain": "Please try again",
+  "medicinesScheduled": "Medicines Scheduled",
+  "nextIntake": "Next Intake",
+  "dosageInfo": "Dosage",
+  "intakeTime": "Intake Time",
+  "medicineStatus": "Status",
+  "untaken": "Untaken",
+  "upcoming": "Upcoming",
+  "overdue": "Overdue",
+  "allMedicinesTaken": "All medicines taken!",
+  "noMedicinesScheduled": "No medicines scheduled for today",
+  "viewDetails": "View Details",
+  "markAllTaken": "Mark All Taken"
 }

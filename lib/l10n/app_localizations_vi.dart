@@ -1218,4 +1218,37 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get enterPositiveNumber => 'Vui lòng nhập số dương';
+
+  @override
+  String get medicinesScheduled => 'Thuốc trong lịch';
+
+  @override
+  String get nextIntake => 'Lần uống tiếp theo';
+
+  @override
+  String get dosageInfo => 'Liều dùng';
+
+  @override
+  String get intakeTime => 'Giờ uống';
+
+  @override
+  String get medicineStatus => 'Trạng thái';
+
+  @override
+  String get untaken => 'Chưa uống';
+
+  @override
+  String get overdue => 'Quá hạn';
+
+  @override
+  String get allMedicinesTaken => 'Đã uống hết thuốc!';
+
+  @override
+  String get noMedicinesScheduled => 'Hôm nay không có thuốc trong lịch';
+
+  @override
+  String get viewDetails => 'Xem chi tiết';
+
+  @override
+  String get markAllTaken => 'Đánh dấu tất cả đã uống';
 }

@@ -1221,4 +1221,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enterPositiveNumber => 'Please enter a positive number';
+
+  @override
+  String get medicinesScheduled => 'Medicines Scheduled';
+
+  @override
+  String get nextIntake => 'Next Intake';
+
+  @override
+  String get dosageInfo => 'Dosage';
+
+  @override
+  String get intakeTime => 'Intake Time';
+
+  @override
+  String get medicineStatus => 'Status';
+
+  @override
+  String get untaken => 'Untaken';
+
+  @override
+  String get overdue => 'Overdue';
+
+  @override
+  String get allMedicinesTaken => 'All medicines taken!';
+
+  @override
+  String get noMedicinesScheduled => 'No medicines scheduled for today';
+
+  @override
+  String get viewDetails => 'View Details';
+
+  @override
+  String get markAllTaken => 'Mark All Taken';
 }

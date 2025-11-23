@@ -2449,6 +2449,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please enter a positive number'**
   String get enterPositiveNumber;
+
+  /// No description provided for @medicinesScheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'Medicines Scheduled'**
+  String get medicinesScheduled;
+
+  /// No description provided for @nextIntake.
+  ///
+  /// In en, this message translates to:
+  /// **'Next Intake'**
+  String get nextIntake;
+
+  /// No description provided for @dosageInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Dosage'**
+  String get dosageInfo;
+
+  /// No description provided for @intakeTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Intake Time'**
+  String get intakeTime;
+
+  /// No description provided for @medicineStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get medicineStatus;
+
+  /// No description provided for @untaken.
+  ///
+  /// In en, this message translates to:
+  /// **'Untaken'**
+  String get untaken;
+
+  /// No description provided for @overdue.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue'**
+  String get overdue;
+
+  /// No description provided for @allMedicinesTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'All medicines taken!'**
+  String get allMedicinesTaken;
+
+  /// No description provided for @noMedicinesScheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'No medicines scheduled for today'**
+  String get noMedicinesScheduled;
+
+  /// No description provided for @viewDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'View Details'**
+  String get viewDetails;
+
+  /// No description provided for @markAllTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark All Taken'**
+  String get markAllTaken;
 }
 
 class _AppLocalizationsDelegate

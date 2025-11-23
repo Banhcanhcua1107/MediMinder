@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'profile_screen.dart';
 import 'add_med_screen.dart';
+import 'personal_info_screen.dart';
 import '../widgets/custom_toast.dart';
 import '../services/user_service.dart';
 import '../services/notification_service.dart';
@@ -311,7 +311,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const ProfileScreen(),
+                      builder: (context) => const PersonalInfoScreen(),
                     ),
                   );
                 },
@@ -502,32 +502,85 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          l10n.todaySchedule,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: kPrimaryTextColor,
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              l10n.medicinesScheduled,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: kPrimaryTextColor,
+              ),
+            ),
+            if (medicines.isNotEmpty)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: kAccentColor,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '${medicines.length} ${l10n.medicines.toLowerCase()}',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: kPrimaryColor,
+                  ),
+                ),
+              ),
+          ],
         ),
         const SizedBox(height: 16),
         if (medicines.isEmpty)
-          Center(child: Text(AppLocalizations.of(context)!.noScheduleToday))
-        else
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: medicines.map((medicine) {
-                return _buildHorizontalMedicineCard(medicine);
-              }).toList(),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: kCardColor,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                ),
+              ],
             ),
+            child: Column(
+              children: [
+                Icon(
+                  Icons.check_circle_outline,
+                  size: 48,
+                  color: kSuccessColor.withOpacity(0.5),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  l10n.noMedicinesScheduled,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: kSecondaryTextColor,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          )
+        else
+          Column(
+            children: medicines.map((medicine) {
+              return _buildVerticalMedicineCard(medicine);
+            }).toList(),
           ),
       ],
     );
   }
 
-  // Widget: Thẻ thuốc nằm ngang với nút "Đã uống"
-  Widget _buildHorizontalMedicineCard(UserMedicine medicine) {
+  // Widget: Thẻ thuốc dạng danh sách (new design)
+  Widget _buildVerticalMedicineCard(UserMedicine medicine) {
     final l10n = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final todayStr =
@@ -540,132 +593,175 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       return intakeDateStr == todayStr && intake.status == 'taken';
     });
 
-    return Padding(
-      padding: const EdgeInsets.only(right: 16),
-      child: GestureDetector(
-        onTap: () async {
-          final result = await Navigator.push<bool>(
-            context,
-            MaterialPageRoute(
-              builder: (context) => AddMedScreen(medicineId: medicine.id),
-            ),
-          );
-          if (result == true) {
-            final user = Supabase.instance.client.auth.currentUser;
-            if (user != null) {
-              Provider.of<MedicineProvider>(
-                context,
-                listen: false,
-              ).fetchMedicines(user.id);
-            }
-          }
-        },
-        child: Container(
-          width: 280,
-          decoration: BoxDecoration(
-            color: kCardColor,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
-            ],
+    return GestureDetector(
+      onTap: () async {
+        final result = await Navigator.push<bool>(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AddMedScreen(medicineId: medicine.id),
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        );
+        if (result == true) {
+          final user = Supabase.instance.client.auth.currentUser;
+          if (user != null) {
+            Provider.of<MedicineProvider>(
+              context,
+              listen: false,
+            ).fetchMedicines(user.id);
+          }
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: kCardColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isTaken
+                ? kSuccessColor.withOpacity(0.3)
+                : Colors.transparent,
+            width: 2,
+          ),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
+          ],
+        ),
+        child: Column(
+          children: [
+            // Header row
+            Row(
               children: [
-                // Header: Icon + Tên
-                Row(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: kAccentColor,
-                        borderRadius: BorderRadius.circular(12),
+                // Icon with background
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: isTaken
+                        ? kSuccessColor.withOpacity(0.1)
+                        : kAccentColor,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      isTaken ? Icons.check_circle : Icons.medication,
+                      color: isTaken ? kSuccessColor : kPrimaryColor,
+                      size: 28,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // Medicine info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        medicine.name,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: kPrimaryTextColor,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      child: Center(
-                        child: Icon(
-                          _getMedicineIcon(medicine.dosageForm),
-                          color: kPrimaryColor,
-                          size: 20,
+                      const SizedBox(height: 4),
+                      Text(
+                        '${l10n.dosageInfo}: ${medicine.quantityPerDose} × ${medicine.dosageStrength}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: kSecondaryTextColor,
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            medicine.name,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: kPrimaryTextColor,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            l10n.units(
-                              medicine.dosageStrength,
-                              medicine.quantityPerDose.toString(),
-                            ),
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: kSecondaryTextColor,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 12),
-                // Thời gian
-                Row(
-                  children: medicine.scheduleTimes.take(2).map((scheduleTime) {
-                    final timeStr =
-                        '${scheduleTime.timeOfDay.hour.toString().padLeft(2, '0')}:${scheduleTime.timeOfDay.minute.toString().padLeft(2, '0')}';
-                    return Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      margin: const EdgeInsets.only(right: 6),
-                      decoration: BoxDecoration(
-                        color: kAccentColor,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        timeStr,
+                // Status badge
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isTaken
+                        ? kSuccessColor.withOpacity(0.1)
+                        : kWarningColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    isTaken ? l10n.taken : l10n.untaken,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: isTaken ? kSuccessColor : kWarningColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            // Time and action row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.intakeTime,
                         style: const TextStyle(
                           fontSize: 11,
+                          color: kSecondaryTextColor,
                           fontWeight: FontWeight.w500,
-                          color: kPrimaryColor,
                         ),
                       ),
-                    );
-                  }).toList(),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: medicine.scheduleTimes.take(3).map((
+                          scheduleTime,
+                        ) {
+                          final timeStr =
+                              '${scheduleTime.timeOfDay.hour.toString().padLeft(2, '0')}:${scheduleTime.timeOfDay.minute.toString().padLeft(2, '0')}';
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            margin: const EdgeInsets.only(right: 6),
+                            decoration: BoxDecoration(
+                              color: kAccentColor,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              timeStr,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: kPrimaryColor,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 12),
-                // Nút "Đã uống"
+                const SizedBox(width: 12),
+                // Action button
                 SizedBox(
-                  width: double.infinity,
+                  height: 40,
+                  width: 100,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: isTaken ? kSuccessColor : kPrimaryColor,
-                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                     onPressed: () async {
-                      // Toggle taken status cho lịch thi đầu tiên
                       if (medicine.scheduleTimes.isNotEmpty) {
                         final firstSchedule = medicine.scheduleTimes.first;
                         await _handleToggleTaken(
@@ -682,12 +778,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
                       ),
+                      textAlign: TextAlign.center,
                     ),
                   ),
                 ),
               ],
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -715,25 +812,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           SnackBar(content: Text('${AppLocalizations.of(context)!.error}: $e')),
         );
       }
-    }
-  }
-
-  IconData _getMedicineIcon(String dosageForm) {
-    switch (dosageForm.toLowerCase()) {
-      case 'tablet':
-      case 'viên nén':
-        return Icons.medication;
-      case 'capsule':
-      case 'viên nang':
-        return Icons.vaccines;
-      case 'liquid':
-      case 'siro':
-        return Icons.local_drink;
-      case 'injection':
-      case 'thuốc tiêm':
-        return Icons.medical_services;
-      default:
-        return Icons.medication;
     }
   }
 }

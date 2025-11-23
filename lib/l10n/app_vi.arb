@@ -587,5 +587,17 @@
   "invalidWeight": "Cân nặng không hợp lệ",
   "enterPositiveNumber": "Vui lòng nhập số dương",
   "errorSaving": "Lỗi khi lưu",
-  "tryAgain": "Vui lòng thử lại"
+  "tryAgain": "Vui lòng thử lại",
+  "medicinesScheduled": "Thuốc trong lịch",
+  "nextIntake": "Lần uống tiếp theo",
+  "dosageInfo": "Liều dùng",
+  "intakeTime": "Giờ uống",
+  "medicineStatus": "Trạng thái",
+  "untaken": "Chưa uống",
+  "upcoming": "Sắp tới",
+  "overdue": "Quá hạn",
+  "allMedicinesTaken": "Đã uống hết thuốc!",
+  "noMedicinesScheduled": "Hôm nay không có thuốc trong lịch",
+  "viewDetails": "Xem chi tiết",
+  "markAllTaken": "Đánh dấu tất cả đã uống"
 }
