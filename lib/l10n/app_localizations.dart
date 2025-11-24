@@ -2629,6 +2629,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enable notifications to receive timely reminders for taking your medicines. Customize sound, vibration, and reminder timing.'**
   String get notificationInfo;
+
+  /// No description provided for @notificationPermissionTipsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'If reminders disappear, check the steps below:'**
+  String get notificationPermissionTipsTitle;
+
+  /// No description provided for @notificationPermissionTipsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'• Allow MediMinder to post notifications and Exact Alarm permission\n• Disable battery saver / allow background running\n• Allow autostart or background launch in your device settings'**
+  String get notificationPermissionTipsBody;
 }
 
 class _AppLocalizationsDelegate

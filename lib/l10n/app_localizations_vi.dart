@@ -1310,4 +1310,12 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get notificationInfo =>
       'Bật thông báo để nhận nhắc nhở kịp thời khi uống thuốc. Tùy chỉnh âm thanh, rền và thời gian nhắc nhở.';
+
+  @override
+  String get notificationPermissionTipsTitle =>
+      'Nếu không thấy thông báo, hãy kiểm tra:';
+
+  @override
+  String get notificationPermissionTipsBody =>
+      '• Cho phép MediMinder gửi thông báo và cấp Exact Alarm\n• Tắt tiết kiệm pin / cho phép chạy ngầm\n• Cho phép tự khởi chạy hoặc chạy nền trong cài đặt điện thoại';
 }

@@ -76,6 +76,8 @@ class NotificationService {
       onDidReceiveNotificationResponse: (details) {
         debugPrint('✅ [FOREGROUND] Notification tapped/received!');
         debugPrint('   ID: ${details.id}');
+        debugPrint('   Title: ${details.notification?.title}');
+        debugPrint('   Body: ${details.notification?.body}');
         debugPrint('   Payload: ${details.payload}');
       },
       onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
@@ -93,7 +95,7 @@ class NotificationService {
         if (androidImplementation != null) {
           await androidImplementation.createNotificationChannel(
             AndroidNotificationChannel(
-              'medicine_alarm_channel_v8', // Updated channel ID to v8
+              'medicine_alarm_channel_v7', // Updated channel ID
               'Nhắc nhở uống thuốc',
               description: 'Kênh thông báo quan trọng cho việc uống thuốc',
               importance: Importance.max,
@@ -104,7 +106,7 @@ class NotificationService {
             ),
           );
           debugPrint(
-            '✅ Notification Channel created: medicine_alarm_channel_v8',
+            '✅ Notification Channel created: medicine_alarm_channel_v7',
           );
         }
       } catch (e) {
@@ -161,7 +163,7 @@ class NotificationService {
     bool showActions = true,
   }) {
     return AndroidNotificationDetails(
-      'medicine_alarm_channel_v8', // Updated channel ID to v8
+      'medicine_alarm_channel_v7', // Updated channel ID
       'Nhắc nhở uống thuốc',
       channelDescription: 'Kênh thông báo quan trọng cho việc uống thuốc',
       importance: Importance.max,
@@ -200,7 +202,6 @@ class NotificationService {
     required String title,
     required String body,
     String? payload,
-    bool useAlarm = false, // Added parameter to fix build error
   }) async {
     debugPrint('📢 [IMMEDIATE] Showing notification: ID=$id');
     debugPrint('   Title: $title');
@@ -280,17 +281,6 @@ class NotificationService {
     try {
       // Check permissions first
       if (Platform.isAndroid) {
-        final androidImplementation = _flutterLocalNotificationsPlugin
-            .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin
-            >();
-
-        if (androidImplementation != null) {
-          final bool? granted = await androidImplementation
-              .requestExactAlarmsPermission();
-          debugPrint('   Exact Alarm Permission (Plugin): $granted');
-        }
-
         final exactAlarmStatus = await Permission.scheduleExactAlarm.status;
         if (!exactAlarmStatus.isGranted) {
           debugPrint('⚠️ SCHEDULE_EXACT_ALARM not granted. Requesting...');
@@ -413,4 +403,8 @@ class NotificationService {
     UserMedicine medicine, {
     required int daysToSchedule,
   }) async {}
+}
+
+extension on NotificationResponse {
+  get notification => null;
 }

@@ -65,7 +65,10 @@ class _NotificationSettingsScreenState
       await _prefs.setBool('enable_notifications', _enableNotifications);
       await _prefs.setBool('enable_notification_sound', _enableSound);
       await _prefs.setBool('enable_notification_vibration', _enableVibration);
-      await _prefs.setInt('repeat_notification_interval', _repeatNotificationInterval);
+      await _prefs.setInt(
+        'repeat_notification_interval',
+        _repeatNotificationInterval,
+      );
 
       debugPrint('✅ Notification settings saved');
     } catch (e) {
@@ -536,6 +539,37 @@ class _NotificationSettingsScreenState
                     ),
                   ],
                 ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFDF2E7),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFFED7AA)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.notificationPermissionTipsTitle,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFFB45309),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    l10n.notificationPermissionTipsBody,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF78350F),
+                      height: 1.4,
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 20),

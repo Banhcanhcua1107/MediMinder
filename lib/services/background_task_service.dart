@@ -2,7 +2,7 @@
 import 'package:workmanager/workmanager.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'notification_service.dart';
 import '../repositories/medicine_repository.dart';
 import '../config/constants.dart';
@@ -70,16 +70,14 @@ class BackgroundTaskService {
     }
   }
 
-  /// Lên lịch kiểm tra thuốc hàng giờ (mỗi 2 phút để giảm delay)
+  /// Lên lịch kiểm tra thuốc hàng giờ (mỗi 4 giờ để refill schedule)
   Future<void> scheduleMedicineCheckTask() async {
     try {
       await Workmanager().registerPeriodicTask(
         taskCheckMedicineReminder,
         taskCheckMedicineReminder,
-        frequency: const Duration(
-          minutes: 2,
-        ), // Kiểm tra mỗi 2 phút để giảm delay từ 5+ phút xuống còn <2 phút
-        initialDelay: const Duration(seconds: 5),
+        frequency: const Duration(minutes: 15),
+        initialDelay: const Duration(seconds: 10),
         constraints: Constraints(
           networkType: NetworkType.connected,
           requiresBatteryNotLow: false,
@@ -89,7 +87,7 @@ class BackgroundTaskService {
         ),
       );
 
-      debugPrint('✅ Medicine check task scheduled (every 2 minutes)');
+      debugPrint('✅ Medicine scheduling task scheduled (every 4 hours)');
     } catch (e) {
       debugPrint('❌ Error scheduling medicine check task: $e');
     }
@@ -139,16 +137,16 @@ class BackgroundTaskService {
   }
 }
 
-/// Xử lý task kiểm tra thuốc
+/// Xử lý task kiểm tra thuốc (Updated: Scheduling Mode)
 Future<void> _handleMedicineCheckTask() async {
   try {
-    debugPrint('🔔 Background medicine check task executing...');
+    debugPrint('🔔 Background medicine scheduling task executing...');
 
     // Khởi tạo Supabase (trong isolate cần khởi tạo lại)
     try {
       await Supabase.initialize(
         url: AppConstants.supabaseUrl,
-        anonKey: AppConstants.supabaseAnonKey, // Thay bằng key thực tế
+        anonKey: AppConstants.supabaseAnonKey,
       );
     } catch (e) {
       debugPrint('⚠️ Supabase already initialized: $e');
@@ -158,31 +156,26 @@ Future<void> _handleMedicineCheckTask() async {
     final user = supabase.auth.currentUser;
 
     if (user == null) {
-      debugPrint('⚠️ No user logged in, skipping medicine check');
+      debugPrint('⚠️ No user logged in, skipping scheduling');
       return;
     }
-
-    // Lấy repeat interval setting từ SharedPreferences (default 10 phút)
-    final prefs = await SharedPreferences.getInstance();
-    final repeatInterval = prefs.getInt('repeat_notification_interval') ?? 10;
-    debugPrint('⏱️ Repeat notification interval: $repeatInterval minutes');
 
     // Lấy dữ liệu thuốc hôm nay
     final medicineRepository = MedicineRepository(supabase);
 
-    // 1. Thử lấy từ cache trước (Ưu tiên tốc độ)
+    // 1. Thử lấy từ cache trước
     List<UserMedicine> medicines = await medicineRepository.getLocalMedicines();
 
     if (medicines.isNotEmpty) {
       debugPrint('⚡ Loaded ${medicines.length} medicines from local cache');
     } else {
-      // 2. Nếu cache rỗng, mới gọi API (Fallback)
+      // 2. Nếu cache rỗng, mới gọi API
       debugPrint('⚠️ Local cache empty, fetching from Supabase...');
       medicines = await medicineRepository.getTodayMedicines(user.id);
     }
 
     if (medicines.isEmpty) {
-      debugPrint('ℹ️ No medicines today');
+      debugPrint('ℹ️ No medicines to schedule');
       return;
     }
 
@@ -191,122 +184,88 @@ Future<void> _handleMedicineCheckTask() async {
     await notificationService.initialize();
 
     final now = DateTime.now();
-    int notificationsTriggered = 0;
 
-    debugPrint(
-      '📋 Checking ${medicines.length} medicines at ${now.hour}:${now.minute.toString().padLeft(2, '0')}',
-    );
+    int medicinesScheduled = 0;
 
-    // Kiểm tra từng thuốc
+    // Schedule cho từng thuốc
     for (var medicine in medicines) {
-      if (medicine.scheduleTimes.isEmpty) continue;
+      if (!medicine.isActive) continue;
 
-      // Kiểm tra từng giờ uống
+      // Schedule lặp lại hàng ngày cho từng giờ uống
       for (int i = 0; i < medicine.scheduleTimes.length; i++) {
         final scheduleTime = medicine.scheduleTimes[i];
-        final notificationId = NotificationService.generateNotificationId(
-          medicine.id,
-          i,
+        final timeOfDay = scheduleTime.timeOfDay;
+
+        await notificationService.scheduleDailyNotification(
+          id: NotificationService.generateNotificationId(medicine.id, i),
+          title: 'Đến giờ uống thuốc! 💊',
+          body:
+              '${medicine.name} - ${medicine.dosageStrength}, ${medicine.quantityPerDose} viên',
+          time: timeOfDay,
+          payload: 'medicine:${medicine.id}',
         );
-
-        // Tính toán thời gian uống
-        final scheduledDateTime = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          scheduleTime.timeOfDay.hour,
-          scheduleTime.timeOfDay.minute,
-        );
-
-        // Hiệu số giây (để chính xác hơn)
-        final differenceInSeconds = scheduledDateTime.difference(now).inSeconds;
-        final differenceInMinutes = differenceInSeconds ~/ 60;
-
-        // Kiểm tra xem đã gửi thông báo hôm nay chưa
-        final todayStr =
-            '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
-
-        // Lấy thông tin từ database xem lần cuối gửi khi nào
-        final scheduleTimeData = await supabase
-            .from('medicine_schedule_times')
-            .select('last_notification_sent_date, notification_sent_count')
-            .eq('id', scheduleTime.id)
-            .single();
-
-        final lastSentDate =
-            scheduleTimeData['last_notification_sent_date'] as String?;
-        final hasAlreadySentToday = lastSentDate == todayStr;
-
-        debugPrint(
-          '🔍 Kiểm tra ${medicine.name} lúc ${scheduleTime.timeOfDay.hour}:${scheduleTime.timeOfDay.minute.toString().padLeft(2, '0')}: Chênh lệch=${differenceInSeconds}s, Đã gửi hôm nay=$hasAlreadySentToday',
-        );
-
-        if (!hasAlreadySentToday &&
-            differenceInSeconds <= 300 &&
-            differenceInSeconds > -3600) {
-          // Thông báo ngay lập tức vì đã tới giờ (hoặc chậm tối đa 5 phút)
-          // differenceInSeconds <= 300: Nếu đã qua giờ hoặc sắp tới (trong 5 phút)
-          await notificationService.showImmediateNotification(
-            id: notificationId,
-            title: '⏰ Đến giờ uống thuốc! 💊',
-            body:
-                '${medicine.name} (${medicine.dosageStrength}) - ${medicine.quantityPerDose} viên',
-            payload: 'medicine:${medicine.id}',
-          );
-
-          // Cập nhật database - ghi nhận đã gửi hôm nay
-          try {
-            await supabase
-                .from('medicine_schedule_times')
-                .update({
-                  'last_notification_sent_date': todayStr,
-                  'notification_sent_count':
-                      ((scheduleTimeData['notification_sent_count'] ?? 0)
-                          as int) +
-                      1,
-                })
-                .eq('id', scheduleTime.id);
-
-            debugPrint(
-              '💾 Marked notification as sent for today: ${scheduleTime.id}',
-            );
-          } catch (e) {
-            debugPrint('⚠️ Error updating notification status: $e');
-          }
-
-          notificationsTriggered++;
-          debugPrint(
-            '🔔 Notification triggered for ${medicine.name} at ${scheduleTime.timeOfDay.hour}:${scheduleTime.timeOfDay.minute.toString().padLeft(2, '0')} (diff: $differenceInSeconds sec)',
-          );
-        } else if (!hasAlreadySentToday &&
-            differenceInMinutes > 0 &&
-            differenceInMinutes <= 3) {
-          // Thông báo sắp tới (trong 3 phút tới) - chỉ nếu chưa gửi hôm nay
-          await notificationService.showImmediateNotification(
-            id: notificationId,
-            title: 'Nhắc uống thuốc',
-            body:
-                '${medicine.name} (${medicine.dosageStrength}) - ${medicine.quantityPerDose} viên - Trong $differenceInMinutes phút',
-            payload: 'medicine:${medicine.id}',
-          );
-
-          notificationsTriggered++;
-          debugPrint(
-            '📲 Advance notification sent for ${medicine.name} (in $differenceInMinutes minutes)',
-          );
-        } else if (hasAlreadySentToday) {
-          debugPrint(
-            '⏭️ Skipped notification for ${medicine.name} - already sent today (last: $lastSentDate)',
-          );
-        }
       }
+      medicinesScheduled++;
     }
 
     debugPrint(
-      '✅ Medicine check completed - $notificationsTriggered notifications triggered',
+      '✅ Medicine scheduling completed - $medicinesScheduled medicines scheduled for next 7 days',
+    );
+
+    await _showImmediateRemindersIfNeeded(
+      notificationService,
+      medicines,
+      now: now,
     );
   } catch (e) {
     debugPrint('❌ Error in medicine check task: $e');
+  }
+}
+
+Future<void> _showImmediateRemindersIfNeeded(
+  NotificationService notificationService,
+  List<UserMedicine> medicines, {
+  required DateTime now,
+}) async {
+  const immediateWindowSeconds = 60;
+  final triggeredIds = <int>{};
+
+  for (final medicine in medicines) {
+    if (!medicine.isActive) continue;
+    if (!medicine.isScheduledForDate(now)) continue;
+
+    for (int i = 0; i < medicine.scheduleTimes.length; i++) {
+      final scheduledDateTime = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        medicine.scheduleTimes[i].timeOfDay.hour,
+        medicine.scheduleTimes[i].timeOfDay.minute,
+      );
+
+      final diffSeconds = scheduledDateTime.difference(now).inSeconds;
+      if (diffSeconds.abs() > immediateWindowSeconds) continue;
+
+      final notificationId = NotificationService.generateNotificationId(
+        medicine.id,
+        i,
+      );
+      if (triggeredIds.contains(notificationId)) continue;
+      triggeredIds.add(notificationId);
+
+      debugPrint(
+        '⏰ Immediate reminder triggered for ${medicine.name} at ${scheduledDateTime.toIso8601String()}',
+      );
+
+      await notificationService.showNotification(
+        id: notificationId,
+        title: 'Đến giờ uống thuốc! 💊',
+        body:
+            '${medicine.name} - ${medicine.dosageStrength}, ${medicine.quantityPerDose} viên',
+        payload: 'medicine:${medicine.id}',
+        useAlarm: true,
+      );
+    }
   }
 }
 
@@ -340,9 +299,6 @@ Future<void> _handleMedicineSyncTask() async {
     debugPrint(
       '✅ Medicine sync completed - ${medicines.length} medicines synced',
     );
-
-    // TODO: Lưu vào bộ nhớ cục bộ nếu cần
-    // Ví dụ: Lưu vào SharedPreferences để hỗ trợ ngoại tuyến
   } catch (e) {
     debugPrint('❌ Error in medicine sync task: $e');
   }

@@ -381,13 +381,6 @@ class _AddMedScreenState extends State<AddMedScreen> {
         );
       }
 
-      // Thông báo Test ngay lập tức để người dùng yên tâm
-      await notificationService.showNotification(
-        id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-        title: '✅ Đã lưu thuốc',
-        body: 'Sẽ nhắc vào: ${_reminders.join(", ")}',
-      );
-
       // Lên lịch LẶP LẠI HÀNG NGÀY
       for (int i = 0; i < _reminders.length; i++) {
         final timeParts = _reminders[i].split(':');

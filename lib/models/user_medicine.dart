@@ -56,8 +56,12 @@ class UserMedicine {
       reasonForUse: json['reason_for_use'],
       notes: json['notes'],
       isActive: json['is_active'] ?? true,
-      createdAt: DateTime.parse(json['created_at']),
-      updatedAt: DateTime.parse(json['updated_at']),
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'])
+          : DateTime.now(),
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'])
+          : DateTime.now(),
     );
   }
 
@@ -218,6 +222,100 @@ class UserMedicine {
       final hours = (minutes / 60).toStringAsFixed(0);
       return 'Trong $hours giờ';
     }
+  }
+
+  /// Tính toán danh sách các mốc thời gian uống thuốc trong tương lai
+  /// [fromDate]: Thời điểm bắt đầu tính (thường là DateTime.now())
+  /// [daysToCalculate]: Số ngày muốn tính trước (VD: 7 ngày)
+  List<DateTime> calculateFutureIntakeDates(
+    DateTime fromDate,
+    int daysToCalculate,
+  ) {
+    if (!isActive || scheduleTimes.isEmpty) return [];
+
+    final List<DateTime> futureDates = [];
+    final startDateOnly = DateTime(
+      startDate.year,
+      startDate.month,
+      startDate.day,
+    );
+
+    // Duyệt qua từng ngày trong khoảng daysToCalculate
+    for (int i = 0; i < daysToCalculate; i++) {
+      final checkDate = fromDate.add(Duration(days: i));
+      final checkDateOnly = DateTime(
+        checkDate.year,
+        checkDate.month,
+        checkDate.day,
+      );
+
+      // 1. Check range (Start/End Date)
+      if (checkDateOnly.isBefore(startDateOnly)) continue;
+      if (endDate != null) {
+        final endDateOnly = DateTime(
+          endDate!.year,
+          endDate!.month,
+          endDate!.day,
+        );
+        if (checkDateOnly.isAfter(endDateOnly)) continue;
+      }
+
+      // 2. Check frequency
+      bool isScheduledDay = false;
+      if (schedules.isEmpty) {
+        // Default daily?
+        isScheduledDay = true;
+      } else {
+        final schedule = schedules.first;
+        switch (schedule.frequencyType) {
+          case 'daily':
+            isScheduledDay = true;
+            break;
+          case 'alternate_days':
+            final diff = checkDateOnly.difference(startDateOnly).inDays;
+            isScheduledDay = diff % 2 == 0;
+            break;
+          case 'custom':
+            if (schedule.customIntervalDays != null) {
+              final diff = checkDateOnly.difference(startDateOnly).inDays;
+              isScheduledDay = diff % schedule.customIntervalDays! == 0;
+            } else if (schedule.daysOfWeek != null) {
+              // daysOfWeek: '0101010' (Mon, Wed, Fri) - Index 0 is Mon
+              final weekdayIndex = checkDateOnly.weekday - 1; // 0-6
+              if (weekdayIndex < schedule.daysOfWeek!.length) {
+                isScheduledDay = schedule.daysOfWeek![weekdayIndex] == '1';
+              }
+            } else {
+              isScheduledDay = true;
+            }
+            break;
+          default:
+            isScheduledDay = true;
+        }
+      }
+
+      if (!isScheduledDay) continue;
+
+      // 3. Add specific times
+      for (var time in scheduleTimes) {
+        final scheduledDateTime = DateTime(
+          checkDate.year,
+          checkDate.month,
+          checkDate.day,
+          time.timeOfDay.hour,
+          time.timeOfDay.minute,
+        );
+
+        // Chỉ lấy các mốc thời gian trong tương lai so với fromDate
+        // (Cho phép lấy cả mốc vừa qua 1 chút nếu cần, nhưng ở đây ta lấy future)
+        if (scheduledDateTime.isAfter(fromDate)) {
+          futureDates.add(scheduledDateTime);
+        }
+      }
+    }
+
+    futureDates.sort();
+    return futureDates;
   }
 }
 

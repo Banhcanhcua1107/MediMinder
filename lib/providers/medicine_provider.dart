@@ -6,6 +6,7 @@ import '../services/notification_service.dart';
 
 class MedicineProvider extends ChangeNotifier {
   final MedicineRepository _medicineRepository;
+  final NotificationService _notificationService = NotificationService();
   List<UserMedicine> _medicines = [];
   bool _isLoading = false;
   String? _error;
@@ -24,6 +25,8 @@ class MedicineProvider extends ChangeNotifier {
 
     try {
       _medicines = await _medicineRepository.getUserMedicines(userId);
+      // Ensure each medicine that already exists gets its reminders scheduled
+      await _scheduleNotificationsForMedicines(_medicines);
     } catch (e) {
       _error = e.toString();
       debugPrint('❌ Error fetching medicines: $e');
@@ -120,6 +123,38 @@ class MedicineProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('❌ Error toggling taken status: $e');
       rethrow;
+    }
+  }
+
+  Future<void> _scheduleNotificationsForMedicines(
+    List<UserMedicine> medicines,
+  ) async {
+    if (medicines.isEmpty) return;
+
+    try {
+      for (final medicine in medicines) {
+        if (!medicine.isActive || medicine.scheduleTimes.isEmpty) continue;
+
+        for (int i = 0; i < medicine.scheduleTimes.length; i++) {
+          final timeOfDay = medicine.scheduleTimes[i].timeOfDay;
+          final notificationId = NotificationService.generateNotificationId(
+            medicine.id,
+            i,
+          );
+
+          await _notificationService.cancelNotification(notificationId);
+          await _notificationService.scheduleDailyNotification(
+            id: notificationId,
+            title: 'Đến giờ uống thuốc! 💊',
+            body:
+                '${medicine.name} - ${medicine.dosageStrength}, ${medicine.quantityPerDose} viên',
+            time: timeOfDay,
+            payload: 'medicine:${medicine.id}',
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('❌ Error scheduling notifications for existing medicines: $e');
     }
   }
 }

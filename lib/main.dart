@@ -9,6 +9,7 @@ import 'providers/language_provider.dart';
 import 'config/constants.dart';
 import 'services/notification_service.dart';
 import 'services/background_task_service.dart';
+import 'services/medicine_reminder_poller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,7 +39,10 @@ void main() async {
   try {
     final notificationService = NotificationService();
     await notificationService.initialize();
-    debugPrint('✅ Notification Service initialized');
+    // Request permissions including battery optimization
+    await notificationService.requestPermissions();
+    await notificationService.requestBatteryPermission();
+    debugPrint('✅ Notification Service initialized with permissions');
   } catch (e) {
     debugPrint('❌ Error initializing Notification Service: $e');
   }
@@ -53,6 +57,16 @@ void main() async {
     debugPrint('✅ Background Task Service initialized and scheduled');
   } catch (e) {
     debugPrint('❌ Error initializing Background Task Service: $e');
+  }
+
+  // Khởi tạo Medicine Reminder Poller (kiểm tra mỗi phút và show ngay)
+  try {
+    MedicineReminderPoller().startPolling(
+      checkInterval: const Duration(minutes: 1),
+    );
+    debugPrint('✅ Medicine Reminder Poller started');
+  } catch (e) {
+    debugPrint('❌ Error starting Medicine Reminder Poller: $e');
   }
 
   runApp(

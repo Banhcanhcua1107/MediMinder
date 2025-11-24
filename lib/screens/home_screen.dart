@@ -290,7 +290,26 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           ),
           Row(
             children: [
-              // Test Alarm Button
+              // Test Immediate Notification Button
+              IconButton(
+                icon: const Icon(
+                  Icons.notifications_active,
+                  color: Colors.orange,
+                ),
+                onPressed: () async {
+                  await NotificationService().testImmediateNotification();
+                  if (context.mounted) {
+                    showCustomToast(
+                      context,
+                      message: 'Test Ngay',
+                      subtitle: 'Thông báo test hiển thị ngay',
+                      isSuccess: true,
+                    );
+                  }
+                },
+                tooltip: 'Test Immediate Notification',
+              ),
+              // Test Alarm Button (Schedule in 5 seconds)
               IconButton(
                 icon: const Icon(Icons.alarm_add, color: kPrimaryColor),
                 onPressed: () async {
@@ -298,12 +317,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   if (context.mounted) {
                     showCustomToast(
                       context,
-                      message: l10n.testAlarmSet,
-                      subtitle: l10n.willFireIn10Seconds,
+                      message: 'Test Sau 5 Giây',
+                      subtitle: 'Thông báo sẽ nổ sau 5 giây',
                       isSuccess: true,
                     );
                   }
                 },
+                tooltip: 'Test Scheduled Notification',
               ),
               const SizedBox(width: 8),
               GestureDetector(

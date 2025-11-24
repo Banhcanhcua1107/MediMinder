@@ -17,6 +17,7 @@
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" /> <!-- Dùng cho app chuyên báo thức -->
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     
     <!-- Permissions for Health/Fitness and Google Fit -->
     <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
@@ -71,6 +72,16 @@
                 <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
             </intent-filter>
         </receiver>
+
+        <!-- Custom receiver để handle medicine reminder notifications -->
+        <receiver 
+            android:name="com.mediminder.app.MedicineReminderReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.mediminder.app.MEDICINE_REMINDER" />
+            </intent-filter>
+        </receiver>
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

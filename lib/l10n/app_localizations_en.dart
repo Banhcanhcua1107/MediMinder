@@ -1312,4 +1312,12 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get notificationInfo =>
       'Enable notifications to receive timely reminders for taking your medicines. Customize sound, vibration, and reminder timing.';
+
+  @override
+  String get notificationPermissionTipsTitle =>
+      'If reminders disappear, check the steps below:';
+
+  @override
+  String get notificationPermissionTipsBody =>
+      '• Allow MediMinder to post notifications and Exact Alarm permission\n• Disable battery saver / allow background running\n• Allow autostart or background launch in your device settings';
 }
